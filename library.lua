@@ -447,7 +447,7 @@ function Library:new()
 		TextLabel.Size = UDim2.new(0, 124, 0, 15)
 		TextLabel.ZIndex = 3
 		TextLabel.FontFace = Font.new("rbxasset://fonts/families/Montserrat.json", Enum.FontWeight.SemiBold)
-		TextLabel.Text = self
+		TextLabel.Text = name
 		TextLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 		TextLabel.TextScaled = true
 		TextLabel.TextSize = 14.000
@@ -466,7 +466,7 @@ function Library:new()
 		Logo.Position = UDim2.new(0.130999997, 0, 0.5, 0)
 		Logo.Size = UDim2.new(0, 17, 0, 17)
 		Logo.ZIndex = 3
-		Logo.Image = icon or "rbxassetid://17290697757"
+		Logo.Image = icon
 		Logo.ImageTransparency = 0.3001
 
 		local Glow = Instance.new("ImageLabel")
@@ -479,6 +479,8 @@ function Library:new()
 		Glow.BorderSizePixel = 0
 		Glow.Position = UDim2.new(0.5, 0, 0.5, 0)
 		Glow.Size = UDim2.new(0, 190, 0, 53)
+		Glow.Image = icon or "rbxassetid://17290723539"
+		
 		Glow.Image = "rbxassetid://17290723539"
 		Glow.ImageTransparency = 1.000
 
