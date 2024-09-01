@@ -479,8 +479,6 @@ function Library:new()
 		Glow.BorderSizePixel = 0
 		Glow.Position = UDim2.new(0.5, 0, 0.5, 0)
 		Glow.Size = UDim2.new(0, 190, 0, 53)
-		Glow.Image = icon or "rbxassetid://17290723539"
-		
 		Glow.Image = "rbxassetid://17290723539"
 		Glow.ImageTransparency = 1.000
 
