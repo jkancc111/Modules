@@ -17,12 +17,6 @@ local Library = {
     dragging = false;
     drag_position = nil;
     start_position = nil;
-    Theme = {
-        Background = Color3.fromRGB(19, 20, 24),
-        Foreground = Color3.fromRGB(27, 28, 33),
-        Accent = Color3.fromRGB(66, 89, 182),
-        Text = Color3.fromRGB(255, 255, 255),
-    }
 }
 
 if isfolder("Astral hub") then
@@ -74,82 +68,30 @@ end
 Library.load_flags()
 Library.clear()
 
-function Library:updateUIScale()
-    local viewportSize = workspace.CurrentCamera.ViewportSize
-    local scale = math.min(viewportSize.X / 1920, viewportSize.Y / 1080)
-    
-    -- Atur skala minimum dan maksimum
-    scale = math.clamp(scale, 0.5, 1.5)
-    
-    -- Update ukuran dan posisi container utama
-    self.container.Size = UDim2.new(0, 699 * scale, 0, 426 * scale)
-    self.container.Position = UDim2.new(0.5, 0, 0.5, 0)
-    
-    -- Update ukuran bayangan
-    self.Shadow.Size = UDim2.new(0, 776 * scale, 0, 509 * scale)
-    
-    -- Update ukuran dan posisi tombol mobile
-    self.Mobile.Size = UDim2.new(0, 122 * scale, 0, 38 * scale)
-    self.Mobile.Position = UDim2.new(0.02, 0, 0.92, 0)
-    
-    -- Update ukuran font
-    local function updateTextSize(object)
-        if object:IsA("TextLabel") or object:IsA("TextButton") or object:IsA("TextBox") then
-            object.TextSize = object.TextSize * scale
-        end
-        for _, child in ipairs(object:GetChildren()) do
-            updateTextSize(child)
-        end
-    end
-    
-    updateTextSize(self.container)
-    updateTextSize(self.Mobile)
-end
-
-function Library:smoothTween(object, properties, duration)
-    local tween = TweenService:Create(object, TweenInfo.new(duration, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), properties)
-    tween:Play()
-    return tween
-end
-
-function Library:setTheme(theme)
-    for key, value in pairs(theme) do
-        if self.Theme[key] then
-            self.Theme[key] = value
-        end
-    end
-    self:updateTheme()
-end
-
-function Library:updateTheme()
-    -- Update warna elemen UI berdasarkan tema
-    self.container.BackgroundColor3 = self.Theme.Background
-    self.Shadow.BackgroundColor3 = self.Theme.Background
-    self.Mobile.BackgroundColor3 = self.Theme.Foreground
-    self.Top.BackgroundColor3 = self.Theme.Foreground
-    self.Line.BackgroundColor3 = self.Theme.Foreground
-    self.tabs.BackgroundColor3 = self.Theme.Background
-    self.Mobile.TextColor3 = self.Theme.Text
-    self.TextLabel.TextColor3 = self.Theme.Text
-    self.State.TextColor3 = self.Theme.Text
-end
-
 function Library:open()
 	self.Container.Visible = true
 	self.Shadow.Visible = true
 	self.Mobile.Modal = true
 
-	local scale = self.container.Size.X.Offset / 699
-	self:smoothTween(self.Container, {Size = UDim2.new(0, 699 * scale, 0, 426 * scale)}, 0.6)
-	self:smoothTween(self.Shadow, {Size = UDim2.new(0, 776 * scale, 0, 509 * scale)}, 0.6)
+	TweenService:Create(self.Container, TweenInfo.new(0.6, Enum.EasingStyle.Circular, Enum.EasingDirection.InOut), {
+		Size = UDim2.new(0, 699, 0, 426)
+	}):Play()
+
+	TweenService:Create(self.Shadow, TweenInfo.new(0.6, Enum.EasingStyle.Circular, Enum.EasingDirection.InOut), {
+		Size = UDim2.new(0, 776, 0, 509)
+	}):Play()
 end
 
 function Library:close()
-    local scale = self.container.Size.X.Offset / 699
-    self:smoothTween(self.Shadow, {Size = UDim2.new(0, 0, 0, 0)}, 0.6)
+	TweenService:Create(self.Shadow, TweenInfo.new(0.6, Enum.EasingStyle.Circular, Enum.EasingDirection.InOut), {
+		Size = UDim2.new(0, 0, 0, 0)
+	}):Play()
 
-    local main_tween = self:smoothTween(self.container, {Size = UDim2.new(0, 0, 0, 0)}, 0.6)
+	local main_tween = TweenService:Create(self.Container, TweenInfo.new(0.6, Enum.EasingStyle.Circular, Enum.EasingDirection.InOut), {
+		Size = UDim2.new(0, 0, 0, 0)
+	})
 
+	main_tween:Play()
 	main_tween.Completed:Once(function()
 		if Library.enabled then
 			return
@@ -173,8 +115,13 @@ function Library:drag()
 	local delta = self.input.Position - Library.drag_position
 	local position = UDim2.new(Library.start_position.X.Scale, Library.start_position.X.Offset + delta.X, Library.start_position.Y.Scale, Library.start_position.Y.Offset + delta.Y)
 
-	self:smoothTween(self.container.Container, {Position = position}, 0.2)
-	self:smoothTween(self.container.Shadow, {Position = position}, 0.2)
+	TweenService:Create(self.container.Container, TweenInfo.new(0.2), {
+		Position = position
+	}):Play()
+
+    TweenService:Create(self.container.Shadow, TweenInfo.new(0.2), {
+		Position = position
+	}):Play()
 end
 
 function Library:visible()
@@ -359,7 +306,7 @@ function Library:new()
 	Icon.Position = UDim2.new(0.268000007, 0, 0.5, 0)
 	Icon.Size = UDim2.new(0, 15, 0, 15)
 	Icon.Image = "rbxassetid://10734975692"
-     container.Container.InputBegan:Connect(function(input: InputObject)
+    container.Container.InputBegan:Connect(function(input: InputObject)
         if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
             Library.dragging = true
             Library.drag_position = input.Position
@@ -427,10 +374,21 @@ function Library:new()
 			right_section = self.right_section
 		})
 
-		Library:smoothTween(self.tab.Fill, {BackgroundTransparency = 0}, 0.4)
-		Library:smoothTween(self.tab.Glow, {ImageTransparency = 0}, 0.4)
-		Library:smoothTween(self.tab.TextLabel, {TextTransparency = 0}, 0.4)
-		Library:smoothTween(self.tab.Logo, {ImageTransparency = 0}, 0.4)
+		TweenService:Create(self.tab.Fill, TweenInfo.new(0.4), {
+			BackgroundTransparency = 0
+		}):Play()
+
+		TweenService:Create(self.tab.Glow, TweenInfo.new(0.4), {
+			ImageTransparency = 0
+		}):Play()
+
+		TweenService:Create(self.tab.TextLabel, TweenInfo.new(0.4), {
+			TextTransparency = 0
+		}):Play()
+
+		TweenService:Create(self.tab.Logo, TweenInfo.new(0.4), {
+			ImageTransparency = 0
+		}):Play()
 
 		for _, object in tabs:GetChildren() do
 			if object.Name ~= 'Tab' then
@@ -441,11 +399,6 @@ function Library:new()
 				continue
 			end
 
-			Library:smoothTween(object.Fill, {BackgroundTransparency = 1}, 0.4)
-			Library:smoothTween(object.Glow, {ImageTransparency = 1}, 0.4)
-			Library:smoothTween(object.TextLabel, {TextTransparency = 0.5}, 0.4)
-			Library:smoothTween(object.Logo, {ImageTransparency = 0.5}, 0.4)
-		end
 			TweenService:Create(object.Fill, TweenInfo.new(0.4), {
 				BackgroundTransparency = 1
 			}):Play()
@@ -464,7 +417,7 @@ function Library:new()
 		end
 	end
 
-    function Tab:create_tab()
+    function Tab:create_tab(name, icon)
         local tab = Instance.new("TextButton")
 		tab.Name = "Tab"
 		tab.BackgroundColor3 = Color3.fromRGB(27, 28, 33)
@@ -513,7 +466,7 @@ function Library:new()
 		Logo.Position = UDim2.new(0.130999997, 0, 0.5, 0)
 		Logo.Size = UDim2.new(0, 17, 0, 17)
 		Logo.ZIndex = 3
-		Logo.Image = "rbxassetid://17290697757"
+		Logo.Image = icon or "rbxassetid://17290697757"
 		Logo.ImageTransparency = 0.3001
 
 		local Glow = Instance.new("ImageLabel")
