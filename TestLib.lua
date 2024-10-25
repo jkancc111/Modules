@@ -18,61 +18,31 @@ end
 --// Important 
 local Setup = {
 	Keybind = Enum.KeyCode.LeftControl,
-	Transparency = 0.1, -- Kurangi transparansi untuk tampilan lebih solid
+	Transparency = 0.2,
 	ThemeMode = "Dark",
 	Size = nil,
-	CornerRadius = UDim.new(0, 8), -- Tambahkan corner radius
-	ShadowSize = 4, -- Tambahkan bayangan
+	Scale = 1.5, -- New scale factor for UI elements
 }
 
-local Theme = {
+local Theme = { --// (Dark Theme)
 	--// Frames:
-	Primary = Color3.fromRGB(25, 25, 25),
-	Secondary = Color3.fromRGB(30, 30, 30),
-	Component = Color3.fromRGB(35, 35, 35),
-	Interactables = Color3.fromRGB(40, 40, 40),
+	Primary = Color3.fromRGB(30, 30, 30),
+	Secondary = Color3.fromRGB(35, 35, 35),
+	Component = Color3.fromRGB(40, 40, 40),
+	Interactables = Color3.fromRGB(45, 45, 45),
 
 	--// Text:
-	Tab = Color3.fromRGB(220, 220, 220),
-	Title = Color3.fromRGB(255, 255, 255),
-	Description = Color3.fromRGB(200, 200, 200),
+	Tab = Color3.fromRGB(200, 200, 200),
+	Title = Color3.fromRGB(240,240,240),
+	Description = Color3.fromRGB(200,200,200),
 
 	--// Outlines:
 	Shadow = Color3.fromRGB(0, 0, 0),
-	Outline = Color3.fromRGB(50, 50, 50),
+	Outline = Color3.fromRGB(40, 40, 40),
 
 	--// Image:
-	Icon = Color3.fromRGB(235, 235, 235),
-	
-	--// Accents:
-	Accent = Color3.fromRGB(65, 143, 232), -- Tambahkan warna aksen
+	Icon = Color3.fromRGB(220, 220, 220),
 }
-
-local function ApplyStyle(instance)
-    if instance:IsA("Frame") or instance:IsA("TextButton") then
-        local corner = Instance.new("UICorner")
-        corner.CornerRadius = Setup.CornerRadius
-        corner.Parent = instance
-        
-        local shadow = Instance.new("ImageLabel")
-        shadow.AnchorPoint = Vector2.new(0.5, 0.5)
-        shadow.BackgroundTransparency = 1
-        shadow.Position = UDim2.new(0.5, 0, 0.5, 0)
-        shadow.Size = UDim2.new(1, Setup.ShadowSize, 1, Setup.ShadowSize)
-        shadow.ZIndex = -1
-        shadow.Image = "rbxassetid://6014261993"
-        shadow.ImageColor3 = Theme.Shadow
-        shadow.ImageTransparency = 0.5
-        shadow.ScaleType = Enum.ScaleType.Slice
-        shadow.SliceCenter = Rect.new(49, 49, 450, 450)
-        shadow.Parent = instance
-    end
-    
-    if instance:IsA("TextLabel") or instance:IsA("TextButton") then
-        instance.TextSize = instance.TextSize * 1.1 -- Increase text size slightly
-        instance.Font = Enum.Font.GothamSemibold -- Use a cleaner font
-    end
-end
 
 --// Services & Functions
 local Type, Blur = nil
@@ -266,7 +236,7 @@ function Animations:Open(Window: CanvasGroup, Transparency: number, UseCurrentSi
 	local Shadow = Window:FindFirstChildOfClass("UIStroke")
 
 
-	SetProperty(Shadow, { Transparency = 0.5 })
+	SetProperty(Shadow, { Transparency = 1 })
 	SetProperty(Window, {
 		Size = Multiplied,
 		GroupTransparency = 1,
@@ -356,9 +326,16 @@ function Library:CreateWindow(Settings: { Title: string, Size: UDim2, Transparen
 		Setup.Keybind = Settings.MinimizeKeybind
 	end
 
-    for _, descendant in ipairs(Window:GetDescendants()) do
-        ApplyStyle(descendant)
-    end
+	-- Apply scaling to Window size
+	Window.Size = ScaleUDim2(Settings.Size)
+	Setup.Size = Window.Size
+
+	-- Update font sizes
+	for _, descendant in ipairs(Window:GetDescendants()) do
+		if descendant:IsA("TextLabel") or descendant:IsA("TextButton") or descendant:IsA("TextBox") then
+			descendant.TextSize = descendant.TextSize * Setup.Scale
+		end
+	end
 
 	--// Animate
 	local Close = function()
@@ -564,6 +541,9 @@ function Library:CreateWindow(Settings: { Title: string, Size: UDim2, Transparen
 			Parent = Settings.Tab,
 			Visible = true,
 		})
+
+		-- Apply scaling to Button size
+		Button.Size = ScaleUDim2(Button.Size)
 	end
 
 	function Options:AddInput(Settings: { Title: string, Description: string, Tab: Instance, Callback: any }) 
