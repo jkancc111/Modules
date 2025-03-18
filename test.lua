@@ -183,6 +183,21 @@ function UILibrary.new(customConfig)
     ScreenGui.IgnoreGuiInset = true
     ScreenGui.DisplayOrder = 100
     
+    -- Hapus ScreenGui yang mungkin tertinggal
+    for _, instance in pairs(game:GetService("CoreGui"):GetChildren()) do
+        if instance.Name == "LomuHubLibrary" and instance ~= ScreenGui then
+            instance:Destroy()
+        end
+    end
+    
+    pcall(function()
+        for _, instance in pairs(game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui"):GetChildren()) do
+            if instance.Name == "LomuHubLibrary" and instance ~= ScreenGui then
+                instance:Destroy()
+            end
+        end
+    end)
+    
     -- Background overlay untuk efek blur
     Background.Name = "Background"
     Background.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
@@ -535,57 +550,87 @@ function UILibrary.new(customConfig)
     
     CloseButton.MouseButton1Click:Connect(function()
         -- Animate the close process with fancy effect
-        -- First fade the blur
-        smoothTween(BlurEffect, 0.3, {
+        -- First fade the blur more slowly
+        smoothTween(BlurEffect, 0.6, {
             Size = 0
         })
         
-        -- Fade the background
-        smoothTween(Background, 0.3, {
+        -- Fade the background more slowly
+        smoothTween(Background, 0.6, {
             BackgroundTransparency = 1
         })
         
-        -- Fade out content first
+        -- Fade out ALL content first
         for _, child in pairs(MainFrame:GetChildren()) do
             if child:IsA("GuiObject") and child ~= MainFrame and child.Name ~= "Shadow" then
                 if child.ClassName == "TextLabel" or child.ClassName == "TextButton" or child.ClassName == "TextBox" then
-                    smoothTween(child, 0.2, {
+                    smoothTween(child, 0.4, {
                         TextTransparency = 1
+                    })
+                elseif child.ClassName == "ImageLabel" then
+                    smoothTween(child, 0.4, {
+                        ImageTransparency = 1
                     })
                 end
                 
                 if child.BackgroundTransparency < 1 then
-                    smoothTween(child, 0.2, {
+                    smoothTween(child, 0.4, {
                         BackgroundTransparency = 1
                     })
+                end
+                
+                -- Hilangkan PlayerInfo sepenuhnya
+                if child.Name == "PlayerInfo" then
+                    -- Sembunyikan semua children dari PlayerInfo
+                    for _, subChild in pairs(child:GetChildren()) do
+                        if subChild:IsA("GuiObject") then
+                            smoothTween(subChild, 0.3, {
+                                BackgroundTransparency = 1,
+                                TextTransparency = 1,
+                                ImageTransparency = 1
+                            })
+                        end
+                    end
+                    
+                    -- Nanti akan dihapus sepenuhnya
+                    task.delay(0.5, function()
+                        child:Destroy()
+                    end)
                 end
             end
         end
         
+        -- Keep the blur effect for the game hub
+        -- Don't fade the background yet either
+        
         -- Then collapse the frame with a cool effect
-        task.delay(0.2, function()
+        task.delay(0.4, function()
             -- Create a tween with a bounce-in-reverse effect
             local closeTween = game:GetService("TweenService"):Create(
                 MainFrame,
-                TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.In),
+                TweenInfo.new(0.7, Enum.EasingStyle.Back, Enum.EasingDirection.In),
                 {
                     Size = UDim2.new(0, 0, 0, 0),
                     Position = UDim2.new(0.5, 0, 0.5, 0)
                 }
             )
             
-            smoothTween(MainShadow, 0.3, {
+            smoothTween(MainShadow, 0.6, {
                 ImageTransparency = 1
             })
             
             closeTween:Play()
             
             closeTween.Completed:Connect(function()
-                -- Clean up
-                if BlurEffect and BlurEffect.Parent then
-                    BlurEffect:Destroy()
-                end
+                -- Penting: Destroy ScreenGui sebelum membuat GameHub baru
                 ScreenGui:Destroy()
+                
+                -- Setelah ScreenGui dimusnahkan, baru jalankan callback
+                -- Dengan delay kecil untuk memastikan cleanup selesai
+                task.delay(0.1, function()
+                    -- Execute callback but keep blur and background
+                    buttonCallback(BlurEffect, Background)
+                end)
             end)
         end)
     end)
@@ -1596,8 +1641,14 @@ function UILibrary:CreateStartMenu(options)
         })
     end)
     
+    -- Variable untuk melacak status menu
+    local isClosing = false
+    
     -- Button click effects and callbacks
     LoadButton.MouseButton1Click:Connect(function()
+        if isClosing then return end -- Prevent multiple clicks
+        isClosing = true
+        
         -- Visual feedback
         smoothTween(LoadButton, 0.1, {
             Size = UDim2.new(0, 145, 0, 34),
@@ -1612,7 +1663,7 @@ function UILibrary:CreateStartMenu(options)
         end)
         
         -- Animate closing of start menu but keep blur
-        -- Fade out content first
+        -- Fade out ALL content first
         for _, child in pairs(MainFrame:GetChildren()) do
             if child:IsA("GuiObject") and child ~= MainFrame and child.Name ~= "Shadow" then
                 if child.ClassName == "TextLabel" or child.ClassName == "TextButton" or child.ClassName == "TextBox" then
@@ -1629,6 +1680,25 @@ function UILibrary:CreateStartMenu(options)
                     smoothTween(child, 0.4, {
                         BackgroundTransparency = 1
                     })
+                end
+                
+                -- Hilangkan PlayerInfo sepenuhnya
+                if child.Name == "PlayerInfo" then
+                    -- Sembunyikan semua children dari PlayerInfo
+                    for _, subChild in pairs(child:GetChildren()) do
+                        if subChild:IsA("GuiObject") then
+                            smoothTween(subChild, 0.3, {
+                                BackgroundTransparency = 1,
+                                TextTransparency = 1,
+                                ImageTransparency = 1
+                            })
+                        end
+                    end
+                    
+                    -- Nanti akan dihapus sepenuhnya
+                    task.delay(0.5, function()
+                        child:Destroy()
+                    end)
                 end
             end
         end
@@ -1655,30 +1725,27 @@ function UILibrary:CreateStartMenu(options)
             closeTween:Play()
             
             closeTween.Completed:Connect(function()
-                -- Execute callback but keep blur and background
-                buttonCallback(BlurEffect, Background)
-                -- Don't destroy ScreenGui or background yet
-                -- They'll be reused by the main hub
+                -- Penting: Destroy ScreenGui sebelum membuat GameHub baru
+                ScreenGui:Destroy()
+                
+                -- Setelah ScreenGui dimusnahkan, baru jalankan callback
+                -- Dengan delay kecil untuk memastikan cleanup selesai
+                task.delay(0.1, function()
+                    -- Execute callback but keep blur and background
+                    buttonCallback(BlurEffect, Background)
+                end)
             end)
         end)
     end)
     
-    UniversalButton.MouseButton1Click:Connect(function()
-        -- Visual feedback
-        smoothTween(UniversalButton, 0.1, {
-            Size = UDim2.new(0, 145, 0, 34),
-            BackgroundColor3 = Color3.fromRGB(50, 50, 60)
-        })
-        
-        task.delay(0.1, function()
-            smoothTween(UniversalButton, 0.1, {
-                Size = UDim2.new(0, 150, 0, 36),
-                BackgroundColor3 = Color3.fromRGB(60, 60, 70)
-            })
-        end)
-        
-        -- Execute universal callback
-        universalCallback()
+    -- Pastikan PlayerInfo dan anak-anaknya tidak bisa diklik
+    PlayerInfo.Active = false
+    PlayerAvatar.Active = false
+    PlayerName.Active = false
+    
+    -- Tambahkan check ini di semua event handler
+    PlayerInfo.InputBegan:Connect(function(input)
+        input:Destroy() -- Hapus event input
     end)
     
     -- Perform the opening animation sequence
@@ -1760,7 +1827,23 @@ end
 
 -- Function to create hub from start menu (compatible with both methods)
 function UILibrary.CreateHub(customConfig)
-    -- Just call UILibrary.new with the custom config
+    -- Cek dan hapus UI yang sudah ada terlebih dahulu
+    for _, instance in pairs(game:GetService("CoreGui"):GetChildren()) do
+        if instance.Name == "LomuHubLibrary" then
+            instance:Destroy()
+        end
+    end
+    
+    -- Jaga-jaga cek juga di PlayerGui
+    pcall(function()
+        for _, instance in pairs(game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui"):GetChildren()) do
+            if instance.Name == "LomuHubLibrary" then
+                instance:Destroy()
+            end
+        end
+    end)
+    
+    -- Baru kemudian buat UI baru
     return UILibrary.new(customConfig)
 end
 
