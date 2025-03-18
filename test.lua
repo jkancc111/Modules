@@ -557,23 +557,23 @@ function UILibrary.new(customConfig)
         GameItemInner.Position = UDim2.new(0, 0, 0, 0)
         GameItemInner.Parent = GameItem
         
-        -- Thumbnail with streamlined design
+        -- Thumbnail with improved spacing
         Thumbnail.Name = "Thumbnail"
         Thumbnail.BackgroundColor3 = Color3.fromRGB(15, 18, 25)
-        Thumbnail.Position = UDim2.new(0, config.SpacingS, 0.5, 0)
+        Thumbnail.Position = UDim2.new(0, 12, 0.5, 0) -- Increased spacing
         Thumbnail.AnchorPoint = Vector2.new(0, 0.5)
-        Thumbnail.Size = UDim2.new(0, 45, 0, 45) -- Smaller thumbnail
+        Thumbnail.Size = UDim2.new(0, 45, 0, 45)
         Thumbnail.Image = gameThumbnail
         Thumbnail.Parent = GameItemInner
         
         ThumbnailCorner.CornerRadius = UDim.new(0, 4)
         ThumbnailCorner.Parent = Thumbnail
         
-        -- Game name - improved typography
+        -- Game name - improved spacing
         GameName.Name = "GameName"
         GameName.BackgroundTransparency = 1
-        GameName.Position = UDim2.new(0, 60, 0, config.SpacingS)
-        GameName.Size = UDim2.new(1, -150, 0, 18)
+        GameName.Position = UDim2.new(0, 68, 0, 11) -- Increased spacing
+        GameName.Size = UDim2.new(1, -155, 0, 18)
         GameName.Font = config.Font
         GameName.Text = gameName
         GameName.TextColor3 = config.TextColor
@@ -581,12 +581,12 @@ function UILibrary.new(customConfig)
         GameName.TextXAlignment = Enum.TextXAlignment.Left
         GameName.Parent = GameItemInner
         
-        -- Status indicator - minimalist dot
+        -- Status indicator - better spacing
         local statusColor = config.StatusColors[gameStatus] or Color3.fromRGB(150, 150, 150)
         
         StatusIndicator.Name = "StatusIndicator"
         StatusIndicator.BackgroundColor3 = statusColor
-        StatusIndicator.Position = UDim2.new(0, 60, 0, GameName.Position.Y.Offset + GameName.Size.Y.Offset + 5)
+        StatusIndicator.Position = UDim2.new(0, 68, 0, GameName.Position.Y.Offset + GameName.Size.Y.Offset + 7)
         StatusIndicator.Size = UDim2.new(0, 6, 0, 6)
         StatusIndicator.Parent = GameItemInner
         
@@ -596,21 +596,21 @@ function UILibrary.new(customConfig)
         
         StatusLabel.Name = "StatusLabel"
         StatusLabel.BackgroundTransparency = 1
-        StatusLabel.Position = UDim2.new(0, 70, 0, StatusIndicator.Position.Y.Offset - 3)
-        StatusLabel.Size = UDim2.new(0, 100, 0, 12)
+        StatusLabel.Position = UDim2.new(0, 80, 0, StatusIndicator.Position.Y.Offset - 3)
+        StatusLabel.Size = UDim2.new(0, 150, 0, 12)
         StatusLabel.Font = config.BodyFont
-        StatusLabel.Text = gameStatus .. " • " .. gameLastUpdate -- Combined into one line
+        StatusLabel.Text = gameStatus .. " • " .. gameLastUpdate
         StatusLabel.TextColor3 = config.SecondaryTextColor
         StatusLabel.TextSize = config.SmallTextSize
         StatusLabel.TextXAlignment = Enum.TextXAlignment.Left
         StatusLabel.Parent = GameItemInner
         
-        -- Play button - more compact
+        -- Play button - better spacing
         PlayButton.Name = "PlayButton"
         PlayButton.BackgroundColor3 = config.AccentColor
-        PlayButton.Position = UDim2.new(1, -65, 0.5, 0)
+        PlayButton.Position = UDim2.new(1, -70, 0.5, 0) -- Increased spacing
         PlayButton.AnchorPoint = Vector2.new(0, 0.5)
-        PlayButton.Size = UDim2.new(0, 55, 0, 28)
+        PlayButton.Size = UDim2.new(0, 58, 0, 30)
         PlayButton.AutoButtonColor = false
         PlayButton.Font = config.ButtonFont
         PlayButton.Text = "PLAY"
@@ -618,13 +618,13 @@ function UILibrary.new(customConfig)
         PlayButton.TextSize = 13
         PlayButton.Parent = GameItemInner
         
-        PlayButtonCorner.CornerRadius = config.ButtonCornerRadius
+        PlayButtonCorner.CornerRadius = UDim.new(0, 5)
         PlayButtonCorner.Parent = PlayButton
         
-        -- Create shadow for play button
+        -- Add shadow
         createShadow(PlayButton, 0.8)
         
-        -- Advanced hover effects with subtle animations
+        -- Game item hover effect
         GameItem.MouseEnter:Connect(function()
             smoothTween(GameItem, config.AnimationSpeedFast, {
                 BackgroundTransparency = config.HoverTransparency
@@ -647,126 +647,117 @@ function UILibrary.new(customConfig)
             })
         end)
         
-        -- Play button enhanced effects
+        -- Play button hover effects
         PlayButton.MouseEnter:Connect(function()
             smoothTween(PlayButton, config.AnimationSpeedFast, {
                 BackgroundColor3 = config.AccentColorHover,
-                Size = UDim2.new(0, 57, 0, 30)
+                Size = UDim2.new(0, 60, 0, 32)
             })
-            
-            -- Update shadow
-            local shadow = PlayButton:FindFirstChild("Shadow")
-            if shadow then
-                smoothTween(shadow, config.AnimationSpeedFast, {
-                    ImageTransparency = 0.7
-                })
-            end
         end)
         
         PlayButton.MouseLeave:Connect(function()
             smoothTween(PlayButton, config.AnimationSpeedFast, {
                 BackgroundColor3 = config.AccentColor,
-                Size = UDim2.new(0, 55, 0, 28)
+                Size = UDim2.new(0, 58, 0, 30)
             })
-            
-            -- Reset shadow
-            local shadow = PlayButton:FindFirstChild("Shadow")
-            if shadow then
-                smoothTween(shadow, config.AnimationSpeedFast, {
-                    ImageTransparency = 0.8
-                })
-            end
         end)
         
-        -- Play button click with tactile feedback
+        -- Play button click feedback
         PlayButton.MouseButton1Down:Connect(function()
             smoothTween(PlayButton, 0.1, {
-                Size = UDim2.new(0, 53, 0, 26),
+                Size = UDim2.new(0, 56, 0, 28),
                 BackgroundColor3 = config.AccentColorActive
             })
         end)
         
         PlayButton.MouseButton1Up:Connect(function()
             smoothTween(PlayButton, 0.1, {
-                Size = UDim2.new(0, 55, 0, 28),
+                Size = UDim2.new(0, 58, 0, 30),
                 BackgroundColor3 = config.AccentColorHover
             })
         end)
         
-        -- Play button functionality with loading feedback
+        -- Play button functionality with improved loading animation
         PlayButton.MouseButton1Click:Connect(function()
             -- Visual feedback
             PlayButton.Text = ""
             
-            -- Create loading animation - minimal 3 dots
-            local loadingDots = {}
+            -- Create loading container with better animation
+            local loadingContainer = Instance.new("Frame")
+            loadingContainer.Name = "LoadingContainer"
+            loadingContainer.BackgroundTransparency = 1
+            loadingContainer.Size = UDim2.new(1, 0, 1, 0)
+            loadingContainer.ZIndex = 10
+            loadingContainer.Parent = PlayButton
+            
+            -- Create loading dots with pulsing animation
+            local dots = {}
             for i = 1, 3 do
                 local dot = Instance.new("Frame")
                 dot.Name = "LoadingDot" .. i
                 dot.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-                dot.Position = UDim2.new(0.5, -8 + (i-1)*8, 0.5, 0)
+                dot.Position = UDim2.new(0.5, -10 + (i-1)*10, 0.5, 0)
                 dot.AnchorPoint = Vector2.new(0.5, 0.5)
-                dot.Size = UDim2.new(0, 4, 0, 4)
+                dot.Size = UDim2.new(0, 5, 0, 5)
+                dot.ZIndex = 11
                 
                 local dotCorner = Instance.new("UICorner")
                 dotCorner.CornerRadius = UDim.new(1, 0)
                 dotCorner.Parent = dot
                 
-                dot.Parent = PlayButton
-                table.insert(loadingDots, dot)
-                
-                -- Animate the dot - simplified animation
-                task.spawn(function()
-                    local oscillation = 0
-                    while PlayButton:FindFirstChild("LoadingDot" .. i) do
-                        oscillation = (oscillation + 0.1) % 1
-                        dot.BackgroundTransparency = 0.2 + 0.6 * math.abs(math.sin(oscillation * math.pi * 2))
-                        task.wait(0.03)
-                    end
-                end)
+                dot.Parent = loadingContainer
+                table.insert(dots, dot)
             end
             
-            -- Execute callback with timeout
+            -- Animate the dots with wave pattern
+            task.spawn(function()
+                local startTime = tick()
+                while loadingContainer.Parent do
+                    for i, dot in ipairs(dots) do
+                        local offset = (i - 1) * 0.33
+                        local scaleWave = 0.7 + 0.6 * math.abs(math.sin((tick() - startTime) * 3 + offset * math.pi * 2))
+                        
+                        -- Smooth size animation
+                        smoothTween(dot, 0.1, {
+                            Size = UDim2.new(0, 5 * scaleWave, 0, 5 * scaleWave),
+                            BackgroundTransparency = 0.2 * (1 - scaleWave)
+                        })
+                    end
+                    task.wait(0.05)
+                end
+            end)
+            
+            -- Execute callback with timeout handling
             local callbackSuccess = false
             local callbackThread = task.spawn(function()
                 gameCallback()
                 callbackSuccess = true
             end)
             
-            -- Show loading for at least 0.5 seconds for feedback
-            task.delay(0.5, function()
+            -- Show loading for at least 0.8 seconds for better feedback
+            task.delay(0.8, function()
                 -- Reset button state
+                if loadingContainer.Parent then
+                    loadingContainer:Destroy()
+                end
                 PlayButton.Text = "PLAY"
                 
-                -- Remove loading dots
-                for _, dot in ipairs(loadingDots) do
-                    if dot.Parent then
-                        dot:Destroy()
-                    end
-                end
-                
-                -- Handle callback timeout
+                -- Provide feedback if script is taking long
                 if not callbackSuccess then
-                    task.delay(10, function()
+                    task.delay(5, function()
                         if not callbackSuccess then
-                            hub:ShowNotification("Script execution taking longer than expected...", 3)
+                            hub:ShowNotification("Script execution in progress...", 3, "Info")
+                        end
+                    end)
+                    
+                    task.delay(15, function()
+                        if not callbackSuccess then
+                            hub:ShowNotification("Script execution taking longer than expected", 3, "Warning")
                         end
                     end)
                 end
             end)
         end)
-        
-        -- Keyboard support for accessibility
-        GameItem.SelectionImageObject = Instance.new("ImageLabel")
-        GameItem.SelectionImageObject.BackgroundTransparency = 1
-        GameItem.SelectionImageObject.Image = ""
-        GameItem.SelectionImageObject.Size = UDim2.new(1, 0, 1, 0)
-        GameItem.SelectionGroup = true
-        GameItem.Selectable = true
-        GameItem.NextSelectionDown = nil -- Will be set dynamically
-        
-        PlayButton.NextSelectionLeft = GameItem
-        PlayButton.Selectable = true
         
         -- Connect to search filter
         local function updateVisibility()
@@ -1103,15 +1094,15 @@ function UILibrary:CreateStartMenu(options)
     local Logo = Instance.new("TextLabel")
     local Description = Instance.new("TextLabel")
     local TitleDivider = Instance.new("Frame")
+    local PlayerInfoContainer = Instance.new("Frame")
+    local PlayerAvatar = Instance.new("ImageLabel")
+    local PlayerAvatarCorner = Instance.new("UICorner")
+    local PlayerName = Instance.new("TextLabel")
     local ButtonsContainer = Instance.new("Frame")
     local LoadHubButton = Instance.new("TextButton")
     local HubButtonCorner = Instance.new("UICorner")
     local LoadUniversalButton = Instance.new("TextButton")
     local UniversalButtonCorner = Instance.new("UICorner")
-    local PlayerInfoContainer = Instance.new("Frame")
-    local PlayerAvatar = Instance.new("ImageLabel")
-    local PlayerAvatarCorner = Instance.new("UICorner")
-    local PlayerName = Instance.new("TextLabel")
     
     -- Set up Start Menu
     StartMenu.Name = "StartMenu"
@@ -1131,16 +1122,16 @@ function UILibrary:CreateStartMenu(options)
         StartMenu.Parent = game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui")
     end
     
-    -- Main frame - clean blue acrylic design positioned at bottom center
+    -- Main frame - redesigned for better alignment and spacing
     MainFrame.Name = "MainFrame"
     MainFrame.BackgroundColor3 = Color3.fromRGB(15, 17, 26) -- Dark blue-black background
     MainFrame.BorderSizePixel = 0
     MainFrame.Position = UDim2.new(0.5, 0, 1, 100) -- Start offscreen
     MainFrame.AnchorPoint = Vector2.new(0.5, 1)
-    MainFrame.Size = UDim2.new(0, 280, 0, 150) -- More compact size
+    MainFrame.Size = UDim2.new(0, 300, 0, 165) -- Adjusted size for better proportions
     MainFrame.Parent = StartMenu
     
-    Corner.CornerRadius = config.CornerRadius
+    Corner.CornerRadius = UDim.new(0, 6)
     Corner.Parent = MainFrame
     
     -- Add shadow for depth
@@ -1148,7 +1139,7 @@ function UILibrary:CreateStartMenu(options)
     Shadow.AnchorPoint = Vector2.new(0.5, 0.5)
     Shadow.BackgroundTransparency = 1
     Shadow.Position = UDim2.new(0.5, 0, 0.5, 0)
-    Shadow.Size = UDim2.new(1, 20, 1, 20)
+    Shadow.Size = UDim2.new(1, 24, 1, 24)
     Shadow.ZIndex = 0
     Shadow.Image = "rbxassetid://6015897843"
     Shadow.ImageColor3 = Color3.new(0, 0, 0)
@@ -1157,17 +1148,17 @@ function UILibrary:CreateStartMenu(options)
     Shadow.SliceCenter = Rect.new(49, 49, 450, 450)
     Shadow.Parent = MainFrame
     
-    -- Logo section - more compact
+    -- Logo section - better alignment
     LogoContainer.Name = "LogoContainer"
     LogoContainer.BackgroundTransparency = 1
     LogoContainer.Position = UDim2.new(0, 0, 0, 0)
-    LogoContainer.Size = UDim2.new(1, 0, 0, 50)
+    LogoContainer.Size = UDim2.new(1, 0, 0, 55)
     LogoContainer.Parent = MainFrame
     
     Logo.Name = "Logo"
     Logo.BackgroundTransparency = 1
-    Logo.Position = UDim2.new(0, 15, 0, 12)
-    Logo.Size = UDim2.new(1, -30, 0, 20)
+    Logo.Position = UDim2.new(0, 20, 0, 16)
+    Logo.Size = UDim2.new(1, -40, 0, 20)
     Logo.Font = Enum.Font.GothamBold
     Logo.Text = logoText
     Logo.TextColor3 = accentColor
@@ -1177,8 +1168,8 @@ function UILibrary:CreateStartMenu(options)
     
     Description.Name = "Description"
     Description.BackgroundTransparency = 1
-    Description.Position = UDim2.new(0, 15, 0, 32)
-    Description.Size = UDim2.new(1, -30, 0, 16)
+    Description.Position = UDim2.new(0, 20, 0, 36)
+    Description.Size = UDim2.new(1, -40, 0, 16)
     Description.Font = Enum.Font.Gotham
     Description.Text = description
     Description.TextColor3 = Color3.fromRGB(150, 155, 170) -- Secondary text color
@@ -1188,17 +1179,17 @@ function UILibrary:CreateStartMenu(options)
     
     -- Subtle divider line
     TitleDivider.Name = "TitleDivider"
-    TitleDivider.BackgroundColor3 = Color3.fromRGB(40, 40, 45)
+    TitleDivider.BackgroundColor3 = Color3.fromRGB(40, 45, 60) -- Border color
     TitleDivider.BorderSizePixel = 0
-    TitleDivider.Position = UDim2.new(0, 15, 0, 50)
-    TitleDivider.Size = UDim2.new(1, -30, 0, 1)
+    TitleDivider.Position = UDim2.new(0, 20, 0, 57)
+    TitleDivider.Size = UDim2.new(1, -40, 0, 1)
     TitleDivider.Parent = MainFrame
     
-    -- Player info with avatar
+    -- Player info with avatar - better alignment
     PlayerInfoContainer.Name = "PlayerInfoContainer"
     PlayerInfoContainer.BackgroundTransparency = 1
-    PlayerInfoContainer.Position = UDim2.new(0, 15, 0, 55)
-    PlayerInfoContainer.Size = UDim2.new(1, 0, 0, 40)
+    PlayerInfoContainer.Position = UDim2.new(0, 20, 0, 70)
+    PlayerInfoContainer.Size = UDim2.new(1, -40, 0, 40)
     PlayerInfoContainer.Parent = MainFrame
     
     -- Try to get player avatar
@@ -1215,7 +1206,7 @@ function UILibrary:CreateStartMenu(options)
     PlayerAvatar.Name = "PlayerAvatar"
     PlayerAvatar.BackgroundColor3 = Color3.fromRGB(25, 30, 40)
     PlayerAvatar.Position = UDim2.new(0, 0, 0, 0)
-    PlayerAvatar.Size = UDim2.new(0, 32, 0, 32)
+    PlayerAvatar.Size = UDim2.new(0, 34, 0, 34)
     PlayerAvatar.Image = avatarUrl
     PlayerAvatar.Parent = PlayerInfoContainer
     
@@ -1224,117 +1215,294 @@ function UILibrary:CreateStartMenu(options)
     
     PlayerName.Name = "PlayerName"
     PlayerName.BackgroundTransparency = 1
-    PlayerName.Position = UDim2.new(0, 40, 0, 75)
-    PlayerName.Size = UDim2.new(1, -40, 0, 32)
-    PlayerName.Font = Enum.Font.Gotham -- Hardcoded font
+    PlayerName.Position = UDim2.new(0, 44, 0, 9)
+    PlayerName.Size = UDim2.new(1, -44, 0, 16)
+    PlayerName.Font = Enum.Font.Gotham
     PlayerName.Text = player.DisplayName or player.Name
-    PlayerName.TextColor3 = config.TextColor
+    PlayerName.TextColor3 = Color3.fromRGB(210, 210, 220) -- Text color
     PlayerName.TextSize = 14
     PlayerName.TextXAlignment = Enum.TextXAlignment.Left
-    PlayerName.Parent = MainFrame
+    PlayerName.Parent = PlayerInfoContainer
     
-    -- Buttons section
+    -- Buttons container - fixed alignment
     ButtonsContainer.Name = "ButtonsContainer"
     ButtonsContainer.BackgroundTransparency = 1
-    ButtonsContainer.Position = UDim2.new(0, 0, 0, 120)
-    ButtonsContainer.Size = UDim2.new(1, 0, 0, 40)
+    ButtonsContainer.Position = UDim2.new(0, 20, 0, 115)
+    ButtonsContainer.Size = UDim2.new(1, -40, 0, 36)
     ButtonsContainer.Parent = MainFrame
     
-    -- Load Hub button
+    -- Load Hub button - better spacing and alignment
     LoadHubButton.Name = "LoadHubButton"
     LoadHubButton.BackgroundColor3 = accentColor
-    LoadHubButton.Position = UDim2.new(0, 20, 0, 0)
-    LoadHubButton.Size = UDim2.new(0.5, -25, 1, -10)
-    LoadHubButton.Font = Enum.Font.GothamSemibold -- Hardcoded font
+    LoadHubButton.Position = UDim2.new(0, 0, 0, 0)
+    LoadHubButton.Size = UDim2.new(0.485, 0, 1, 0)
+    LoadHubButton.Font = Enum.Font.GothamSemibold
     LoadHubButton.Text = "Load Lomu Hub"
     LoadHubButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-    LoadHubButton.TextSize = 14
+    LoadHubButton.TextSize = 13
     LoadHubButton.AutoButtonColor = false
     LoadHubButton.Parent = ButtonsContainer
     
-    HubButtonCorner.CornerRadius = config.ButtonCornerRadius
+    HubButtonCorner.CornerRadius = UDim.new(0, 5)
     HubButtonCorner.Parent = LoadHubButton
     
-    -- Load Universal button
+    -- Load Universal button - better spacing and alignment
     LoadUniversalButton.Name = "LoadUniversalButton"
-    LoadUniversalButton.BackgroundColor3 = Color3.fromRGB(35, 35, 40)
-    LoadUniversalButton.Position = UDim2.new(0.5, 5, 0, 0)
-    LoadUniversalButton.Size = UDim2.new(0.5, -25, 1, -10)
-    LoadUniversalButton.Font = Enum.Font.GothamSemibold -- Hardcoded font
+    LoadUniversalButton.BackgroundColor3 = Color3.fromRGB(35, 40, 50)
+    LoadUniversalButton.Position = UDim2.new(0.515, 0, 0, 0)
+    LoadUniversalButton.Size = UDim2.new(0.485, 0, 1, 0)
+    LoadUniversalButton.Font = Enum.Font.GothamSemibold
     LoadUniversalButton.Text = "Load Universal"
-    LoadUniversalButton.TextColor3 = config.TextColor
-    LoadUniversalButton.TextSize = 14
+    LoadUniversalButton.TextColor3 = Color3.fromRGB(210, 210, 220)
+    LoadUniversalButton.TextSize = 13
     LoadUniversalButton.AutoButtonColor = false
     LoadUniversalButton.Parent = ButtonsContainer
     
-    UniversalButtonCorner.CornerRadius = config.ButtonCornerRadius
+    UniversalButtonCorner.CornerRadius = UDim.new(0, 5)
     UniversalButtonCorner.Parent = LoadUniversalButton
-    
-    -- Add shadows to buttons
-    createShadow(LoadHubButton)
-    createShadow(LoadUniversalButton)
     
     -- Button effects
     LoadHubButton.MouseEnter:Connect(function()
         smoothTween(LoadHubButton, 0.15, {
-            BackgroundColor3 = Color3.fromRGB(255, 180, 40),
-            Size = UDim2.new(0.5, -23, 1, -8)
+            BackgroundColor3 = Color3.fromRGB(90, 160, 240), -- Lighter blue
         })
     end)
     
     LoadHubButton.MouseLeave:Connect(function()
         smoothTween(LoadHubButton, 0.15, {
             BackgroundColor3 = accentColor,
-            Size = UDim2.new(0.5, -25, 1, -10)
         })
     end)
     
     LoadHubButton.MouseButton1Down:Connect(function()
         smoothTween(LoadHubButton, 0.1, {
-            BackgroundColor3 = Color3.fromRGB(235, 150, 10),
-            Size = UDim2.new(0.5, -27, 1, -12)
+            Size = UDim2.new(0.48, 0, 0.97, 0),
         })
     end)
     
     LoadHubButton.MouseButton1Up:Connect(function()
         smoothTween(LoadHubButton, 0.1, {
-            BackgroundColor3 = Color3.fromRGB(255, 180, 40),
-            Size = UDim2.new(0.5, -23, 1, -8)
+            Size = UDim2.new(0.485, 0, 1, 0),
         })
     end)
     
-    -- Button functionality
     LoadHubButton.MouseButton1Click:Connect(function()
-        -- Hide start menu with animation
-        smoothTween(MainFrame, 0.3, {
-            Position = UDim2.new(0.5, 0, 1, 100)
-        }, function()
-            StartMenu:Destroy()
-            buttonCallback()
+        -- Show a loading indicator before closing
+        local LoadingFrame = Instance.new("Frame")
+        local LoadingCorner = Instance.new("UICorner")
+        local LoadingIcon = Instance.new("Frame")
+        local LoadingText = Instance.new("TextLabel")
+        
+        LoadingFrame.Name = "LoadingFrame"
+        LoadingFrame.BackgroundColor3 = Color3.fromRGB(25, 30, 40)
+        LoadingFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
+        LoadingFrame.AnchorPoint = Vector2.new(0.5, 0.5)
+        LoadingFrame.Size = UDim2.new(0, 130, 0, 40)
+        LoadingFrame.ZIndex = 10
+        LoadingFrame.Parent = MainFrame
+        
+        LoadingCorner.CornerRadius = UDim.new(0, 5)
+        LoadingCorner.Parent = LoadingFrame
+        
+        LoadingText.Name = "LoadingText"
+        LoadingText.BackgroundTransparency = 1
+        LoadingText.Position = UDim2.new(0, 40, 0, 0)
+        LoadingText.Size = UDim2.new(1, -45, 1, 0)
+        LoadingText.Font = Enum.Font.GothamSemibold
+        LoadingText.Text = "Loading..."
+        LoadingText.TextColor3 = Color3.fromRGB(210, 210, 220)
+        LoadingText.TextSize = 14
+        LoadingText.TextXAlignment = Enum.TextXAlignment.Left
+        LoadingText.Parent = LoadingFrame
+        
+        -- Create loading spinner
+        LoadingIcon.Name = "LoadingIcon"
+        LoadingIcon.BackgroundTransparency = 1
+        LoadingIcon.Position = UDim2.new(0, 18, 0.5, 0)
+        LoadingIcon.AnchorPoint = Vector2.new(0.5, 0.5)
+        LoadingIcon.Size = UDim2.new(0, 24, 0, 24)
+        LoadingIcon.Parent = LoadingFrame
+        
+        -- Create dots for loading animation
+        for i = 1, 3 do
+            local dot = Instance.new("Frame")
+            dot.Name = "Dot" .. i
+            dot.BackgroundColor3 = accentColor
+            dot.Size = UDim2.new(0, 5, 0, 5)
+            dot.Position = UDim2.new(0.5, -8 + (i-1)*8, 0.5, 0)
+            dot.AnchorPoint = Vector2.new(0.5, 0.5)
+            dot.Parent = LoadingIcon
+            
+            local dotCorner = Instance.new("UICorner")
+            dotCorner.CornerRadius = UDim.new(1, 0)
+            dotCorner.Parent = dot
+        end
+        
+        -- Animate loading dots
+        task.spawn(function()
+            local dots = {
+                LoadingIcon.Dot1,
+                LoadingIcon.Dot2,
+                LoadingIcon.Dot3
+            }
+            
+            local startTime = tick()
+            while LoadingFrame.Parent do
+                for i, dot in ipairs(dots) do
+                    local offset = (i - 1) * 0.33
+                    local scale = 0.7 + 0.6 * math.abs(math.sin((tick() - startTime) * 3 + offset * math.pi * 2))
+                    local transparency = 0.3 - 0.3 * math.abs(math.sin((tick() - startTime) * 3 + offset * math.pi * 2))
+                    
+                    dot.Size = UDim2.new(0, 5 * scale, 0, 5 * scale)
+                    dot.BackgroundTransparency = transparency
+                end
+                task.wait()
+            end
+        end)
+        
+        -- Fade in loading indicator
+        LoadingFrame.BackgroundTransparency = 1
+        LoadingText.TextTransparency = 1
+        
+        smoothTween(LoadingFrame, 0.2, {
+            BackgroundTransparency = 0
+        })
+        
+        smoothTween(LoadingText, 0.2, {
+            TextTransparency = 0
+        })
+        
+        -- Wait a moment for loading animation
+        task.delay(0.5, function()
+            -- Hide start menu with animation
+            smoothTween(MainFrame, 0.3, {
+                Position = UDim2.new(0.5, 0, 1, 100)
+            }, function()
+                StartMenu:Destroy()
+                buttonCallback()
+            end)
         end)
     end)
     
     LoadUniversalButton.MouseEnter:Connect(function()
         smoothTween(LoadUniversalButton, 0.15, {
-            BackgroundColor3 = Color3.fromRGB(45, 45, 50),
-            Size = UDim2.new(0.5, -23, 1, -8)
+            BackgroundColor3 = Color3.fromRGB(45, 50, 65),
         })
     end)
     
     LoadUniversalButton.MouseLeave:Connect(function()
         smoothTween(LoadUniversalButton, 0.15, {
-            BackgroundColor3 = Color3.fromRGB(35, 35, 40),
-            Size = UDim2.new(0.5, -25, 1, -10)
+            BackgroundColor3 = Color3.fromRGB(35, 40, 50),
+        })
+    end)
+    
+    LoadUniversalButton.MouseButton1Down:Connect(function()
+        smoothTween(LoadUniversalButton, 0.1, {
+            Size = UDim2.new(0.48, 0, 0.97, 0),
+        })
+    end)
+    
+    LoadUniversalButton.MouseButton1Up:Connect(function()
+        smoothTween(LoadUniversalButton, 0.1, {
+            Size = UDim2.new(0.485, 0, 1, 0),
         })
     end)
     
     LoadUniversalButton.MouseButton1Click:Connect(function()
-        -- Hide start menu with animation
-        smoothTween(MainFrame, 0.3, {
-            Position = UDim2.new(0.5, 0, 1, 100)
-        }, function()
-            StartMenu:Destroy()
-            universalButtonCallback()
+        -- Similar loading indicator for universal
+        local LoadingFrame = Instance.new("Frame")
+        local LoadingCorner = Instance.new("UICorner")
+        local LoadingIcon = Instance.new("Frame")
+        local LoadingText = Instance.new("TextLabel")
+        
+        LoadingFrame.Name = "LoadingFrame"
+        LoadingFrame.BackgroundColor3 = Color3.fromRGB(25, 30, 40)
+        LoadingFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
+        LoadingFrame.AnchorPoint = Vector2.new(0.5, 0.5)
+        LoadingFrame.Size = UDim2.new(0, 130, 0, 40)
+        LoadingFrame.ZIndex = 10
+        LoadingFrame.Parent = MainFrame
+        
+        LoadingCorner.CornerRadius = UDim.new(0, 5)
+        LoadingCorner.Parent = LoadingFrame
+        
+        LoadingText.Name = "LoadingText"
+        LoadingText.BackgroundTransparency = 1
+        LoadingText.Position = UDim2.new(0, 40, 0, 0)
+        LoadingText.Size = UDim2.new(1, -45, 1, 0)
+        LoadingText.Font = Enum.Font.GothamSemibold
+        LoadingText.Text = "Loading..."
+        LoadingText.TextColor3 = Color3.fromRGB(210, 210, 220)
+        LoadingText.TextSize = 14
+        LoadingText.TextXAlignment = Enum.TextXAlignment.Left
+        LoadingText.Parent = LoadingFrame
+        
+        -- Create loading spinner
+        LoadingIcon.Name = "LoadingIcon"
+        LoadingIcon.BackgroundTransparency = 1
+        LoadingIcon.Position = UDim2.new(0, 18, 0.5, 0)
+        LoadingIcon.AnchorPoint = Vector2.new(0.5, 0.5)
+        LoadingIcon.Size = UDim2.new(0, 24, 0, 24)
+        LoadingIcon.Parent = LoadingFrame
+        
+        -- Create dots for loading animation
+        for i = 1, 3 do
+            local dot = Instance.new("Frame")
+            dot.Name = "Dot" .. i
+            dot.BackgroundColor3 = accentColor
+            dot.Size = UDim2.new(0, 5, 0, 5)
+            dot.Position = UDim2.new(0.5, -8 + (i-1)*8, 0.5, 0)
+            dot.AnchorPoint = Vector2.new(0.5, 0.5)
+            dot.Parent = LoadingIcon
+            
+            local dotCorner = Instance.new("UICorner")
+            dotCorner.CornerRadius = UDim.new(1, 0)
+            dotCorner.Parent = dot
+        end
+        
+        -- Animate loading dots
+        task.spawn(function()
+            local dots = {
+                LoadingIcon.Dot1,
+                LoadingIcon.Dot2,
+                LoadingIcon.Dot3
+            }
+            
+            local startTime = tick()
+            while LoadingFrame.Parent do
+                for i, dot in ipairs(dots) do
+                    local offset = (i - 1) * 0.33
+                    local scale = 0.7 + 0.6 * math.abs(math.sin((tick() - startTime) * 3 + offset * math.pi * 2))
+                    local transparency = 0.3 - 0.3 * math.abs(math.sin((tick() - startTime) * 3 + offset * math.pi * 2))
+                    
+                    dot.Size = UDim2.new(0, 5 * scale, 0, 5 * scale)
+                    dot.BackgroundTransparency = transparency
+                end
+                task.wait()
+            end
+        end)
+        
+        -- Fade in loading indicator
+        LoadingFrame.BackgroundTransparency = 1
+        LoadingText.TextTransparency = 1
+        
+        smoothTween(LoadingFrame, 0.2, {
+            BackgroundTransparency = 0
+        })
+        
+        smoothTween(LoadingText, 0.2, {
+            TextTransparency = 0
+        })
+        
+        -- Wait a moment for loading animation
+        task.delay(0.5, function()
+            -- Hide start menu with animation
+            smoothTween(MainFrame, 0.3, {
+                Position = UDim2.new(0.5, 0, 1, 100)
+            }, function()
+                StartMenu:Destroy()
+                universalButtonCallback()
+            end)
         end)
     end)
     
@@ -1352,14 +1520,16 @@ function UILibrary:CreateStartMenu(options)
 end
 
 -- Show notification globally
-function UILibrary.ShowNotification(message, duration)
+function UILibrary.ShowNotification(message, duration, notificationType)
     duration = duration or 3
+    notificationType = notificationType or "Info" -- Info, Success, Warning, Error
     
     -- Create GUI elements
     local ScreenGui = Instance.new("ScreenGui")
     local Notification = Instance.new("Frame")
     local NotificationCorner = Instance.new("UICorner")
     local NotificationBorder = Instance.new("UIStroke")
+    local NotificationIcon = Instance.new("Frame")
     local NotificationText = Instance.new("TextLabel")
     
     -- Set up ScreenGui
@@ -1367,32 +1537,97 @@ function UILibrary.ShowNotification(message, duration)
     ScreenGui.ResetOnSpawn = false
     ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
     
+    -- Parent to CoreGui or PlayerGui
+    pcall(function()
+        ScreenGui.Parent = game:GetService("CoreGui")
+    end)
+    
+    if not ScreenGui.Parent then
+        ScreenGui.Parent = game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui")
+    end
+    
     -- Create minimalist notification design
     Notification.Name = "Notification"
     Notification.BackgroundColor3 = Color3.fromRGB(15, 17, 26) -- Dark blue-black
     Notification.BackgroundTransparency = 0.1
-    Notification.Position = UDim2.new(0.5, 0, 0, -36)
+    Notification.Position = UDim2.new(0.5, 0, 0, -40)
     Notification.AnchorPoint = Vector2.new(0.5, 0)
-    Notification.Size = UDim2.new(0, 0, 0, 32)
+    Notification.Size = UDim2.new(0, 0, 0, 36)
     Notification.AutomaticSize = Enum.AutomaticSize.X
     Notification.Parent = ScreenGui
     
-    NotificationCorner.CornerRadius = UDim.new(0, 4)
+    NotificationCorner.CornerRadius = UDim.new(0, 6)
     NotificationCorner.Parent = Notification
     
-    NotificationBorder.Color = Color3.fromRGB(61, 133, 224) -- Blue accent
+    -- Border color based on type
+    local borderColor = Color3.fromRGB(61, 133, 224) -- Default blue
+    
+    if notificationType == "Success" then
+        borderColor = Color3.fromRGB(80, 170, 120) -- Green
+    elseif notificationType == "Warning" then
+        borderColor = Color3.fromRGB(220, 170, 60) -- Yellow
+    elseif notificationType == "Error" then
+        borderColor = Color3.fromRGB(200, 80, 80) -- Red
+    end
+    
+    NotificationBorder.Color = borderColor
     NotificationBorder.Thickness = 1
     NotificationBorder.Parent = Notification
     
+    -- Loading animation container
+    NotificationIcon.Name = "Icon"
+    NotificationIcon.BackgroundTransparency = 1
+    NotificationIcon.Position = UDim2.new(0, 10, 0.5, 0)
+    NotificationIcon.AnchorPoint = Vector2.new(0, 0.5)
+    NotificationIcon.Size = UDim2.new(0, 20, 0, 20)
+    NotificationIcon.Parent = Notification
+    
+    -- Create loading dots
+    for i = 1, 3 do
+        local dot = Instance.new("Frame")
+        dot.Name = "Dot" .. i
+        dot.BackgroundColor3 = borderColor
+        dot.Size = UDim2.new(0, 4, 0, 4)
+        dot.Position = UDim2.new(0.5, -6 + (i-1)*6, 0.5, 0)
+        dot.AnchorPoint = Vector2.new(0.5, 0.5)
+        dot.Parent = NotificationIcon
+        
+        local dotCorner = Instance.new("UICorner")
+        dotCorner.CornerRadius = UDim.new(1, 0)
+        dotCorner.Parent = dot
+    end
+    
+    -- Animate dots
+    task.spawn(function()
+        local dots = {
+            NotificationIcon.Dot1,
+            NotificationIcon.Dot2,
+            NotificationIcon.Dot3
+        }
+        
+        local startTime = tick()
+        while Notification.Parent do
+            for i, dot in ipairs(dots) do
+                local offset = (i - 1) * 0.33
+                local scale = 0.8 + 0.5 * math.abs(math.sin((tick() - startTime) * 3 + offset * math.pi * 2))
+                local transparency = 0.2 - 0.2 * math.abs(math.sin((tick() - startTime) * 3 + offset * math.pi * 2))
+                
+                dot.Size = UDim2.new(0, 4 * scale, 0, 4 * scale)
+                dot.BackgroundTransparency = transparency
+            end
+            task.wait()
+        end
+    end)
+    
     NotificationText.Name = "NotificationText"
     NotificationText.BackgroundTransparency = 1
-    NotificationText.Position = UDim2.new(0, 12, 0, 0)
+    NotificationText.Position = UDim2.new(0, 38, 0, 0)
     NotificationText.Size = UDim2.new(0, 0, 1, 0)
     NotificationText.AutomaticSize = Enum.AutomaticSize.X
     NotificationText.Font = Enum.Font.Gotham
-    NotificationText.Text = message
+    NotificationText.Text = "  " .. message .. "  " -- Added spacing
     NotificationText.TextColor3 = Color3.fromRGB(210, 210, 220)
-    NotificationText.TextSize = 13
+    NotificationText.TextSize = 14
     NotificationText.Parent = Notification
     
     -- Add shadow
@@ -1410,18 +1645,26 @@ function UILibrary.ShowNotification(message, duration)
     Shadow.SliceCenter = Rect.new(49, 49, 450, 450)
     Shadow.Parent = Notification
     
-    -- Parent to CoreGui or PlayerGui
-    pcall(function()
-        ScreenGui.Parent = game:GetService("CoreGui")
-    end)
-    
-    if not ScreenGui.Parent then
-        ScreenGui.Parent = game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui")
-    end
-    
     -- Smooth animation
+    Notification.BackgroundTransparency = 1
+    NotificationText.TextTransparency = 1
+    Shadow.ImageTransparency = 1
+    
+    -- First make the notification visible
+    task.wait(0.05)
+    
+    -- Then animate its appearance
     local showTween = smoothTween(Notification, 0.3, {
-        Position = UDim2.new(0.5, 0, 0, 15)
+        Position = UDim2.new(0.5, 0, 0, 20),
+        BackgroundTransparency = 0.1
+    })
+    
+    smoothTween(NotificationText, 0.3, {
+        TextTransparency = 0
+    })
+    
+    smoothTween(Shadow, 0.3, {
+        ImageTransparency = 0.5
     })
     
     showTween:Play()
@@ -1429,7 +1672,16 @@ function UILibrary.ShowNotification(message, duration)
     -- Hide after duration with clean animation
     task.delay(duration, function()
         local hideTween = smoothTween(Notification, 0.3, {
-            Position = UDim2.new(0.5, 0, 0, -36)
+            Position = UDim2.new(0.5, 0, 0, -40),
+            BackgroundTransparency = 1
+        })
+        
+        smoothTween(NotificationText, 0.3, {
+            TextTransparency = 1
+        })
+        
+        smoothTween(Shadow, 0.3, {
+            ImageTransparency = 1
         })
         
         hideTween:Play()
