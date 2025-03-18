@@ -94,17 +94,18 @@ function RSV:CreateWindow(options)
     screenGui.Enabled = true 
 
     local mainFrame = Instance.new("Frame")
-    mainFrame.Size = UDim2.new(0, 500, 0, 350)
-    mainFrame.Position = UDim2.new(0.5, -250, 1, 400)
+    mainFrame.Size = UDim2.new(0, 350, 0, 400)
+    mainFrame.Position = UDim2.new(0.5, -175, 0.5, -220)
     mainFrame.BackgroundColor3 = selectedTheme.MainFrameColor
     mainFrame.BackgroundTransparency = selectedTheme.Transparency
     mainFrame.BorderSizePixel = 0
     mainFrame.ClipsDescendants = true
     mainFrame.Parent = screenGui
     mainFrame.ZIndex = 1
+    mainFrame.Visible = false
 
     local mainCorner = Instance.new("UICorner")
-    mainCorner.CornerRadius = UDim.new(0, 10)
+    mainCorner.CornerRadius = UDim.new(0, 20)
     mainCorner.Parent = mainFrame
 
     local mainGradient = Instance.new("UIGradient")
@@ -113,89 +114,72 @@ function RSV:CreateWindow(options)
     mainGradient.Parent = mainFrame
 
     local mainStroke = Instance.new("UIStroke")
-    mainStroke.Thickness = 1.5
+    mainStroke.Thickness = 2
     mainStroke.Color = Color3.fromRGB(50, 50, 60)
     mainStroke.Transparency = 0.7
     mainStroke.Parent = mainFrame
 
-    local headerFrame = Instance.new("Frame")
-    headerFrame.Size = UDim2.new(1, 0, 0, 40)
-    headerFrame.Position = UDim2.new(0, 0, 0, 0)
-    headerFrame.BackgroundColor3 = selectedTheme.BottomBarColor
-    headerFrame.BackgroundTransparency = selectedTheme.Transparency
-    headerFrame.BorderSizePixel = 0
-    headerFrame.Parent = mainFrame
-    headerFrame.ZIndex = 2
+    local titleBar = Instance.new("Frame")
+    titleBar.Size = UDim2.new(1, 0, 0, 40)
+    titleBar.Position = UDim2.new(0, 0, 0, 0)
+    titleBar.BackgroundColor3 = selectedTheme.BottomBarColor
+    titleBar.BackgroundTransparency = selectedTheme.Transparency
+    titleBar.BorderSizePixel = 0
+    titleBar.Parent = mainFrame
+    titleBar.ZIndex = 2
 
-    local headerCorner = Instance.new("UICorner")
-    headerCorner.CornerRadius = UDim.new(0, 10)
-    headerCorner.Parent = headerFrame
+    local titleCorner = Instance.new("UICorner")
+    titleCorner.CornerRadius = UDim.new(0, 10)
+    titleCorner.Parent = titleBar
 
-    local headerMask = Instance.new("Frame")
-    headerMask.Size = UDim2.new(1, 0, 0.5, 0)
-    headerMask.Position = UDim2.new(0, 0, 0.5, 0)
-    headerMask.BackgroundColor3 = selectedTheme.BottomBarColor
-    headerMask.BackgroundTransparency = selectedTheme.Transparency
-    headerMask.BorderSizePixel = 0
-    headerMask.Parent = headerFrame
-    headerMask.ZIndex = 2
+    local titleCornerFix = Instance.new("Frame")
+    titleCornerFix.Size = UDim2.new(1, 0, 0.5, 0)
+    titleCornerFix.Position = UDim2.new(0, 0, 0.5, 0)
+    titleCornerFix.BackgroundColor3 = selectedTheme.BottomBarColor
+    titleCornerFix.BackgroundTransparency = selectedTheme.Transparency
+    titleCornerFix.BorderSizePixel = 0
+    titleCornerFix.Parent = titleBar
+    titleCornerFix.ZIndex = 2
 
-    local headerGradient = Instance.new("UIGradient")
-    headerGradient.Color = selectedTheme.BottomBarGradient
-    headerGradient.Rotation = 90
-    headerGradient.Parent = headerFrame
+    local titleGradient = Instance.new("UIGradient")
+    titleGradient.Color = selectedTheme.BottomBarGradient
+    titleGradient.Rotation = 90
+    titleGradient.Parent = titleBar
 
-    local titleLabel = Instance.new("TextLabel")
-    titleLabel.Size = UDim2.new(0, 200, 1, 0)
-    titleLabel.Position = UDim2.new(0, 15, 0, 0)
-    titleLabel.BackgroundTransparency = 1
-    titleLabel.Text = name
-    titleLabel.TextColor3 = selectedTheme.TextColor
-    titleLabel.Font = Enum.Font.GothamBold
-    titleLabel.TextSize = 18
-    titleLabel.TextXAlignment = Enum.TextXAlignment.Left
-    titleLabel.Parent = headerFrame
-    titleLabel.ZIndex = 3
-
-    local creditLabel = Instance.new("TextLabel")
-    creditLabel.Size = UDim2.new(0, 200, 1, 0)
-    creditLabel.Position = UDim2.new(1, -210, 0, 0)
-    creditLabel.BackgroundTransparency = 1
-    creditLabel.Text = "Made by " .. credits
-    creditLabel.TextColor3 = selectedTheme.SubTextColor
-    creditLabel.Font = Enum.Font.Gotham
-    creditLabel.TextSize = 14
-    creditLabel.TextXAlignment = Enum.TextXAlignment.Right
-    creditLabel.Parent = headerFrame
-    creditLabel.ZIndex = 3
+    local titleText = Instance.new("TextLabel")
+    titleText.Size = UDim2.new(1, -40, 1, 0)
+    titleText.Position = UDim2.new(0, 20, 0, 0)
+    titleText.BackgroundTransparency = 1
+    titleText.Text = name
+    titleText.TextColor3 = selectedTheme.TextColor
+    titleText.Font = Enum.Font.GothamBold
+    titleText.TextSize = 18
+    titleText.TextXAlignment = Enum.TextXAlignment.Left
+    titleText.Parent = titleBar
+    titleText.ZIndex = 3
 
     local closeButton = Instance.new("TextButton")
-    closeButton.Size = UDim2.new(0, 24, 0, 24)
-    closeButton.Position = UDim2.new(1, -32, 0, 8)
-    closeButton.BackgroundColor3 = Color3.fromRGB(225, 50, 50)
-    closeButton.BorderSizePixel = 0
-    closeButton.Text = "✕"
-    closeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    closeButton.Size = UDim2.new(0, 30, 0, 30)
+    closeButton.Position = UDim2.new(1, -35, 0, 5)
+    closeButton.BackgroundTransparency = 1
+    closeButton.Text = "×"
+    closeButton.TextColor3 = selectedTheme.TextColor
     closeButton.Font = Enum.Font.GothamBold
-    closeButton.TextSize = 14
-    closeButton.Parent = headerFrame
+    closeButton.TextSize = 24
+    closeButton.Parent = titleBar
     closeButton.ZIndex = 3
 
-    local closeCorner = Instance.new("UICorner")
-    closeCorner.CornerRadius = UDim.new(0, 12)
-    closeCorner.Parent = closeButton
-
     local bottomBar = Instance.new("Frame")
-    bottomBar.Size = UDim2.new(1, -20, 0, 40)
-    bottomBar.Position = UDim2.new(0, 10, 1, -50)
+    bottomBar.Size = UDim2.new(0, 350, 0, 50)
+    bottomBar.Position = UDim2.new(0.5, -175, 1, -70)
     bottomBar.BackgroundColor3 = selectedTheme.BottomBarColor
     bottomBar.BackgroundTransparency = selectedTheme.Transparency
     bottomBar.BorderSizePixel = 0
-    bottomBar.Parent = mainFrame
+    bottomBar.Parent = screenGui
     bottomBar.ZIndex = 2
 
     local bottomBarCorner = Instance.new("UICorner")
-    bottomBarCorner.CornerRadius = UDim.new(0, 8)
+    bottomBarCorner.CornerRadius = UDim.new(0, 15)
     bottomBarCorner.Parent = bottomBar
 
     local bottomBarGradient = Instance.new("UIGradient")
@@ -204,12 +188,16 @@ function RSV:CreateWindow(options)
     bottomBarGradient.Parent = bottomBar
 
     local highlight = Instance.new("Frame")
-    highlight.Size = UDim2.new(0, 80, 0, 3)
-    highlight.Position = UDim2.new(0, 0, 1, -3)
+    highlight.Size = UDim2.new(0, 60, 1, 0)
+    highlight.Position = UDim2.new(0, 0, 0, 0)
     highlight.BackgroundColor3 = Color3.fromRGB(255, 105, 180)
     highlight.BorderSizePixel = 0
     highlight.Parent = bottomBar
     highlight.ZIndex = 3
+
+    local highlightCorner = Instance.new("UICorner")
+    highlightCorner.CornerRadius = UDim.new(0, 10)
+    highlightCorner.Parent = highlight
 
     local highlightGradient = Instance.new("UIGradient")
     highlightGradient.Color = ColorSequence.new{ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 105, 180)), ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 150, 200))}
@@ -229,46 +217,70 @@ function RSV:CreateWindow(options)
         IsOpen = false
     }
 
-    closeButton.MouseButton1Click:Connect(function()
-        window:Toggle()
-    end)
-
     function window:CreateTab(name, description)
         local tabCount = #self.Tabs + 1
-        local tabButtonWidth = bottomBar.AbsoluteSize.X / (tabCount <= 5 and 5 or tabCount)
         
-        for i, tab in ipairs(self.Tabs) do
-            tab.Button.Size = UDim2.new(0, tabButtonWidth, 1, 0)
-            tab.Button.Position = UDim2.new(0, (i-1) * tabButtonWidth, 0, 0)
+        local maxTabsPerRow = 5
+        local tabWidth = math.min(bottomBar.Size.X.Offset / math.min(tabCount, maxTabsPerRow), 70)
+        
+        local rowCount = math.ceil(tabCount / maxTabsPerRow)
+        local totalWidth = math.min(tabCount, maxTabsPerRow) * tabWidth
+        bottomBar.Size = UDim2.new(0, totalWidth, 0, 50)
+        bottomBar.Position = UDim2.new(0.5, -totalWidth/2, 1, -70)
+        
+        if tabCount == 1 then
+            highlight.Size = UDim2.new(0, tabWidth, 1, 0)
         end
 
         local tabFrame = Instance.new("ScrollingFrame")
-        tabFrame.Size = UDim2.new(1, -20, 1, -100)
-        tabFrame.Position = UDim2.new(0, 10, 0, 50)
+        tabFrame.Size = UDim2.new(0, 330, 0, 350)
+        tabFrame.Position = UDim2.new(0, 10, 0, 45)
         tabFrame.BackgroundTransparency = 1
-        tabFrame.ScrollBarThickness = 4
+        tabFrame.ScrollBarThickness = 5
         tabFrame.ScrollBarImageColor3 = Color3.fromRGB(255, 105, 180)
         tabFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
         tabFrame.Parent = mainFrame
         tabFrame.Visible = false
         tabFrame.ZIndex = 2
-        tabFrame.BorderSizePixel = 0
 
+        local row = math.floor((tabCount-1) / maxTabsPerRow)
+        local col = (tabCount-1) % maxTabsPerRow
+        
         local tabButton = Instance.new("TextButton")
-        tabButton.Size = UDim2.new(0, tabButtonWidth, 1, 0)
-        tabButton.Position = UDim2.new(0, (#self.Tabs * tabButtonWidth), 0, 0)
+        tabButton.Size = UDim2.new(0, tabWidth, 1, 0)
+        tabButton.Position = UDim2.new(0, col * tabWidth, 0, 0)
         tabButton.BackgroundTransparency = 1
         tabButton.Text = name
-        tabButton.TextColor3 = window.Theme == themes.Light and Color3.fromRGB(0, 0, 0) or Color3.fromRGB(200, 200, 200)
+        tabButton.TextColor3 = window.Theme == themes.Light and Color3.fromRGB(0, 0, 0) or Color3.fromRGB(255, 255, 255)
         tabButton.Font = Enum.Font.GothamBold
         tabButton.TextSize = 14
         tabButton.BorderSizePixel = 0
         tabButton.Parent = bottomBar
         tabButton.ZIndex = 4
 
+        local tabIcon = Instance.new("ImageLabel")
+        tabIcon.Size = UDim2.new(0, 20, 0, 20)
+        tabIcon.Position = UDim2.new(0.5, -10, 0, 5)
+        tabIcon.BackgroundTransparency = 1
+        tabIcon.Image = ""
+        tabIcon.Parent = tabButton
+        tabIcon.ZIndex = 5
+        tabIcon.Visible = false
+        
+        local tabLabel = Instance.new("TextLabel")
+        tabLabel.Size = UDim2.new(1, 0, 0, 20)
+        tabLabel.Position = UDim2.new(0, 0, 0.5, -10)
+        tabLabel.BackgroundTransparency = 1
+        tabLabel.Text = name
+        tabLabel.TextColor3 = window.Theme.TextColor
+        tabLabel.Font = Enum.Font.GothamBold
+        tabLabel.TextSize = 12
+        tabLabel.Parent = tabButton
+        tabLabel.ZIndex = 5
+
         local descLabel = Instance.new("TextLabel")
-        descLabel.Size = UDim2.new(0, 180, 0, 30)
-        descLabel.Position = UDim2.new(0.5, -90, -1, -5)
+        descLabel.Size = UDim2.new(0, 150, 0, 30)
+        descLabel.Position = UDim2.new(0.5, -75, -0.6, 0)
         descLabel.BackgroundColor3 = window.Theme.BottomBarColor
         descLabel.BackgroundTransparency = 0.2
         descLabel.BorderSizePixel = 0
@@ -284,16 +296,22 @@ function RSV:CreateWindow(options)
         local descCorner = Instance.new("UICorner")
         descCorner.CornerRadius = UDim.new(0, 5)
         descCorner.Parent = descLabel
+        
+        local descStroke = Instance.new("UIStroke")
+        descStroke.Thickness = 1
+        descStroke.Color = Color3.fromRGB(255, 105, 180)
+        descStroke.Transparency = 0.5
+        descStroke.Parent = descLabel
 
         tabButton.MouseEnter:Connect(function()
             descLabel.Visible = true
-            TweenService:Create(tabButton, TweenInfo.new(0.2), {TextColor3 = Color3.fromRGB(255, 255, 255)}):Play()
+            TweenService:Create(tabButton, TweenInfo.new(0.3), {TextTransparency = 0}):Play()
         end)
 
         tabButton.MouseLeave:Connect(function()
             descLabel.Visible = false
             if self.CurrentTab ~= tab then
-                TweenService:Create(tabButton, TweenInfo.new(0.2), {TextColor3 = window.Theme == themes.Light and Color3.fromRGB(0, 0, 0) or Color3.fromRGB(200, 200, 200)}):Play()
+                TweenService:Create(tabButton, TweenInfo.new(0.3), {TextTransparency = 0.3}):Play()
             end
         end)
 
@@ -308,38 +326,33 @@ function RSV:CreateWindow(options)
         if not self.CurrentTab then
             self.CurrentTab = tab
             tab.Frame.Visible = true
-            tabButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-            
-            highlight.Size = UDim2.new(0, tabButtonWidth, 0, 3)
-            highlight.Position = UDim2.new(0, 0, 1, -3)
+            tabButton.TextTransparency = 0
+        else
+            tabButton.TextTransparency = 0.3
         end
 
         tabButton.MouseButton1Click:Connect(function()
             if self.CurrentTab ~= tab then
                 local oldTab = self.CurrentTab
-                oldTab.Button.TextColor3 = window.Theme == themes.Light and Color3.fromRGB(100, 100, 100) or Color3.fromRGB(200, 200, 200)
+                oldTab.Button.TextTransparency = 0.3
                 
-                local oldTween = TweenService:Create(oldTab.Frame, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), 
-                    {Position = UDim2.new(0, -10, 0, 50), BackgroundTransparency = 1})
+                local oldTween = TweenService:Create(oldTab.Frame, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Position = UDim2.new(-1, 10, 0, 45)})
                 oldTween:Play()
                 oldTween.Completed:Connect(function()
                     oldTab.Frame.Visible = false
+                    oldTab.Frame.Position = UDim2.new(0, 10, 0, 45)
                 end)
 
                 tab.Frame.Visible = true
-                tab.Frame.Position = UDim2.new(0, 30, 0, 50)
-                tab.Frame.BackgroundTransparency = 1
+                tab.Frame.Position = UDim2.new(1, 10, 0, 45)
+                TweenService:Create(tab.Frame, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Position = UDim2.new(0, 10, 0, 45)}):Play()
                 
-                TweenService:Create(tab.Frame, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), 
-                    {Position = UDim2.new(0, 10, 0, 50), BackgroundTransparency = 1}):Play()
-                
-                tabButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+                tab.Button.TextTransparency = 0
                 self.CurrentTab = tab
                 self.ActiveIndex = table.find(self.Tabs, tab)
                 
-                local targetPosition = UDim2.new(0, (self.ActiveIndex - 1) * tabButtonWidth, 1, -3)
-                TweenService:Create(highlight, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), 
-                    {Position = targetPosition, Size = UDim2.new(0, tabButtonWidth, 0, 3)}):Play()
+                local targetPosition = UDim2.new(0, (col * tabWidth), 0, 0)
+                TweenService:Create(highlight, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Position = targetPosition}):Play()
             end
         end)
 
@@ -684,21 +697,66 @@ function RSV:CreateWindow(options)
     end
 
     function window:Toggle()
-        if not self.IsOpen then
-            TweenService:Create(mainFrame, TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out), 
-                {Position = UDim2.new(0.5, -250, 1, -370)}):Play()
-            self.IsOpen = true
+        self.IsOpen = not self.IsOpen
+        
+        if self.IsOpen then
+            mainFrame.Visible = true
+            mainFrame.Position = UDim2.new(0.5, -175, 0, -400)
+            TweenService:Create(mainFrame, TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {Position = UDim2.new(0.5, -175, 0.5, -220)}):Play()
+            
+            bottomBar.Position = UDim2.new(0.5, -bottomBar.Size.X.Offset/2, 1, 50)
+            TweenService:Create(bottomBar, TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {Position = UDim2.new(0.5, -bottomBar.Size.X.Offset/2, 1, -70)}):Play()
         else
-            TweenService:Create(mainFrame, TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.In), 
-                {Position = UDim2.new(0.5, -250, 1, 400)}):Play()
-            self.IsOpen = false
+            TweenService:Create(mainFrame, TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {Position = UDim2.new(0.5, -175, 0, -400)}):Play()
+            
+            TweenService:Create(bottomBar, TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {Position = UDim2.new(0.5, -bottomBar.Size.X.Offset/2, 1, 50)}):Play()
+            
+            delay(0.5, function()
+                if not self.IsOpen then
+                    mainFrame.Visible = false
+                end
+            end)
         end
     end
 
     UserInputService.InputBegan:Connect(function(input, gameProcessed)
-        if not gameProcessed and input.KeyCode == Enum.KeyCode.K then
+        if not gameProcessed and input.KeyCode == Enum.KeyCode.RightControl then
             window:Toggle()
         end
+    end)
+
+    local dragging = false
+    local dragInput, dragStart, startPos
+
+    titleBar.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            dragging = true
+            dragStart = input.Position
+            startPos = mainFrame.Position
+        end
+    end)
+
+    titleBar.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            dragging = false
+        end
+    end)
+
+    UserInputService.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+            dragInput = input
+        end
+    end)
+
+    RunService.RenderStepped:Connect(function()
+        if dragging and dragInput and dragStart then
+            local delta = dragInput.Position - dragStart
+            mainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+        end
+    end)
+    
+    closeButton.MouseButton1Click:Connect(function()
+        window:Toggle()
     end)
 
     local homeTab = window:CreateTab("Home", "Welcome to " .. name)
@@ -839,7 +897,9 @@ function RSV:CreateWindow(options)
         end
     end)
 
-    window:Toggle()
+    delay(0.1, function()
+        window:Toggle()
+    end)
 
     return window
 end
