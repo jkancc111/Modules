@@ -1,1495 +1,847 @@
-local UILibrary = {}
-local config = {
-	MainColor = Color3.fromRGB(15, 17, 26),
-	SecondaryColor = Color3.fromRGB(25, 30, 40),
-	AccentColor = Color3.fromRGB(61, 133, 224),
-	AccentColorHover = Color3.fromRGB(90, 160, 240),
-	AccentColorActive = Color3.fromRGB(45, 110, 200),
-	BorderColor = Color3.fromRGB(40, 45, 60),
-	HeadingColor = Color3.fromRGB(230, 230, 240),
-	TextColor = Color3.fromRGB(210, 210, 220),
-	SecondaryTextColor = Color3.fromRGB(150, 155, 170),
-	DisabledTextColor = Color3.fromRGB(100, 105, 120),
-	ElementTransparency = 0.92,
-	HoverTransparency = 0.85,
-	Width = 520,
-	Height = 340,
-	GameItemHeight = 60,
-	CornerRadius = UDim.new(0, 5),
-	ButtonCornerRadius = UDim.new(0, 4),
-	HeadingFont = Enum.Font.GothamBold,
-	Font = Enum.Font.GothamSemibold,
-	BodyFont = Enum.Font.Gotham,
-	ButtonFont = Enum.Font.GothamSemibold,
-	HeadingSize = 16,
-	SubheadingSize = 14,
-	BodyTextSize = 13,
-	SmallTextSize = 12,
-	SpacingXS = 3,
-	SpacingS = 6,
-	SpacingM = 12,
-	SpacingL = 18,
-	SpacingXL = 24,
-	AnimationSpeed = 0.3,
-	AnimationSpeedFast = 0.15,
-	AnimationSpeedSlow = 0.5,
-	EasingStyle = Enum.EasingStyle.Quint,
-	EasingDirection = Enum.EasingDirection.Out,
-	StatusColors = {
-		["Working"] = Color3.fromRGB(80, 170, 120),
-		["Updated"] = Color3.fromRGB(61, 133, 224),
-		["Testing"] = Color3.fromRGB(220, 170, 60),
-		["Patched"] = Color3.fromRGB(200, 80, 80)
-	},
-	ShadowTransparency = 0.82,
-	ShadowSize = UDim2.new(1, 8, 1, 8),
-	HoverScale = 1.02,
-	ClickScale = 0.98
-}
-local function smoothTween(object, duration, properties, callback)
-	local tween = game:GetService("TweenService"):Create(object, TweenInfo.new(duration or config.AnimationSpeed, config.EasingStyle, config.EasingDirection), properties)
-	if callback then
-		tween.Completed:Connect(callback)
-	end;
-	tween:Play()
-	return tween
-end;
-local function createShadow(parent, transparency)
-	local shadow = Instance.new("ImageLabel")
-	shadow.Name = "Shadow"
-	shadow.BackgroundTransparency = 1;
-	shadow.Image = "rbxassetid://6014261993"
-	shadow.ImageColor3 = Color3.fromRGB(0, 0, 0)
-	shadow.ImageTransparency = transparency or config.ShadowTransparency;
-	shadow.Position = UDim2.new(0.5, 0, 0.5, 0)
-	shadow.AnchorPoint = Vector2.new(0.5, 0.5)
-	shadow.Size = config.ShadowSize;
-	shadow.ZIndex = parent.ZIndex - 1;
-	shadow.Parent = parent;
-	return shadow
-end;
-local function animateLoading(loadingIndicator)
-	if not loadingIndicator then return end
-	
-	local dots = {
-		loadingIndicator.LoadingDot1,
-		loadingIndicator.LoadingDot2,
-		loadingIndicator.LoadingDot3
-	}
-	
-	for i, dot in ipairs(dots) do
-		if not dot then
-			return
-		end
-	end
-	
-	local connection;
-	connection = game:GetService("RunService").Heartbeat:Connect(function()
-		if not loadingIndicator or not loadingIndicator.Parent then
-			connection:Disconnect()
-			return
-		end;
-		for i, dot in ipairs(dots) do
-			local angle = (os.clock() * 2 + (i - 1) * (math.pi * 2 / 3)) % (math.pi * 2)
-			local radius = 12;
-			local x = math.cos(angle) * radius;
-			local y = math.sin(angle) * radius;
-			dot.Position = UDim2.new(0.5, x - 3, 0.5, y - 3)
-			local scale = 0.7 + 0.5 * ((math.sin(angle) + 1) / 2)
-			local transparency = 0.3 - 0.3 * ((math.sin(angle) + 1) / 2)
-			dot.Size = UDim2.new(0, 6 * scale, 0, 6 * scale)
-			dot.BackgroundTransparency = transparency
-		end
-	end)
-	return connection
-end;
-function UILibrary.new(customConfig)
-	local hub = {}
-	local userConfig = customConfig or {}
-	for key, value in pairs(userConfig) do
-		config[key] = value
-	end;
-	local BlurEffect = Instance.new("BlurEffect")
-	BlurEffect.Size = 0;
-	BlurEffect.Parent = game:GetService("Lighting")
-	local ScreenGui = Instance.new("ScreenGui")
-	local Background = Instance.new("Frame")
-	local MainFrame = Instance.new("Frame")
-	local MainCorner = Instance.new("UICorner")
-	local MainBorder = Instance.new("UIStroke")
-	local TopBar = Instance.new("Frame")
-	local Title = Instance.new("TextLabel")
-	local CloseButton = Instance.new("TextButton")
-	local SearchContainer = Instance.new("Frame")
-	local SearchBar = Instance.new("Frame")
-	local SearchBorder = Instance.new("UIStroke")
-	local SearchIcon = Instance.new("ImageLabel")
-	local SearchInput = Instance.new("TextBox")
-	local CategoryContainer = Instance.new("Frame")
-	local CategoryLayout = Instance.new("UIListLayout")
-	local GameList = Instance.new("ScrollingFrame")
-	local GameListLayout = Instance.new("UIListLayout")
-	local GameListPadding = Instance.new("UIPadding")
-	local EmptyStateLabel = Instance.new("TextLabel")
-	local LoadingIndicator = Instance.new("Frame")
-	ScreenGui.Name = "LomuHubLibrary"
-	ScreenGui.ResetOnSpawn = false;
-	ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling;
-	ScreenGui.IgnoreGuiInset = true;
-	ScreenGui.DisplayOrder = 100;
-	for _, instance in pairs(game:GetService("CoreGui"):GetChildren()) do
-		if instance.Name == "LomuHubLibrary" and instance ~= ScreenGui then
-			instance:Destroy()
-		end
-	end;
-	pcall(function()
-		for _, instance in pairs(game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui"):GetChildren()) do
-			if instance.Name == "LomuHubLibrary" and instance ~= ScreenGui then
-				instance:Destroy()
-			end
-		end
-	end)
-	Background.Name = "Background"
-	Background.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-	Background.BackgroundTransparency = 1;
-	Background.Size = UDim2.new(1, 0, 1, 0)
-	Background.ZIndex = 5;
-	Background.Parent = ScreenGui;
-	MainFrame.Name = "MainFrame"
-	MainFrame.BackgroundColor3 = config.MainColor;
-	MainFrame.BorderSizePixel = 0;
-	MainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
-	MainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
-	MainFrame.Size = UDim2.new(0, 0, 0, 0)
-	MainFrame.Visible = true;
-	MainFrame.ZIndex = 10;
-	MainFrame.Parent = ScreenGui;
-	local MainShadow = createShadow(MainFrame)
-	MainShadow.ImageTransparency = 1;
-	MainCorner.CornerRadius = UDim.new(0, 6)
-	MainCorner.Parent = MainFrame;
-	MainBorder.Color = config.BorderColor;
-	MainBorder.Thickness = 1;
-	MainBorder.Transparency = 1;
-	MainBorder.Parent = MainFrame;
-	TopBar.Name = "TopBar"
-	TopBar.BackgroundTransparency = 1;
-	TopBar.Size = UDim2.new(1, 0, 0, 40)
-	TopBar.ZIndex = 11;
-	TopBar.Parent = MainFrame;
-	Title.Name = "Title"
-	Title.BackgroundTransparency = 1;
-	Title.Position = UDim2.new(0, 18, 0, 0)
-	Title.Size = UDim2.new(1, -70, 1, 0)
-	Title.Font = config.HeadingFont;
-	Title.Text = "Lomu Hub"
-	Title.TextColor3 = config.HeadingColor;
-	Title.TextSize = config.HeadingSize;
-	Title.TextXAlignment = Enum.TextXAlignment.Left;
-	Title.TextTransparency = 1;
-	Title.ZIndex = 12;
-	Title.Parent = TopBar;
-	CloseButton.Name = "CloseButton"
-	CloseButton.BackgroundColor3 = Color3.fromRGB(192, 57, 57)
-	CloseButton.BackgroundTransparency = 1;
-	CloseButton.Position = UDim2.new(1, -18 - 18, 0.5, 0)
-	CloseButton.AnchorPoint = Vector2.new(0, 0.5)
-	CloseButton.Size = UDim2.new(0, 18, 0, 18)
-	CloseButton.Font = config.HeadingFont;
-	CloseButton.Text = "×"
-	CloseButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-	CloseButton.TextTransparency = 1;
-	CloseButton.TextSize = 16;
-	CloseButton.AutoButtonColor = false;
-	CloseButton.ZIndex = 12;
-	CloseButton.Parent = TopBar;
-	local CloseButtonCorner = Instance.new("UICorner")
-	CloseButtonCorner.CornerRadius = UDim.new(0, 4)
-	CloseButtonCorner.Parent = CloseButton;
-	SearchContainer.Name = "SearchContainer"
-	SearchContainer.BackgroundTransparency = 1;
-	SearchContainer.Position = UDim2.new(0, 18, 0, TopBar.Size.Y.Offset + 5)
-	SearchContainer.Size = UDim2.new(1, -36, 0, 34)
-	SearchContainer.ZIndex = 11;
-	SearchContainer.Parent = MainFrame;
-	SearchBar.Name = "SearchBar"
-	SearchBar.BackgroundColor3 = config.SecondaryColor;
-	SearchBar.BackgroundTransparency = 1;
-	SearchBar.Size = UDim2.new(1, 0, 1, 0)
-	SearchBar.ZIndex = 11;
-	SearchBar.Parent = SearchContainer;
-	SearchBorder.Color = config.BorderColor;
-	SearchBorder.Thickness = 1;
-	SearchBorder.Transparency = 1;
-	SearchBorder.Parent = SearchBar;
-	local SearchBarCorner = Instance.new("UICorner")
-	SearchBarCorner.CornerRadius = UDim.new(0, 5)
-	SearchBarCorner.Parent = SearchBar;
-	SearchIcon.Name = "SearchIcon"
-	SearchIcon.BackgroundTransparency = 1;
-	SearchIcon.Position = UDim2.new(0, 12, 0.5, 0)
-	SearchIcon.AnchorPoint = Vector2.new(0, 0.5)
-	SearchIcon.Size = UDim2.new(0, 14, 0, 14)
-	SearchIcon.Image = "rbxassetid://3926305904"
-	SearchIcon.ImageRectOffset = Vector2.new(964, 324)
-	SearchIcon.ImageRectSize = Vector2.new(36, 36)
-	SearchIcon.ImageColor3 = config.SecondaryTextColor;
-	SearchIcon.ImageTransparency = 1;
-	SearchIcon.ZIndex = 12;
-	SearchIcon.Parent = SearchBar;
-	SearchInput.Name = "SearchInput"
-	SearchInput.BackgroundTransparency = 1;
-	SearchInput.Position = UDim2.new(0, 34, 0, 0)
-	SearchInput.Size = UDim2.new(1, -48, 1, 0)
-	SearchInput.Font = config.BodyFont;
-	SearchInput.PlaceholderText = "Search games..."
-	SearchInput.Text = ""
-	SearchInput.TextColor3 = config.TextColor;
-	SearchInput.PlaceholderColor3 = Color3.fromRGB(100, 110, 130)
-	SearchInput.TextSize = 14;
-	SearchInput.TextXAlignment = Enum.TextXAlignment.Left;
-	SearchInput.ClearTextOnFocus = false;
-	SearchInput.TextTransparency = 1;
-	SearchInput.ZIndex = 12;
-	SearchInput.Parent = SearchBar;
-	CategoryContainer.Name = "CategoryContainer"
-	CategoryContainer.BackgroundTransparency = 1;
-	CategoryContainer.Position = UDim2.new(0, 18, 0, SearchContainer.Position.Y.Offset + SearchContainer.Size.Y.Offset + 10)
-	CategoryContainer.Size = UDim2.new(1, -36, 0, 30)
-	CategoryContainer.ZIndex = 11;
-	CategoryContainer.Parent = MainFrame;
-	CategoryLayout.Name = "CategoryLayout"
-	CategoryLayout.FillDirection = Enum.FillDirection.Horizontal;
-	CategoryLayout.HorizontalAlignment = Enum.HorizontalAlignment.Left;
-	CategoryLayout.SortOrder = Enum.SortOrder.LayoutOrder;
-	CategoryLayout.Padding = UDim.new(0, 10)
-	CategoryLayout.Parent = CategoryContainer;
-	GameList.Name = "GameList"
-	GameList.BackgroundTransparency = 1;
-	GameList.Position = UDim2.new(0, 18, 0, CategoryContainer.Position.Y.Offset + CategoryContainer.Size.Y.Offset + 10)
-	GameList.Size = UDim2.new(1, -36, 1, -(CategoryContainer.Position.Y.Offset + CategoryContainer.Size.Y.Offset + 28))
-	GameList.CanvasSize = UDim2.new(0, 0, 0, 0)
-	GameList.ScrollBarThickness = 4;
-	GameList.ScrollBarImageColor3 = config.AccentColor;
-	GameList.ScrollingDirection = Enum.ScrollingDirection.Y;
-	GameList.AutomaticCanvasSize = Enum.AutomaticSize.Y;
-	GameList.VerticalScrollBarInset = Enum.ScrollBarInset.ScrollBar;
-	GameList.ZIndex = 11;
-	GameList.Parent = MainFrame;
-	GameListLayout.Name = "GameListLayout"
-	GameListLayout.Padding = UDim.new(0, 8)
-	GameListLayout.SortOrder = Enum.SortOrder.LayoutOrder;
-	GameListLayout.Parent = GameList;
-	GameListPadding.PaddingTop = UDim.new(0, 4)
-	GameListPadding.PaddingBottom = UDim.new(0, 10)
-	GameListPadding.Parent = GameList;
-	EmptyStateLabel.Name = "EmptyState"
-	EmptyStateLabel.BackgroundTransparency = 1;
-	EmptyStateLabel.Position = UDim2.new(0.5, 0, 0.5, 0)
-	EmptyStateLabel.AnchorPoint = Vector2.new(0.5, 0.5)
-	EmptyStateLabel.Size = UDim2.new(0, 260, 0, 50)
-	EmptyStateLabel.Font = config.Font;
-	EmptyStateLabel.Text = "No games found. Try adjusting your search or category."
-	EmptyStateLabel.TextColor3 = config.SecondaryTextColor;
-	EmptyStateLabel.TextSize = 14;
-	EmptyStateLabel.TextWrapped = true;
-	EmptyStateLabel.Visible = false;
-	EmptyStateLabel.TextTransparency = 1;
-	EmptyStateLabel.ZIndex = 12;
-	EmptyStateLabel.Parent = GameList;
-	LoadingIndicator.Name = "LoadingIndicator"
-	LoadingIndicator.BackgroundTransparency = 1;
-	LoadingIndicator.Position = UDim2.new(0.5, 0, 0.25, 0)
-	LoadingIndicator.AnchorPoint = Vector2.new(0.5, 0.5)
-	LoadingIndicator.Size = UDim2.new(0, 40, 0, 40)
-	LoadingIndicator.Visible = false;
-	LoadingIndicator.ZIndex = 12;
-	LoadingIndicator.Parent = MainFrame;
-	for i = 1, 3 do
-		local dot = Instance.new("Frame")
-		dot.Name = "LoadingDot" .. i;
-		dot.BackgroundColor3 = config.AccentColor;
-		dot.Position = UDim2.new(0.5, 0, 0.5, 0)
-		dot.AnchorPoint = Vector2.new(0.5, 0.5)
-		dot.Size = UDim2.new(0, 6, 0, 6)
-		dot.ZIndex = 13;
-		dot.Parent = LoadingIndicator;
-		local dotCorner = Instance.new("UICorner")
-		dotCorner.CornerRadius = UDim.new(1, 0)
-		dotCorner.Parent = dot
-	end;
-	pcall(function()
-		ScreenGui.Parent = game:GetService("CoreGui")
-	end)
-	if not ScreenGui.Parent then
-		ScreenGui.Parent = game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui")
-	end;
-	local categories = {
-		"All",
-		"Popular",
-		"Recent"
-	}
-	local selectedCategory = "All"
-	local categoryButtons = {}
-	for i, catName in ipairs(categories) do
-		local CategoryButton = Instance.new("TextButton")
-		local CategoryButtonCorner = Instance.new("UICorner")
-		CategoryButton.Name = "Category_" .. catName;
-		CategoryButton.BackgroundColor3 = (catName == selectedCategory) and config.AccentColor or config.SecondaryColor;
-		CategoryButton.BackgroundTransparency = 1;
-		CategoryButton.Size = UDim2.new(0, 0, 1, 0)
-		CategoryButton.AutomaticSize = Enum.AutomaticSize.X;
-		CategoryButton.Font = config.BodyFont;
-		CategoryButton.Text = " " .. catName .. " "
-		CategoryButton.TextColor3 = config.TextColor;
-		CategoryButton.TextSize = config.BodyTextSize;
-		CategoryButton.TextTransparency = 1;
-		CategoryButton.AutoButtonColor = false;
-		CategoryButton.ZIndex = 12;
-		CategoryButton.Parent = CategoryContainer;
-		CategoryButtonCorner.CornerRadius = config.ButtonCornerRadius;
-		CategoryButtonCorner.Parent = CategoryButton;
-		CategoryButton.MouseEnter:Connect(function()
-			if catName ~= selectedCategory then
-				smoothTween(CategoryButton, config.AnimationSpeedFast, {
-					BackgroundColor3 = Color3.fromRGB(45, 55, 75),
-					BackgroundTransparency = 0.75,
-					Size = UDim2.new(0, CategoryButton.AbsoluteSize.X * config.HoverScale, 1, 0)
-				})
-			end
-		end)
-		CategoryButton.MouseLeave:Connect(function()
-			if catName ~= selectedCategory then
-				smoothTween(CategoryButton, config.AnimationSpeedFast, {
-					BackgroundColor3 = config.SecondaryColor,
-					BackgroundTransparency = config.ElementTransparency,
-					Size = UDim2.new(0, 0, 1, 0)
-				})
-			end
-		end)
-		CategoryButton.MouseButton1Click:Connect(function()
-			if catName ~= selectedCategory then
-				LoadingIndicator.Visible = true;
-				animateLoading(LoadingIndicator)
-				for _, btn in pairs(categoryButtons) do
-					if btn.Name == "Category_" .. selectedCategory then
-						smoothTween(btn, config.AnimationSpeedFast, {
-							BackgroundColor3 = config.SecondaryColor,
-							BackgroundTransparency = config.ElementTransparency
-						})
-					end
-				end;
-				smoothTween(CategoryButton, config.AnimationSpeedFast, {
-					BackgroundColor3 = config.AccentColor,
-					BackgroundTransparency = 0,
-					Size = UDim2.new(0, 0, 1, 0)
-				})
-				selectedCategory = catName;
-				local visibleCount = 0;
-				for _, child in pairs(GameList:GetChildren()) do
-					if child:IsA("Frame") and child.Name:sub(1, 9) == "GameItem_" then
-						local gameCategory = child:GetAttribute("Category") or "All"
-						local shouldBeVisible = (selectedCategory == "All" or gameCategory == selectedCategory)
-						local searchText = string.lower(SearchInput.Text)
-						if searchText ~= "" then
-							local gameName = child.Name:sub(10)
-							shouldBeVisible = shouldBeVisible and string.find(string.lower(gameName), searchText)
-						end;
-						if shouldBeVisible then
-							visibleCount = visibleCount + 1;
-							child.Visible = true;
-							if child.BackgroundTransparency > config.ElementTransparency then
-								smoothTween(child, 0.2, {
-									BackgroundTransparency = config.ElementTransparency
-								})
-							end
-						else
-							smoothTween(child, 0.2, {
-								BackgroundTransparency = 1
-							}, function()
-								child.Visible = false
-							end)
-						end
-					end
-				end;
-				EmptyStateLabel.Visible = (visibleCount == 0)
-				task.delay(0.3, function()
-					if LoadingIndicator and LoadingIndicator.Parent then
-						LoadingIndicator.Visible = false
-					end
-				end)
-			end
-		end)
-		table.insert(categoryButtons, CategoryButton)
-	end;
-	CloseButton.MouseEnter:Connect(function()
-		smoothTween(CloseButton, config.AnimationSpeedFast, {
-			BackgroundColor3 = Color3.fromRGB(222, 87, 87),
-			Size = UDim2.new(0, 18, 0, 18)
-		})
-	end)
-	CloseButton.MouseLeave:Connect(function()
-		smoothTween(CloseButton, config.AnimationSpeedFast, {
-			BackgroundColor3 = Color3.fromRGB(192, 57, 57),
-			Size = UDim2.new(0, 16, 0, 16)
-		})
-	end)
-	CloseButton.MouseButton1Click:Connect(function()
-		smoothTween(BlurEffect, 0.6, {
-			Size = 0
-		})
-		smoothTween(Background, 0.6, {
-			BackgroundTransparency = 1
-		})
-		if MainFrame and MainFrame.Parent then
-			for _, child in pairs(MainFrame:GetChildren()) do
-				if child and child:IsA("GuiObject") and child ~= MainFrame and child.Name ~= "Shadow" then
-					if child.ClassName == "TextLabel" or child.ClassName == "TextButton" or child.ClassName == "TextBox" then
-						smoothTween(child, 0.4, {
-							TextTransparency = 1
-						})
-					elseif child.ClassName == "ImageLabel" then
-						smoothTween(child, 0.4, {
-							ImageTransparency = 1
-						})
-					end;
-					if child.BackgroundTransparency < 1 then
-						smoothTween(child, 0.4, {
-							BackgroundTransparency = 1
-						})
-					end;
-					if child.Name == "PlayerInfo" then
-						for _, subChild in pairs(child:GetChildren()) do
-							if subChild and subChild:IsA("GuiObject") then
-								smoothTween(subChild, 0.3, {
-									BackgroundTransparency = 1,
-									TextTransparency = 1,
-									ImageTransparency = 1
-								})
-							end
-						end;
-						task.delay(0.5, function()
-							if child and child.Parent then
-								child:Destroy()
-							end
-						end)
-					end
-				end
-			end
-		end;
-		task.delay(0.4, function()
-			local closeTween = game:GetService("TweenService"):Create(MainFrame, TweenInfo.new(0.7, Enum.EasingStyle.Back, Enum.EasingDirection.In), {
-				Size = UDim2.new(0, 0, 0, 0),
-				Position = UDim2.new(0.5, 0, 0.5, 0)
-			})
-			smoothTween(MainShadow, 0.6, {
-				ImageTransparency = 1
-			})
-			closeTween:Play()
-			closeTween.Completed:Connect(function()
-				if ScreenGui and ScreenGui.Parent then
-					ScreenGui:Destroy()
-				end;
-				task.delay(0.1, function()
-					if BlurEffect and BlurEffect.Parent then
-						BlurEffect:Destroy()
-					end
-					
-					if Background and Background.Parent then
-						Background:Destroy()
-					end
-				end)
-			end)
-		end)
-	end)
-	function hub:AddGame(gameData)
-		local game = gameData or {}
-		local gameName = game.Name or "Unnamed Game"
-		local gameLastUpdate = game.LastUpdate or "Unknown"
-		local gameStatus = game.Status or "Unknown"
-		local gameThumbnail = game.Thumbnail or config.DefaultThumbnail;
-		local gameCallback = game.Callback or function()
-		end;
-		local gameCategory = game.Category or "All"
-		local GameItem = Instance.new("Frame")
-		local GameItemInner = Instance.new("Frame")
-		local GameCorner = Instance.new("UICorner")
-		local GameBorder = Instance.new("UIStroke")
-		local Thumbnail = Instance.new("ImageLabel")
-		local ThumbnailCorner = Instance.new("UICorner")
-		local GameName = Instance.new("TextLabel")
-		local StatusLabel = Instance.new("TextLabel")
-		local StatusIndicator = Instance.new("Frame")
-		local PlayButton = Instance.new("TextButton")
-		local PlayButtonCorner = Instance.new("UICorner")
-		GameItem.Name = "GameItem_" .. gameName;
-		GameItem.BackgroundColor3 = config.SecondaryColor;
-		GameItem.BackgroundTransparency = config.ElementTransparency;
-		GameItem.Size = UDim2.new(1, 0, 0, config.GameItemHeight)
-		GameItem.ClipsDescendants = true;
-		GameItem.Parent = GameList;
-		GameItem:SetAttribute("Category", gameCategory)
-		GameItem.ZIndex = 12;
-		GameItem.Visible = true;
-		GameCorner.CornerRadius = config.CornerRadius;
-		GameCorner.Parent = GameItem;
-		GameBorder.Color = config.BorderColor;
-		GameBorder.Thickness = 1;
-		GameBorder.Transparency = 1;
-		GameBorder.Parent = GameItem;
-		GameItemInner.Name = "Inner"
-		GameItemInner.BackgroundTransparency = 1;
-		GameItemInner.Size = UDim2.new(1, 0, 1, 0)
-		GameItemInner.Position = UDim2.new(0, 0, 0, 0)
-		GameItemInner.ZIndex = 13;
-		GameItemInner.Parent = GameItem;
-		Thumbnail.Name = "Thumbnail"
-		Thumbnail.BackgroundColor3 = Color3.fromRGB(15, 18, 25)
-		Thumbnail.Position = UDim2.new(0, 12, 0.5, 0)
-		Thumbnail.AnchorPoint = Vector2.new(0, 0.5)
-		Thumbnail.Size = UDim2.new(0, 45, 0, 45)
-		Thumbnail.Image = gameThumbnail;
-		Thumbnail.ImageTransparency = 0;
-		Thumbnail.ZIndex = 14;
-		Thumbnail.Parent = GameItemInner;
-		ThumbnailCorner.CornerRadius = UDim.new(0, 4)
-		ThumbnailCorner.Parent = Thumbnail;
-		GameName.Name = "GameName"
-		GameName.BackgroundTransparency = 1;
-		GameName.Position = UDim2.new(0, 68, 0, 11)
-		GameName.Size = UDim2.new(1, -155, 0, 18)
-		GameName.Font = config.Font;
-		GameName.Text = gameName;
-		GameName.TextColor3 = config.TextColor;
-		GameName.TextSize = config.SubheadingSize;
-		GameName.TextXAlignment = Enum.TextXAlignment.Left;
-		GameName.TextTransparency = 0;
-		GameName.ZIndex = 14;
-		GameName.Parent = GameItemInner;
-		local statusColor = config.StatusColors[gameStatus] or Color3.fromRGB(150, 150, 150)
-		StatusIndicator.Name = "StatusIndicator"
-		StatusIndicator.BackgroundColor3 = statusColor;
-		StatusIndicator.BackgroundTransparency = 0;
-		StatusIndicator.Position = UDim2.new(0, 68, 0, GameName.Position.Y.Offset + GameName.Size.Y.Offset + 7)
-		StatusIndicator.Size = UDim2.new(0, 6, 0, 6)
-		StatusIndicator.ZIndex = 14;
-		StatusIndicator.Parent = GameItemInner;
-		local StatusIndicatorCorner = Instance.new("UICorner")
-		StatusIndicatorCorner.CornerRadius = UDim.new(1, 0)
-		StatusIndicatorCorner.Parent = StatusIndicator;
-		StatusLabel.Name = "StatusLabel"
-		StatusLabel.BackgroundTransparency = 1;
-		StatusLabel.Position = UDim2.new(0, 80, 0, StatusIndicator.Position.Y.Offset - 3)
-		StatusLabel.Size = UDim2.new(0, 150, 0, 12)
-		StatusLabel.Font = config.BodyFont;
-		StatusLabel.Text = gameStatus .. " • " .. gameLastUpdate;
-		StatusLabel.TextColor3 = config.SecondaryTextColor;
-		StatusLabel.TextSize = config.SmallTextSize;
-		StatusLabel.TextXAlignment = Enum.TextXAlignment.Left;
-		StatusLabel.TextTransparency = 0;
-		StatusLabel.ZIndex = 14;
-		StatusLabel.Parent = GameItemInner;
-		PlayButton.Name = "PlayButton"
-		PlayButton.BackgroundColor3 = config.AccentColor;
-		PlayButton.BackgroundTransparency = 0;
-		PlayButton.Position = UDim2.new(1, -70, 0.5, 0)
-		PlayButton.AnchorPoint = Vector2.new(0, 0.5)
-		PlayButton.Size = UDim2.new(0, 58, 0, 30)
-		PlayButton.AutoButtonColor = false;
-		PlayButton.Font = config.ButtonFont;
-		PlayButton.Text = "PLAY"
-		PlayButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-		PlayButton.TextSize = 13;
-		PlayButton.TextTransparency = 0;
-		PlayButton.ZIndex = 14;
-		PlayButton.Parent = GameItemInner;
-		PlayButtonCorner.CornerRadius = UDim.new(0, 5)
-		PlayButtonCorner.Parent = PlayButton;
-		local playShadow = createShadow(PlayButton, 0.8)
-		playShadow.ImageTransparency = 1;
-		GameItem.MouseEnter:Connect(function()
-			smoothTween(GameItem, config.AnimationSpeedFast, {
-				BackgroundTransparency = config.HoverTransparency
-			})
-			smoothTween(GameBorder, config.AnimationSpeedFast, {
-				Color = config.AccentColor,
-				Transparency = 0.7
-			})
-		end)
-		GameItem.MouseLeave:Connect(function()
-			smoothTween(GameItem, config.AnimationSpeedFast, {
-				BackgroundTransparency = config.ElementTransparency
-			})
-			smoothTween(GameBorder, config.AnimationSpeedFast, {
-				Color = config.BorderColor,
-				Transparency = 0
-			})
-		end)
-		PlayButton.MouseEnter:Connect(function()
-			smoothTween(PlayButton, config.AnimationSpeedFast, {
-				BackgroundColor3 = config.AccentColorHover,
-				Size = UDim2.new(0, 60, 0, 32)
-			})
-		end)
-		PlayButton.MouseLeave:Connect(function()
-			smoothTween(PlayButton, config.AnimationSpeedFast, {
-				BackgroundColor3 = config.AccentColor,
-				Size = UDim2.new(0, 58, 0, 30)
-			})
-		end)
-		PlayButton.MouseButton1Down:Connect(function()
-			smoothTween(PlayButton, 0.1, {
-				Size = UDim2.new(0, 56, 0, 28),
-				BackgroundColor3 = config.AccentColorActive
-			})
-		end)
-		PlayButton.MouseButton1Up:Connect(function()
-			smoothTween(PlayButton, 0.1, {
-				Size = UDim2.new(0, 58, 0, 30),
-				BackgroundColor3 = config.AccentColorHover
-			})
-		end)
-		PlayButton.MouseButton1Click:Connect(function()
-			PlayButton.Text = ""
-			local loadingContainer = Instance.new("Frame")
-			loadingContainer.Name = "LoadingContainer"
-			loadingContainer.BackgroundTransparency = 1;
-			loadingContainer.Size = UDim2.new(1, 0, 1, 0)
-			loadingContainer.ZIndex = 20;
-			loadingContainer.Parent = PlayButton;
-			local dots = {}
-			for i = 1, 3 do
-				local dot = Instance.new("Frame")
-				dot.Name = "LoadingDot" .. i;
-				dot.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-				dot.Position = UDim2.new(0.5, -10 + (i - 1) * 10, 0.5, 0)
-				dot.AnchorPoint = Vector2.new(0.5, 0.5)
-				dot.Size = UDim2.new(0, 5, 0, 5)
-				dot.ZIndex = 21;
-				local dotCorner = Instance.new("UICorner")
-				dotCorner.CornerRadius = UDim.new(1, 0)
-				dotCorner.Parent = dot;
-				dot.Parent = loadingContainer;
-				table.insert(dots, dot)
-			end;
-			task.spawn(function()
-				local startTime = tick()
-				while loadingContainer.Parent do
-					for i, dot in ipairs(dots) do
-						local offset = (i - 1) * 0.33;
-						local scaleWave = 0.7 + 0.6 * math.abs(math.sin((tick() - startTime) * 3 + offset * math.pi * 2))
-						smoothTween(dot, 0.1, {
-							Size = UDim2.new(0, 5 * scaleWave, 0, 5 * scaleWave),
-							BackgroundTransparency = 0.2 * (1 - scaleWave)
-						})
-					end;
-					task.wait(0.05)
-				end
-			end)
-			local callbackSuccess = false;
-			local callbackThread = task.spawn(function()
-				gameCallback()
-				callbackSuccess = true
-			end)
-			task.delay(0.8, function()
-				if loadingContainer.Parent then
-					loadingContainer:Destroy()
-				end;
-				PlayButton.Text = "PLAY"
-				if not callbackSuccess then
-					task.delay(5, function()
-						if not callbackSuccess then
-							hub:ShowNotification("Script execution in progress...", 3, "Info")
-						end
-					end)
-					task.delay(15, function()
-						if not callbackSuccess then
-							hub:ShowNotification("Script execution taking longer than expected", 3, "Warning")
-						end
-					end)
-				end
-			end)
-		end)
-		local function updateVisibility(gameItem, gameName, gameCategory)
-			if not gameItem or not gameItem.Parent then
-				return
-			end;
-			local searchText = string.lower(SearchInput.Text or "")
-			local shouldBeVisible = (selectedCategory == "All" or gameCategory == selectedCategory)
-			if searchText ~= "" then
-				local gameNameLower = string.lower(gameName or "")
-				shouldBeVisible = shouldBeVisible and string.find(gameNameLower, searchText, 1, true) ~= nil
-			end;
-			gameItem.Visible = shouldBeVisible;
-			return shouldBeVisible
-		end;
-		if selectedCategory == "All" or gameCategory == selectedCategory then
-			GameItem.Visible = true
-		else
-			GameItem.Visible = false
-		end;
-		return GameItem
-	end;
-	function hub:AddCategory(categoryName)
-		for _, btn in pairs(categoryButtons) do
-			if btn.Name == "Category_" .. categoryName then
-				return
-			end
-		end;
-		local CategoryButton = Instance.new("TextButton")
-		local CategoryButtonCorner = Instance.new("UICorner")
-		CategoryButton.Name = "Category_" .. categoryName;
-		CategoryButton.BackgroundColor3 = config.SecondaryColor;
-		CategoryButton.BackgroundTransparency = 1;
-		CategoryButton.Size = UDim2.new(0, 0, 1, 0)
-		CategoryButton.AutomaticSize = Enum.AutomaticSize.X;
-		CategoryButton.Font = config.BodyFont;
-		CategoryButton.Text = " " .. categoryName .. " "
-		CategoryButton.TextColor3 = config.TextColor;
-		CategoryButton.TextSize = config.BodyTextSize;
-		CategoryButton.TextTransparency = 1;
-		CategoryButton.AutoButtonColor = false;
-		CategoryButton.ZIndex = 12;
-		CategoryButton.Parent = CategoryContainer;
-		CategoryButtonCorner.CornerRadius = config.ButtonCornerRadius;
-		CategoryButtonCorner.Parent = CategoryButton;
-		CategoryButton.MouseEnter:Connect(function()
-			if categoryName ~= selectedCategory then
-				smoothTween(CategoryButton, config.AnimationSpeedFast, {
-					BackgroundColor3 = Color3.fromRGB(45, 55, 75),
-					BackgroundTransparency = 0.75,
-					Size = UDim2.new(0, CategoryButton.AbsoluteSize.X * config.HoverScale, 1, 0)
-				})
-			end
-		end)
-		CategoryButton.MouseLeave:Connect(function()
-			if categoryName ~= selectedCategory then
-				smoothTween(CategoryButton, config.AnimationSpeedFast, {
-					BackgroundColor3 = config.SecondaryColor,
-					BackgroundTransparency = config.ElementTransparency,
-					Size = UDim2.new(0, 0, 1, 0)
-				})
-			end
-		end)
-		CategoryButton.MouseButton1Click:Connect(function()
-			if categoryName ~= selectedCategory then
-				LoadingIndicator.Visible = true;
-				animateLoading(LoadingIndicator)
-				for _, btn in pairs(categoryButtons) do
-					if btn.Name == "Category_" .. selectedCategory then
-						smoothTween(btn, config.AnimationSpeedFast, {
-							BackgroundColor3 = config.SecondaryColor,
-							BackgroundTransparency = config.ElementTransparency
-						})
-					end
-				end;
-				smoothTween(CategoryButton, config.AnimationSpeedFast, {
-					BackgroundColor3 = config.AccentColor,
-					BackgroundTransparency = 0,
-					Size = UDim2.new(0, 0, 1, 0)
-				})
-				selectedCategory = categoryName;
-				local visibleCount = 0;
-				for _, child in pairs(GameList:GetChildren()) do
-					if child:IsA("Frame") and child.Name:sub(1, 9) == "GameItem_" then
-						local gameCategory = child:GetAttribute("Category") or "All"
-						local shouldBeVisible = (selectedCategory == "All" or gameCategory == selectedCategory)
-						local searchText = string.lower(SearchInput.Text)
-						if searchText ~= "" then
-							local gameName = child.Name:sub(10)
-							shouldBeVisible = shouldBeVisible and string.find(string.lower(gameName), searchText)
-						end;
-						if shouldBeVisible then
-							visibleCount = visibleCount + 1;
-							child.Visible = true;
-							if child.BackgroundTransparency > config.ElementTransparency then
-								smoothTween(child, 0.2, {
-									BackgroundTransparency = config.ElementTransparency
-								})
-							end
-						else
-							smoothTween(child, 0.2, {
-								BackgroundTransparency = 1
-							}, function()
-								child.Visible = false
-							end)
-						end
-					end
-				end;
-				EmptyStateLabel.Visible = (visibleCount == 0)
-				task.delay(0.3, function()
-					if LoadingIndicator and LoadingIndicator.Parent then
-						LoadingIndicator.Visible = false
-					end
-				end)
-			end
-		end)
-		task.delay(0.1, function()
-			smoothTween(CategoryButton, 0.4, {
-				BackgroundTransparency = (categoryName == selectedCategory) and 0 or config.ElementTransparency,
-				TextTransparency = 0
-			})
-		end)
-		table.insert(categoryButtons, CategoryButton)
-		return CategoryButton
-	end;
-	function hub:SetTitle(titleText)
-		local oldText = Title.Text;
-		smoothTween(Title, 0.2, {
-			TextTransparency = 1
-		}, function()
-			Title.Text = titleText;
-			smoothTween(Title, 0.2, {
-				TextTransparency = 0
-			})
-		end)
-	end;
-	function hub:ShowNotification(message, duration, notificationType)
-		duration = duration or 3;
-		notificationType = notificationType or "Info"
-		local notification = Instance.new("Frame")
-		local notificationCorner = Instance.new("UICorner")
-		local notificationBorder = Instance.new("UIStroke")
-		local notificationIcon = Instance.new("ImageLabel")
-		local notificationText = Instance.new("TextLabel")
-		local closeButton = Instance.new("TextButton")
-		notification.Name = "Notification"
-		notification.BackgroundColor3 = config.MainColor;
-		notification.BackgroundTransparency = 0.1;
-		notification.Position = UDim2.new(0.5, 0, 0, -40)
-		notification.AnchorPoint = Vector2.new(0.5, 0)
-		notification.Size = UDim2.new(0, 0, 0, 36)
-		notification.AutomaticSize = Enum.AutomaticSize.X;
-		notification.ZIndex = 100;
-		notification.Parent = ScreenGui;
-		local notifShadow = createShadow(notification, 0.8)
-		notifShadow.ImageTransparency = 1;
-		notificationCorner.CornerRadius = UDim.new(0, 4)
-		notificationCorner.Parent = notification;
-		local borderColor = config.AccentColor;
-		if notificationType == "Success" then
-			borderColor = config.StatusColors.Working
-		elseif notificationType == "Warning" then
-			borderColor = config.StatusColors.Testing
-		elseif notificationType == "Error" then
-			borderColor = config.StatusColors.Patched
-		end;
-		notificationBorder.Color = borderColor;
-		notificationBorder.Thickness = 1;
-		notificationBorder.Parent = notification;
-		notificationIcon.Name = "Icon"
-		notificationIcon.BackgroundTransparency = 1;
-		notificationIcon.Position = UDim2.new(0, 10, 0.5, 0)
-		notificationIcon.AnchorPoint = Vector2.new(0, 0.5)
-		notificationIcon.Size = UDim2.new(0, 14, 0, 14)
-		notificationIcon.ImageTransparency = 1;
-		notificationIcon.ZIndex = 101;
-		if notificationType == "Success" then
-			notificationIcon.Image = "rbxassetid://3926305904"
-			notificationIcon.ImageRectOffset = Vector2.new(184, 484)
-			notificationIcon.ImageRectSize = Vector2.new(36, 36)
-			notificationIcon.ImageColor3 = config.StatusColors.Working
-		elseif notificationType == "Warning" then
-			notificationIcon.Image = "rbxassetid://3926305904"
-			notificationIcon.ImageRectOffset = Vector2.new(364, 324)
-			notificationIcon.ImageRectSize = Vector2.new(36, 36)
-			notificationIcon.ImageColor3 = config.StatusColors.Testing
-		elseif notificationType == "Error" then
-			notificationIcon.Image = "rbxassetid://3926305904"
-			notificationIcon.ImageRectOffset = Vector2.new(924, 724)
-			notificationIcon.ImageRectSize = Vector2.new(36, 36)
-			notificationIcon.ImageColor3 = config.StatusColors.Patched
-		else
-			notificationIcon.Image = "rbxassetid://3926305904"
-			notificationIcon.ImageRectOffset = Vector2.new(124, 924)
-			notificationIcon.ImageRectSize = Vector2.new(36, 36)
-			notificationIcon.ImageColor3 = config.AccentColor
-		end;
-		notificationIcon.Parent = notification;
-		notificationText.Name = "NotificationText"
-		notificationText.BackgroundTransparency = 1;
-		notificationText.Position = UDim2.new(0, 30, 0, 0)
-		notificationText.Size = UDim2.new(0, 0, 1, 0)
-		notificationText.AutomaticSize = Enum.AutomaticSize.X;
-		notificationText.Font = config.BodyFont;
-		notificationText.Text = message;
-		notificationText.TextColor3 = config.TextColor;
-		notificationText.TextSize = 13;
-		notificationText.TextTransparency = 1;
-		notificationText.ZIndex = 101;
-		notificationText.Parent = notification;
-		closeButton.Name = "CloseButton"
-		closeButton.BackgroundTransparency = 1;
-		closeButton.Position = UDim2.new(1, -16, 0.5, 0)
-		closeButton.AnchorPoint = Vector2.new(0.5, 0.5)
-		closeButton.Size = UDim2.new(0, 16, 0, 16)
-		closeButton.Font = config.HeadingFont;
-		closeButton.Text = "×"
-		closeButton.TextColor3 = config.SecondaryTextColor;
-		closeButton.TextTransparency = 1;
-		closeButton.TextSize = 18;
-		closeButton.ZIndex = 101;
-		closeButton.Parent = notification;
-		local function showNotification()
-			notification.Size = UDim2.new(0, notificationText.TextBounds.X + 60, 0, 36)
-			notification.BackgroundTransparency = 1;
-			local sizeTween = game:GetService("TweenService"):Create(notification, TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
-				Position = UDim2.new(0.5, 0, 0, 15),
-				BackgroundTransparency = 0.1
-			})
-			sizeTween:Play()
-			smoothTween(notifShadow, 0.4, {
-				ImageTransparency = 0.5
-			})
-			smoothTween(notificationIcon, 0.3, {
-				ImageTransparency = 0
-			})
-			smoothTween(notificationText, 0.3, {
-				TextTransparency = 0
-			})
-			smoothTween(closeButton, 0.3, {
-				TextTransparency = 0
-			})
-		end;
-		function dismissNotification()
-			local hideTween = game:GetService("TweenService"):Create(notification, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.In), {
-				Position = UDim2.new(0.5, 0, 0, -40),
-				BackgroundTransparency = 1
-			})
-			hideTween:Play()
-			smoothTween(notifShadow, 0.3, {
-				ImageTransparency = 1
-			})
-			smoothTween(notificationIcon, 0.2, {
-				ImageTransparency = 1
-			})
-			smoothTween(notificationText, 0.2, {
-				TextTransparency = 1
-			})
-			smoothTween(closeButton, 0.2, {
-				TextTransparency = 1
-			})
-			hideTween.Completed:Connect(function()
-				notification:Destroy()
-			end)
-		end;
-		closeButton.MouseButton1Click:Connect(function()
-			dismissNotification()
-		end)
-		closeButton.MouseEnter:Connect(function()
-			smoothTween(closeButton, 0.1, {
-				TextColor3 = Color3.fromRGB(255, 255, 255)
-			})
-		end)
-		closeButton.MouseLeave:Connect(function()
-			smoothTween(closeButton, 0.1, {
-				TextColor3 = config.SecondaryTextColor
-			})
-		end)
-		showNotification()
-		task.delay(duration, function()
-			if notification.Parent then
-				dismissNotification()
-			end
-		end)
-		return notification
-	end;
-	smoothTween(BlurEffect, 0.3, {
-		Size = 10
-	})
-	smoothTween(Background, 0.3, {
-		BackgroundTransparency = 0.4
-	})
-	task.delay(0.1, function()
-		local sizeTween = game:GetService("TweenService"):Create(MainFrame, TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
-			Size = UDim2.new(0, config.Width, 0, config.Height)
-		})
-		sizeTween:Play()
-		smoothTween(MainBorder, 0.5, {
-			Transparency = 0
-		})
-		smoothTween(MainShadow, 0.5, {
-			ImageTransparency = 0.5
-		})
-		task.delay(0.2, function()
-			smoothTween(Title, 0.3, {
-				TextTransparency = 0
-			})
-			smoothTween(CloseButton, 0.3, {
-				TextTransparency = 0,
-				BackgroundTransparency = 0
-			})
-			task.delay(0.05, function()
-				smoothTween(SearchBar, 0.3, {
-					BackgroundTransparency = config.ElementTransparency
-				})
-				smoothTween(SearchBorder, 0.3, {
-					Transparency = 0
-				})
-				smoothTween(SearchIcon, 0.3, {
-					ImageTransparency = 0
-				})
-				smoothTween(SearchInput, 0.3, {
-					TextTransparency = 0
-				})
-			end)
-			task.delay(0.1, function()
-				for i, button in ipairs(categoryButtons) do
-					task.delay((i - 1) * 0.05, function()
-						smoothTween(button, 0.3, {
-							BackgroundTransparency = (button.Name == "Category_" .. selectedCategory) and 0 or config.ElementTransparency,
-							TextTransparency = 0
-						})
-					end)
-				end
-			end)
-		end)
-	end)
-	hub.AddGame = hub.AddGame;
-	hub.AddCategory = hub.AddCategory;
-	hub.SetTitle = hub.SetTitle;
-	hub.ShowNotification = hub.ShowNotification;
-	return hub
-end;
-function UILibrary.ShowExample()
-	local myHub = UILibrary.CreateHub()
-	myHub:AddCategory("Combat")
-	myHub:AddCategory("Movement")
-	myHub:AddCategory("Visual")
-	myHub:AddCategory("Utility")
-	myHub:AddGame({
-		Name = "Aimbot",
-		LastUpdate = "Today",
-		Status = "Working",
-		Category = "Combat",
-		Callback = function()
-			myHub:ShowNotification("Loading Aimbot script...", 2, "Info")
-			task.wait(1)
-			myHub:ShowNotification("Aimbot loaded successfully!", 3, "Success")
-		end
-	})
-	myHub:AddGame({
-		Name = "ESP",
-		LastUpdate = "Yesterday",
-		Status = "Updated",
-		Category = "Visual",
-		Callback = function()
-			myHub:ShowNotification("Loading ESP script...", 2, "Info")
-			task.wait(1.5)
-			myHub:ShowNotification("ESP loaded successfully!", 3, "Success")
-		end
-	})
-	myHub:AddGame({
-		Name = "Speed Hack",
-		LastUpdate = "2 days ago",
-		Status = "Testing",
-		Category = "Movement",
-		Callback = function()
-			myHub:ShowNotification("Loading Speed Hack script...", 2, "Info")
-			task.wait(1)
-			myHub:ShowNotification("Speed Hack is still being tested!", 3, "Warning")
-		end
-	})
-	myHub:AddGame({
-		Name = "Auto Farm",
-		LastUpdate = "1 week ago",
-		Status = "Patched",
-		Category = "Utility",
-		Callback = function()
-			myHub:ShowNotification("This script has been patched!", 3, "Error")
-		end
-	})
-	task.delay(0.8, function()
-		myHub:ShowNotification("Welcome to Lomu Hub!", 3, "Success")
-	end)
-	return myHub
-end;
-function UILibrary:CreateStartMenu(options)
-	local startMenu = {}
-	options = options or {}
-	
-	-- Konfigurasi default
-	local logoText = options.LogoText or "Lomu Hub"
-	local description = options.Description or "Powerful script hub for all your needs"
-	local accentColor = options.AccentColor or config.AccentColor
-	local buttonCallback = options.ButtonCallback or function() end
-	local universalCallback = options.UniversalButtonCallback or function() end
-	local customPlayerName = options.CustomPlayerName
-	
-	-- Membuat efek blur
-	local BlurEffect = Instance.new("BlurEffect")
-	BlurEffect.Size = 0
-	BlurEffect.Parent = game:GetService("Lighting")
-	
-	-- Membuat UI dasar
-	local ScreenGui = Instance.new("ScreenGui")
-	local Background = Instance.new("Frame")
-	local StartMenuFrame = Instance.new("Frame")
-	local StartMenuCorner = Instance.new("UICorner")
-	local StartMenuBorder = Instance.new("UIStroke")
-	
-	-- Membuat komponen utama
-	local PlayerInfo = Instance.new("Frame")
-	local PlayerAvatar = Instance.new("ImageLabel")
-	local PlayerAvatarCorner = Instance.new("UICorner")
-	local PlayerName = Instance.new("TextLabel")
-	local ButtonLoadHub = Instance.new("TextButton")
-	local ButtonLoadHubCorner = Instance.new("UICorner")
-	local UniversalButton = Instance.new("TextButton")
-	local UniversalButtonCorner = Instance.new("UICorner")
-	
-	-- Konfigurasi ScreenGui
-	ScreenGui.Name = "LomuStartMenu"
-	ScreenGui.ResetOnSpawn = false
-	ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-	ScreenGui.IgnoreGuiInset = true
-	ScreenGui.DisplayOrder = 100
-	
-	-- Hapus instance lama jika ada
-	for _, instance in pairs(game:GetService("CoreGui"):GetChildren()) do
-		if instance.Name == "LomuStartMenu" then
-			instance:Destroy()
-		end
-	end
-	
-	pcall(function()
-		for _, instance in pairs(game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui"):GetChildren()) do
-			if instance.Name == "LomuStartMenu" then
-				instance:Destroy()
-			end
-		end
-	end)
-	
-	-- Background untuk blur
-	Background.Name = "Background"
-	Background.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-	Background.BackgroundTransparency = 1
-	Background.Size = UDim2.new(1, 0, 1, 0)
-	Background.ZIndex = 5
-	Background.Parent = ScreenGui
-	
-	-- Start Menu Frame (layout horizontal)
-	StartMenuFrame.Name = "StartMenuFrame"
-	StartMenuFrame.BackgroundColor3 = config.MainColor
-	StartMenuFrame.BorderSizePixel = 0
-	StartMenuFrame.Position = UDim2.new(0.5, 0, 1.1, 0) -- Posisi awal di bawah layar
-	StartMenuFrame.AnchorPoint = Vector2.new(0.5, 0)
-	StartMenuFrame.Size = UDim2.new(0, 600, 0, 70) -- Ukuran horizontal sesuai gambar
-	StartMenuFrame.ZIndex = 10
-	StartMenuFrame.Parent = ScreenGui
-	
-	-- Bayangan untuk Start Menu
-	local StartMenuShadow = createShadow(StartMenuFrame)
-	StartMenuShadow.ImageTransparency = 1
-	
-	-- Sudut dan Stroke untuk Start Menu
-	StartMenuCorner.CornerRadius = UDim.new(0, 6)
-	StartMenuCorner.Parent = StartMenuFrame
-	
-	StartMenuBorder.Color = config.BorderColor
-	StartMenuBorder.Thickness = 1
-	StartMenuBorder.Transparency = 1
-	StartMenuBorder.Parent = StartMenuFrame
-	
-	-- Player Info Section (kiri)
-	PlayerInfo.Name = "PlayerInfo"
-	PlayerInfo.BackgroundTransparency = 1
-	PlayerInfo.Position = UDim2.new(0, 10, 0.5, 0)
-	PlayerInfo.Size = UDim2.new(0, 180, 0, 60)
-	PlayerInfo.AnchorPoint = Vector2.new(0, 0.5)
-	PlayerInfo.ZIndex = 11
-	PlayerInfo.Parent = StartMenuFrame
-	
-	-- Avatar Player
-	PlayerAvatar.Name = "PlayerAvatar"
-	PlayerAvatar.BackgroundTransparency = 0.5
-	PlayerAvatar.BackgroundColor3 = Color3.fromRGB(30, 35, 45)
-	PlayerAvatar.Position = UDim2.new(0, 0, 0.5, 0)
-	PlayerAvatar.AnchorPoint = Vector2.new(0, 0.5)
-	PlayerAvatar.Size = UDim2.new(0, 48, 0, 48)
-	PlayerAvatar.ImageTransparency = 1
-	PlayerAvatar.ZIndex = 12
-	PlayerAvatar.Parent = PlayerInfo
-	
-	PlayerAvatarCorner.CornerRadius = UDim.new(1, 0)
-	PlayerAvatarCorner.Parent = PlayerAvatar
-	
-	-- Nama Player
-	PlayerName.Name = "PlayerName"
-	PlayerName.BackgroundTransparency = 1
-	PlayerName.Position = UDim2.new(0, 58, 0.5, 0)
-	PlayerName.Size = UDim2.new(0, 120, 0, 40)
-	PlayerName.AnchorPoint = Vector2.new(0, 0.5)
-	PlayerName.Font = config.Font
-	PlayerName.TextColor3 = config.HeadingColor
-	PlayerName.TextSize = 16
-	PlayerName.TextXAlignment = Enum.TextXAlignment.Left
-	PlayerName.TextTransparency = 1
-	PlayerName.ZIndex = 12
-	PlayerName.Parent = PlayerInfo
-	
-	-- Load Game Hub Button
-	ButtonLoadHub.Name = "ButtonLoadHub"
-	ButtonLoadHub.BackgroundColor3 = accentColor
-	ButtonLoadHub.Position = UDim2.new(0.5, 0, 0.5, 0)
-	ButtonLoadHub.Size = UDim2.new(0, 180, 0, 40)
-	ButtonLoadHub.Font = config.ButtonFont
-	ButtonLoadHub.Text = "Button Load Lomu Hub"
-	ButtonLoadHub.TextColor3 = Color3.fromRGB(255, 255, 255)
-	ButtonLoadHub.TextSize = 14
-	ButtonLoadHub.AutoButtonColor = false
-	ButtonLoadHub.BackgroundTransparency = 1
-	ButtonLoadHub.TextTransparency = 1
-	ButtonLoadHub.ZIndex = 11
-	ButtonLoadHub.AnchorPoint = Vector2.new(0.5, 0.5)
-	ButtonLoadHub.Parent = StartMenuFrame
-	
-	ButtonLoadHubCorner.CornerRadius = UDim.new(0, 5)
-	ButtonLoadHubCorner.Parent = ButtonLoadHub
-	
-	-- Universal Button
-	UniversalButton.Name = "UniversalButton"
-	UniversalButton.BackgroundColor3 = Color3.fromRGB(60, 60, 70)
-	UniversalButton.Position = UDim2.new(0.82, 0, 0.5, 0)
-	UniversalButton.Size = UDim2.new(0, 180, 0, 40)
-	UniversalButton.Font = config.ButtonFont
-	UniversalButton.Text = "Button Load Universal Script"
-	UniversalButton.TextColor3 = Color3.fromRGB(220, 220, 230)
-	UniversalButton.TextSize = 14
-	UniversalButton.AutoButtonColor = false
-	UniversalButton.BackgroundTransparency = 1
-	UniversalButton.TextTransparency = 1
-	UniversalButton.ZIndex = 11
-	UniversalButton.AnchorPoint = Vector2.new(0.5, 0.5)
-	UniversalButton.Parent = StartMenuFrame
-	
-	UniversalButtonCorner.CornerRadius = UDim.new(0, 5)
-	UniversalButtonCorner.Parent = UniversalButton
-	
-	-- Ambil avatar dan nama player
-	local player = game:GetService("Players").LocalPlayer
-	pcall(function()
-		local userId = player.UserId
-		PlayerAvatar.Image = "https://www.roblox.com/headshot-thumbnail/image?userId=" .. userId .. "&width=420&height=420&format=png"
-	end)
-	
-	PlayerName.Text = customPlayerName or player.Name
-	
-	-- Tempatkan ScreenGui di CoreGui atau PlayerGui
-	pcall(function()
-		ScreenGui.Parent = game:GetService("CoreGui")
-	end)
-	
-	if not ScreenGui.Parent then
-		ScreenGui.Parent = game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui")
-	end
-	
-	-- Hover effect untuk button Load Hub
-	ButtonLoadHub.MouseEnter:Connect(function()
-		smoothTween(ButtonLoadHub, 0.2, {
-			BackgroundColor3 = config.AccentColorHover,
-			Size = UDim2.new(0, 185, 0, 42)
-		})
-	end)
-	
-	ButtonLoadHub.MouseLeave:Connect(function()
-		smoothTween(ButtonLoadHub, 0.2, {
-			BackgroundColor3 = accentColor,
-			Size = UDim2.new(0, 180, 0, 40)
-		})
-	end)
-	
-	-- Hover effect untuk button Universal
-	UniversalButton.MouseEnter:Connect(function()
-		smoothTween(UniversalButton, 0.2, {
-			BackgroundColor3 = Color3.fromRGB(80, 80, 90),
-			Size = UDim2.new(0, 185, 0, 42)
-		})
-	end)
-	
-	UniversalButton.MouseLeave:Connect(function()
-		smoothTween(UniversalButton, 0.2, {
-			BackgroundColor3 = Color3.fromRGB(60, 60, 70),
-			Size = UDim2.new(0, 180, 0, 40)
-		})
-	end)
-	
-	-- Flag untuk mencegah klik ganda
-	local isClosing = false
-	
-	-- Click handler untuk Load Hub button
-	ButtonLoadHub.MouseButton1Click:Connect(function()
-		if isClosing then
-			return
-		end
-		
-		isClosing = true
-		
-		-- Efek click
-		smoothTween(ButtonLoadHub, 0.1, {
-			Size = UDim2.new(0, 175, 0, 38),
-			BackgroundColor3 = config.AccentColorActive
-		})
-		
-		task.delay(0.1, function()
-			smoothTween(ButtonLoadHub, 0.1, {
-				Size = UDim2.new(0, 180, 0, 40),
-				BackgroundColor3 = accentColor
-			})
-			
-			-- Fade out semua elemen UI
-			smoothTween(PlayerAvatar, 0.3, {
-				ImageTransparency = 1,
-				BackgroundTransparency = 1
-			})
-			
-			smoothTween(PlayerName, 0.3, {
-				TextTransparency = 1
-			})
-			
-			smoothTween(ButtonLoadHub, 0.3, {
-				TextTransparency = 1,
-				BackgroundTransparency = 1
-			})
-			
-			smoothTween(UniversalButton, 0.3, {
-				TextTransparency = 1,
-				BackgroundTransparency = 1
-			})
-			
-			-- Animasi turun
-			task.delay(0.2, function()
-				local closeTween = game:GetService("TweenService"):Create(StartMenuFrame, 
-					TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.In), 
-					{Position = UDim2.new(0.5, 0, 1.1, 0)})
-				
-				smoothTween(StartMenuBorder, 0.3, {
-					Transparency = 1
-				})
-				
-				smoothTween(StartMenuShadow, 0.3, {
-					ImageTransparency = 1
-				})
-				
-				closeTween:Play()
-				
-				closeTween.Completed:Connect(function()
-					-- Panggil callback untuk membuat Game Hub
-					task.spawn(buttonCallback)
-					
-					-- Jangan hapus ScreenGui agar background blur tetap ada
-					-- Hanya hapus StartMenuFrame
-					StartMenuFrame:Destroy()
-				})
-			})
-		end)
-	end)
-	
-	-- Click handler untuk Universal button
-	UniversalButton.MouseButton1Click:Connect(function()
-		if isClosing then
-			return
-		end
-		
-		-- Efek click
-		smoothTween(UniversalButton, 0.1, {
-			Size = UDim2.new(0, 175, 0, 38),
-			BackgroundColor3 = Color3.fromRGB(50, 50, 60)
-		})
-		
-		task.delay(0.1, function()
-			smoothTween(UniversalButton, 0.1, {
-				Size = UDim2.new(0, 180, 0, 40),
-				BackgroundColor3 = Color3.fromRGB(60, 60, 70)
-			})
-			
-			-- Jalankan universal callback
-			task.spawn(universalCallback)
-		end)
-	end)
-	
-	-- Nonaktifkan interaksi pada PlayerInfo dan komponennya
-	PlayerInfo.Active = false
-	PlayerAvatar.Active = false
-	PlayerName.Active = false
-	
-	-- Tambahkan blur dan background
-	smoothTween(BlurEffect, 0.5, {
-		Size = 10
-	})
-	
-	smoothTween(Background, 0.5, {
-		BackgroundTransparency = 0.4
-	})
-	
-	-- Animasi Start Menu dari bawah layar
-	task.delay(0.1, function()
-		-- Animasi muncul dari bawah
-		local appearTween = game:GetService("TweenService"):Create(
-			StartMenuFrame, 
-			TweenInfo.new(0.6, Enum.EasingStyle.Back, Enum.EasingDirection.Out), 
-			{Position = UDim2.new(0.5, 0, 0.95, -80)} -- Posisi akhir
-		)
-		
-		appearTween:Play()
-		
-		smoothTween(StartMenuBorder, 0.4, {
-			Transparency = 0
-		})
-		
-		smoothTween(StartMenuShadow, 0.4, {
-			ImageTransparency = 0.5
-		})
-		
-		-- Animasi fade in untuk komponen UI
-		task.delay(0.3, function()
-			smoothTween(PlayerAvatar, 0.4, {
-				BackgroundTransparency = 0.2,
-				ImageTransparency = 0
-			})
-			
-			task.delay(0.05, function()
-				smoothTween(PlayerName, 0.4, {
-					TextTransparency = 0
-				})
-			end)
-			
-			task.delay(0.1, function()
-				smoothTween(ButtonLoadHub, 0.4, {
-					BackgroundTransparency = 0,
-					TextTransparency = 0
-				})
-				
-				task.delay(0.05, function()
-					smoothTween(UniversalButton, 0.4, {
-						BackgroundTransparency = 0.2,
-						TextTransparency = 0
-					})
-				end)
-			end)
-		end)
-	end)
-	
-	-- Membuat fungsi untuk menghubungkan dengan Game Hub
-	function startMenu:CreateGameHub(customConfig)
-		return UILibrary.CreateHub(customConfig)
-	end
-	
-	return startMenu
+local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local MarketplaceService = game:GetService("MarketplaceService")
+local player = Players.LocalPlayer
+
+local RSV = {}
+
+function RSV:CreateWindow(options)
+    local name = options.Name or "MyGUI"
+    local theme = options.Theme or "Dark"
+    local credits = options.Credits or "RSV"
+
+    local themes = {
+        Dark = {
+            MainFrameColor = Color3.fromRGB(25, 25, 30),
+            MainGradient = ColorSequence.new{ColorSequenceKeypoint.new(0, Color3.fromRGB(25, 25, 30)), ColorSequenceKeypoint.new(1, Color3.fromRGB(35, 35, 40))},
+            BottomBarColor = Color3.fromRGB(30, 30, 35),
+            BottomBarGradient = ColorSequence.new{ColorSequenceKeypoint.new(0, Color3.fromRGB(30, 30, 35)), ColorSequenceKeypoint.new(1, Color3.fromRGB(40, 40, 45))},
+            HomeBackgroundColor = Color3.fromRGB(20, 20, 25),
+            HomeGradient = ColorSequence.new{ColorSequenceKeypoint.new(0, Color3.fromRGB(20, 20, 25)), ColorSequenceKeypoint.new(1, Color3.fromRGB(30, 30, 35))},
+            SliderFrameColor = Color3.fromRGB(35, 35, 40),
+            SliderGradient = ColorSequence.new{ColorSequenceKeypoint.new(0, Color3.fromRGB(40, 40, 45)), ColorSequenceKeypoint.new(1, Color3.fromRGB(30, 30, 35))},
+            SliderBarColor = Color3.fromRGB(50, 50, 55),
+            TextColor = Color3.fromRGB(255, 255, 255),
+            SubTextColor = Color3.fromRGB(150, 150, 150),
+            Transparency = 0
+        },
+        Light = {
+            MainFrameColor = Color3.fromRGB(240, 240, 240),
+            MainGradient = ColorSequence.new{ColorSequenceKeypoint.new(0, Color3.fromRGB(240, 240, 240)), ColorSequenceKeypoint.new(1, Color3.fromRGB(220, 220, 220))},
+            BottomBarColor = Color3.fromRGB(200, 200, 200),
+            BottomBarGradient = ColorSequence.new{ColorSequenceKeypoint.new(0, Color3.fromRGB(200, 200, 200)), ColorSequenceKeypoint.new(1, Color3.fromRGB(180, 180, 180))},
+            HomeBackgroundColor = Color3.fromRGB(230, 230, 230),
+            HomeGradient = ColorSequence.new{ColorSequenceKeypoint.new(0, Color3.fromRGB(230, 230, 230)), ColorSequenceKeypoint.new(1, Color3.fromRGB(210, 210, 210))},
+            SliderFrameColor = Color3.fromRGB(220, 220, 220),
+            SliderGradient = ColorSequence.new{ColorSequenceKeypoint.new(0, Color3.fromRGB(230, 230, 230)), ColorSequenceKeypoint.new(1, Color3.fromRGB(200, 200, 200))},
+            SliderBarColor = Color3.fromRGB(180, 180, 180),
+            TextColor = Color3.fromRGB(0, 0, 0),
+            SubTextColor = Color3.fromRGB(100, 100, 100),
+            Transparency = 0
+        },
+        Ocean = {
+            MainFrameColor = Color3.fromRGB(40, 70, 100),
+            MainGradient = ColorSequence.new{ColorSequenceKeypoint.new(0, Color3.fromRGB(40, 70, 100)), ColorSequenceKeypoint.new(1, Color3.fromRGB(50, 90, 120))},
+            BottomBarColor = Color3.fromRGB(50, 80, 110),
+            BottomBarGradient = ColorSequence.new{ColorSequenceKeypoint.new(0, Color3.fromRGB(50, 80, 110)), ColorSequenceKeypoint.new(1, Color3.fromRGB(60, 100, 130))},
+            HomeBackgroundColor = Color3.fromRGB(30, 60, 90),
+            HomeGradient = ColorSequence.new{ColorSequenceKeypoint.new(0, Color3.fromRGB(30, 60, 90)), ColorSequenceKeypoint.new(1, Color3.fromRGB(40, 80, 110))},
+            SliderFrameColor = Color3.fromRGB(50, 90, 120),
+            SliderGradient = ColorSequence.new{ColorSequenceKeypoint.new(0, Color3.fromRGB(60, 100, 130)), ColorSequenceKeypoint.new(1, Color3.fromRGB(40, 80, 110))},
+            SliderBarColor = Color3.fromRGB(70, 110, 140),
+            TextColor = Color3.fromRGB(255, 255, 255),
+            SubTextColor = Color3.fromRGB(180, 210, 240),
+            Transparency = 0
+        },
+        Forest = {
+            MainFrameColor = Color3.fromRGB(34, 45, 34),
+            MainGradient = ColorSequence.new{ColorSequenceKeypoint.new(0, Color3.fromRGB(34, 45, 34)), ColorSequenceKeypoint.new(1, Color3.fromRGB(44, 55, 44))},
+            BottomBarColor = Color3.fromRGB(40, 50, 40),
+            BottomBarGradient = ColorSequence.new{ColorSequenceKeypoint.new(0, Color3.fromRGB(40, 50, 40)), ColorSequenceKeypoint.new(1, Color3.fromRGB(50, 60, 50))},
+            HomeBackgroundColor = Color3.fromRGB(30, 40, 30),
+            HomeGradient = ColorSequence.new{ColorSequenceKeypoint.new(0, Color3.fromRGB(30, 40, 30)), ColorSequenceKeypoint.new(1, Color3.fromRGB(40, 50, 40))},
+            SliderFrameColor = Color3.fromRGB(44, 55, 44),
+            SliderGradient = ColorSequence.new{ColorSequenceKeypoint.new(0, Color3.fromRGB(50, 60, 50)), ColorSequenceKeypoint.new(1, Color3.fromRGB(40, 50, 40))},
+            SliderBarColor = Color3.fromRGB(60, 70, 60),
+            TextColor = Color3.fromRGB(255, 255, 255),
+            SubTextColor = Color3.fromRGB(150, 180, 150),
+            Transparency = 0
+        },
+        Obsidian = {
+            MainFrameColor = Color3.fromRGB(10, 10, 15),
+            MainGradient = ColorSequence.new{ColorSequenceKeypoint.new(0, Color3.fromRGB(10, 10, 15)), ColorSequenceKeypoint.new(1, Color3.fromRGB(20, 20, 25))},
+            BottomBarColor = Color3.fromRGB(15, 15, 20),
+            BottomBarGradient = ColorSequence.new{ColorSequenceKeypoint.new(0, Color3.fromRGB(15, 15, 20)), ColorSequenceKeypoint.new(1, Color3.fromRGB(25, 25, 30))},
+            HomeBackgroundColor = Color3.fromRGB(5, 5, 10),
+            HomeGradient = ColorSequence.new{ColorSequenceKeypoint.new(0, Color3.fromRGB(5, 5, 10)), ColorSequenceKeypoint.new(1, Color3.fromRGB(15, 15, 20))},
+            SliderFrameColor = Color3.fromRGB(20, 20, 25),
+            SliderGradient = ColorSequence.new{ColorSequenceKeypoint.new(0, Color3.fromRGB(25, 25, 30)), ColorSequenceKeypoint.new(1, Color3.fromRGB(15, 15, 20))},
+            SliderBarColor = Color3.fromRGB(30, 30, 35),
+            TextColor = Color3.fromRGB(255, 255, 255),
+            SubTextColor = Color3.fromRGB(200, 200, 200),
+            Transparency = 0.5
+        }
+    }
+
+    local selectedTheme = themes[theme] or themes.Dark
+
+    local screenGui = Instance.new("ScreenGui")
+    screenGui.Parent = player:WaitForChild("PlayerGui")
+    screenGui.ResetOnSpawn = false
+    screenGui.Name = name .. "_UI"
+    screenGui.Enabled = true 
+
+    local mainFrame = Instance.new("Frame")
+    mainFrame.Size = UDim2.new(0, 500, 0, 350)
+    mainFrame.Position = UDim2.new(0.5, -250, 1, 400)
+    mainFrame.BackgroundColor3 = selectedTheme.MainFrameColor
+    mainFrame.BackgroundTransparency = selectedTheme.Transparency
+    mainFrame.BorderSizePixel = 0
+    mainFrame.ClipsDescendants = true
+    mainFrame.Parent = screenGui
+    mainFrame.ZIndex = 1
+
+    local mainCorner = Instance.new("UICorner")
+    mainCorner.CornerRadius = UDim.new(0, 10)
+    mainCorner.Parent = mainFrame
+
+    local mainGradient = Instance.new("UIGradient")
+    mainGradient.Color = selectedTheme.MainGradient
+    mainGradient.Rotation = 90
+    mainGradient.Parent = mainFrame
+
+    local mainStroke = Instance.new("UIStroke")
+    mainStroke.Thickness = 1.5
+    mainStroke.Color = Color3.fromRGB(50, 50, 60)
+    mainStroke.Transparency = 0.7
+    mainStroke.Parent = mainFrame
+
+    local headerFrame = Instance.new("Frame")
+    headerFrame.Size = UDim2.new(1, 0, 0, 40)
+    headerFrame.Position = UDim2.new(0, 0, 0, 0)
+    headerFrame.BackgroundColor3 = selectedTheme.BottomBarColor
+    headerFrame.BackgroundTransparency = selectedTheme.Transparency
+    headerFrame.BorderSizePixel = 0
+    headerFrame.Parent = mainFrame
+    headerFrame.ZIndex = 2
+
+    local headerCorner = Instance.new("UICorner")
+    headerCorner.CornerRadius = UDim.new(0, 10)
+    headerCorner.Parent = headerFrame
+
+    local headerMask = Instance.new("Frame")
+    headerMask.Size = UDim2.new(1, 0, 0.5, 0)
+    headerMask.Position = UDim2.new(0, 0, 0.5, 0)
+    headerMask.BackgroundColor3 = selectedTheme.BottomBarColor
+    headerMask.BackgroundTransparency = selectedTheme.Transparency
+    headerMask.BorderSizePixel = 0
+    headerMask.Parent = headerFrame
+    headerMask.ZIndex = 2
+
+    local headerGradient = Instance.new("UIGradient")
+    headerGradient.Color = selectedTheme.BottomBarGradient
+    headerGradient.Rotation = 90
+    headerGradient.Parent = headerFrame
+
+    local titleLabel = Instance.new("TextLabel")
+    titleLabel.Size = UDim2.new(0, 200, 1, 0)
+    titleLabel.Position = UDim2.new(0, 15, 0, 0)
+    titleLabel.BackgroundTransparency = 1
+    titleLabel.Text = name
+    titleLabel.TextColor3 = selectedTheme.TextColor
+    titleLabel.Font = Enum.Font.GothamBold
+    titleLabel.TextSize = 18
+    titleLabel.TextXAlignment = Enum.TextXAlignment.Left
+    titleLabel.Parent = headerFrame
+    titleLabel.ZIndex = 3
+
+    local creditLabel = Instance.new("TextLabel")
+    creditLabel.Size = UDim2.new(0, 200, 1, 0)
+    creditLabel.Position = UDim2.new(1, -210, 0, 0)
+    creditLabel.BackgroundTransparency = 1
+    creditLabel.Text = "Made by " .. credits
+    creditLabel.TextColor3 = selectedTheme.SubTextColor
+    creditLabel.Font = Enum.Font.Gotham
+    creditLabel.TextSize = 14
+    creditLabel.TextXAlignment = Enum.TextXAlignment.Right
+    creditLabel.Parent = headerFrame
+    creditLabel.ZIndex = 3
+
+    local closeButton = Instance.new("TextButton")
+    closeButton.Size = UDim2.new(0, 24, 0, 24)
+    closeButton.Position = UDim2.new(1, -32, 0, 8)
+    closeButton.BackgroundColor3 = Color3.fromRGB(225, 50, 50)
+    closeButton.BorderSizePixel = 0
+    closeButton.Text = "✕"
+    closeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    closeButton.Font = Enum.Font.GothamBold
+    closeButton.TextSize = 14
+    closeButton.Parent = headerFrame
+    closeButton.ZIndex = 3
+
+    local closeCorner = Instance.new("UICorner")
+    closeCorner.CornerRadius = UDim.new(0, 12)
+    closeCorner.Parent = closeButton
+
+    local bottomBar = Instance.new("Frame")
+    bottomBar.Size = UDim2.new(1, -20, 0, 40)
+    bottomBar.Position = UDim2.new(0, 10, 1, -50)
+    bottomBar.BackgroundColor3 = selectedTheme.BottomBarColor
+    bottomBar.BackgroundTransparency = selectedTheme.Transparency
+    bottomBar.BorderSizePixel = 0
+    bottomBar.Parent = mainFrame
+    bottomBar.ZIndex = 2
+
+    local bottomBarCorner = Instance.new("UICorner")
+    bottomBarCorner.CornerRadius = UDim.new(0, 8)
+    bottomBarCorner.Parent = bottomBar
+
+    local bottomBarGradient = Instance.new("UIGradient")
+    bottomBarGradient.Color = selectedTheme.BottomBarGradient
+    bottomBarGradient.Rotation = 90
+    bottomBarGradient.Parent = bottomBar
+
+    local highlight = Instance.new("Frame")
+    highlight.Size = UDim2.new(0, 80, 0, 3)
+    highlight.Position = UDim2.new(0, 0, 1, -3)
+    highlight.BackgroundColor3 = Color3.fromRGB(255, 105, 180)
+    highlight.BorderSizePixel = 0
+    highlight.Parent = bottomBar
+    highlight.ZIndex = 3
+
+    local highlightGradient = Instance.new("UIGradient")
+    highlightGradient.Color = ColorSequence.new{ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 105, 180)), ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 150, 200))}
+    highlightGradient.Rotation = 45
+    highlightGradient.Parent = highlight
+
+    local window = {
+        MainFrame = mainFrame,
+        ScreenGui = screenGui,
+        Tabs = {},
+        CurrentTab = nil,
+        BottomBar = bottomBar,
+        Highlight = highlight,
+        ActiveIndex = 1,
+        StartTime = os.time(),
+        Theme = selectedTheme,
+        IsOpen = false
+    }
+
+    closeButton.MouseButton1Click:Connect(function()
+        window:Toggle()
+    end)
+
+    function window:CreateTab(name, description)
+        local tabCount = #self.Tabs + 1
+        local tabButtonWidth = bottomBar.AbsoluteSize.X / (tabCount <= 5 and 5 or tabCount)
+        
+        for i, tab in ipairs(self.Tabs) do
+            tab.Button.Size = UDim2.new(0, tabButtonWidth, 1, 0)
+            tab.Button.Position = UDim2.new(0, (i-1) * tabButtonWidth, 0, 0)
+        end
+
+        local tabFrame = Instance.new("ScrollingFrame")
+        tabFrame.Size = UDim2.new(1, -20, 1, -100)
+        tabFrame.Position = UDim2.new(0, 10, 0, 50)
+        tabFrame.BackgroundTransparency = 1
+        tabFrame.ScrollBarThickness = 4
+        tabFrame.ScrollBarImageColor3 = Color3.fromRGB(255, 105, 180)
+        tabFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
+        tabFrame.Parent = mainFrame
+        tabFrame.Visible = false
+        tabFrame.ZIndex = 2
+        tabFrame.BorderSizePixel = 0
+
+        local tabButton = Instance.new("TextButton")
+        tabButton.Size = UDim2.new(0, tabButtonWidth, 1, 0)
+        tabButton.Position = UDim2.new(0, (#self.Tabs * tabButtonWidth), 0, 0)
+        tabButton.BackgroundTransparency = 1
+        tabButton.Text = name
+        tabButton.TextColor3 = window.Theme == themes.Light and Color3.fromRGB(0, 0, 0) or Color3.fromRGB(200, 200, 200)
+        tabButton.Font = Enum.Font.GothamBold
+        tabButton.TextSize = 14
+        tabButton.BorderSizePixel = 0
+        tabButton.Parent = bottomBar
+        tabButton.ZIndex = 4
+
+        local descLabel = Instance.new("TextLabel")
+        descLabel.Size = UDim2.new(0, 180, 0, 30)
+        descLabel.Position = UDim2.new(0.5, -90, -1, -5)
+        descLabel.BackgroundColor3 = window.Theme.BottomBarColor
+        descLabel.BackgroundTransparency = 0.2
+        descLabel.BorderSizePixel = 0
+        descLabel.Text = description or "No description"
+        descLabel.TextColor3 = window.Theme.TextColor
+        descLabel.Font = Enum.Font.Gotham
+        descLabel.TextSize = 12
+        descLabel.TextWrapped = true
+        descLabel.Visible = false
+        descLabel.Parent = tabButton
+        descLabel.ZIndex = 10
+
+        local descCorner = Instance.new("UICorner")
+        descCorner.CornerRadius = UDim.new(0, 5)
+        descCorner.Parent = descLabel
+
+        tabButton.MouseEnter:Connect(function()
+            descLabel.Visible = true
+            TweenService:Create(tabButton, TweenInfo.new(0.2), {TextColor3 = Color3.fromRGB(255, 255, 255)}):Play()
+        end)
+
+        tabButton.MouseLeave:Connect(function()
+            descLabel.Visible = false
+            if self.CurrentTab ~= tab then
+                TweenService:Create(tabButton, TweenInfo.new(0.2), {TextColor3 = window.Theme == themes.Light and Color3.fromRGB(0, 0, 0) or Color3.fromRGB(200, 200, 200)}):Play()
+            end
+        end)
+
+        local tab = {
+            Frame = tabFrame,
+            Button = tabButton,
+            Name = name,
+            Elements = {}
+        }
+
+        table.insert(self.Tabs, tab)
+        if not self.CurrentTab then
+            self.CurrentTab = tab
+            tab.Frame.Visible = true
+            tabButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+            
+            highlight.Size = UDim2.new(0, tabButtonWidth, 0, 3)
+            highlight.Position = UDim2.new(0, 0, 1, -3)
+        end
+
+        tabButton.MouseButton1Click:Connect(function()
+            if self.CurrentTab ~= tab then
+                local oldTab = self.CurrentTab
+                oldTab.Button.TextColor3 = window.Theme == themes.Light and Color3.fromRGB(100, 100, 100) or Color3.fromRGB(200, 200, 200)
+                
+                local oldTween = TweenService:Create(oldTab.Frame, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), 
+                    {Position = UDim2.new(0, -10, 0, 50), BackgroundTransparency = 1})
+                oldTween:Play()
+                oldTween.Completed:Connect(function()
+                    oldTab.Frame.Visible = false
+                end)
+
+                tab.Frame.Visible = true
+                tab.Frame.Position = UDim2.new(0, 30, 0, 50)
+                tab.Frame.BackgroundTransparency = 1
+                
+                TweenService:Create(tab.Frame, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), 
+                    {Position = UDim2.new(0, 10, 0, 50), BackgroundTransparency = 1}):Play()
+                
+                tabButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+                self.CurrentTab = tab
+                self.ActiveIndex = table.find(self.Tabs, tab)
+                
+                local targetPosition = UDim2.new(0, (self.ActiveIndex - 1) * tabButtonWidth, 1, -3)
+                TweenService:Create(highlight, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), 
+                    {Position = targetPosition, Size = UDim2.new(0, tabButtonWidth, 0, 3)}):Play()
+            end
+        end)
+
+        function tab:CreateSlider(options)
+            local name = options.Name or "Slider"
+            local min = options.Min or 0
+            local max = options.Max or 100
+            local default = options.Default or min
+            local callback = options.Callback or function() end
+
+            local sliderFrame = Instance.new("Frame")
+            sliderFrame.Size = UDim2.new(0, 300, 0, 60)
+            sliderFrame.Position = UDim2.new(0, 15, 0, #self.Elements * 70 + 10)
+            sliderFrame.BackgroundColor3 = window.Theme.SliderFrameColor
+            sliderFrame.BackgroundTransparency = window.Theme.Transparency
+            sliderFrame.BorderSizePixel = 0
+            sliderFrame.Parent = self.Frame
+            sliderFrame.ZIndex = 3
+            sliderFrame.Visible = true
+
+            self.Frame.CanvasSize = UDim2.new(0, 0, 0, (#self.Elements + 1) * 70 + 10)
+
+            local sliderCorner = Instance.new("UICorner")
+            sliderCorner.CornerRadius = UDim.new(0, 12)
+            sliderCorner.Parent = sliderFrame
+
+            local sliderGradient = Instance.new("UIGradient")
+            sliderGradient.Color = window.Theme.SliderGradient
+            sliderGradient.Rotation = 90
+            sliderGradient.Parent = sliderFrame
+
+            local sliderLabel = Instance.new("TextLabel")
+            sliderLabel.Size = UDim2.new(0, 280, 0, 20)
+            sliderLabel.Position = UDim2.new(0, 10, 0, 5)
+            sliderLabel.BackgroundTransparency = 1
+            sliderLabel.Text = name .. ": " .. default
+            sliderLabel.TextColor3 = window.Theme.TextColor
+            sliderLabel.Font = Enum.Font.GothamBold
+            sliderLabel.TextSize = 16
+            sliderLabel.TextXAlignment = Enum.TextXAlignment.Left
+            sliderLabel.Parent = sliderFrame
+            sliderLabel.ZIndex = 4
+            sliderLabel.Visible = true
+
+            local sliderBar = Instance.new("Frame")
+            sliderBar.Size = UDim2.new(0, 260, 0, 8)
+            sliderBar.Position = UDim2.new(0, 20, 0, 35)
+            sliderBar.BackgroundColor3 = window.Theme.SliderBarColor
+            sliderBar.BorderSizePixel = 0
+            sliderBar.Parent = sliderFrame
+            sliderBar.ZIndex = 4
+            sliderBar.Visible = true
+
+            local barCorner = Instance.new("UICorner")
+            barCorner.CornerRadius = UDim.new(0, 4)
+            barCorner.Parent = sliderBar
+
+            local sliderFill = Instance.new("Frame")
+            sliderFill.Size = UDim2.new((default - min) / (max - min), 0, 1, 0)
+            sliderFill.Position = UDim2.new(0, 0, 0, 0)
+            sliderFill.BackgroundColor3 = Color3.fromRGB(255, 105, 180)
+            sliderFill.BorderSizePixel = 0
+            sliderFill.Parent = sliderBar
+            sliderFill.ZIndex = 4
+            sliderFill.Visible = true
+
+            local fillCorner = Instance.new("UICorner")
+            fillCorner.CornerRadius = UDim.new(0, 4)
+            fillCorner.Parent = sliderFill
+
+            local fillGradient = Instance.new("UIGradient")
+            fillGradient.Color = ColorSequence.new{ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 105, 180)), ColorSequenceKeypoint.new(1, Color3.fromRGB(200, 80, 150))}
+            fillGradient.Rotation = 45
+            fillGradient.Parent = sliderFill
+
+            local sliderHandle = Instance.new("Frame")
+            sliderHandle.Size = UDim2.new(0, 16, 0, 16)
+            sliderHandle.Position = UDim2.new((default - min) / (max - min), -8, 0, -4)
+            sliderHandle.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+            sliderHandle.BorderSizePixel = 0
+            sliderHandle.Parent = sliderBar
+            sliderHandle.ZIndex = 5
+            sliderHandle.Visible = true
+
+            local handleCorner = Instance.new("UICorner")
+            handleCorner.CornerRadius = UDim.new(0, 8)
+            handleCorner.Parent = sliderHandle
+
+            local handleGradient = Instance.new("UIGradient")
+            handleGradient.Color = ColorSequence.new{ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)), ColorSequenceKeypoint.new(1, Color3.fromRGB(200, 200, 200))}
+            handleGradient.Rotation = 0
+            handleGradient.Parent = sliderHandle
+
+            local handleStroke = Instance.new("UIStroke")
+            handleStroke.Thickness = 2
+            handleStroke.Color = Color3.fromRGB(255, 105, 180)
+            handleStroke.Parent = sliderHandle
+
+            local dragging = false
+            sliderHandle.InputBegan:Connect(function(input)
+                if input.UserInputType == Enum.UserInputType.MouseButton1 then
+                    dragging = true
+                end
+            end)
+
+            UserInputService.InputEnded:Connect(function(input)
+                if input.UserInputType == Enum.UserInputType.MouseButton1 then
+                    dragging = false
+                end
+            end)
+
+            RunService.RenderStepped:Connect(function()
+                if dragging then
+                    local mousePos = UserInputService:GetMouseLocation()
+                    local sliderPos = sliderBar.AbsolutePosition
+                    local sliderSize = sliderBar.AbsoluteSize.X
+                    local newX = math.clamp(mousePos.X - sliderPos.X, 0, sliderSize)
+                    local percentage = newX / sliderSize
+                    sliderHandle.Position = UDim2.new(0, newX - 8, 0, -4)
+                    sliderFill.Size = UDim2.new(0, newX, 1, 0)
+                    local value = math.floor(min + (max - min) * percentage)
+                    sliderLabel.Text = name .. ": " .. value
+                    callback(value)
+                end
+            end)
+
+            table.insert(self.Elements, sliderFrame)
+            return sliderFrame
+        end
+
+        function tab:CreateToggle(options)
+            local name = options.Name or "Toggle"
+            local default = options.Default or false
+            local callback = options.Callback or function() end
+
+            local toggleFrame = Instance.new("Frame")
+            toggleFrame.Size = UDim2.new(0, 300, 0, 50)
+            toggleFrame.Position = UDim2.new(0, 15, 0, #self.Elements * 70 + 10)
+            toggleFrame.BackgroundColor3 = window.Theme.MainFrameColor
+            toggleFrame.BackgroundTransparency = window.Theme.Transparency
+            toggleFrame.Parent = self.Frame
+            toggleFrame.ZIndex = 3
+            toggleFrame.Visible = true
+
+            local toggleGradient = Instance.new("UIGradient")
+            toggleGradient.Color = window.Theme.MainGradient
+            toggleGradient.Rotation = 90
+            toggleGradient.Parent = toggleFrame
+
+            local toggleCorner = Instance.new("UICorner")
+            toggleCorner.CornerRadius = UDim.new(0, 8)
+            toggleCorner.Parent = toggleFrame
+
+            self.Frame.CanvasSize = UDim2.new(0, 0, 0, (#self.Elements + 1) * 70 + 10)
+
+            local toggleLabel = Instance.new("TextLabel")
+            toggleLabel.Size = UDim2.new(0, 260, 0, 50)
+            toggleLabel.Position = UDim2.new(0, 40, 0, 0)
+            toggleLabel.BackgroundTransparency = 1
+            toggleLabel.Text = name
+            toggleLabel.TextColor3 = window.Theme.TextColor
+            toggleLabel.Font = Enum.Font.GothamBold
+            toggleLabel.TextSize = 14
+            toggleLabel.TextXAlignment = Enum.TextXAlignment.Left
+            toggleLabel.Parent = toggleFrame
+            toggleLabel.ZIndex = 4
+            toggleLabel.Visible = true
+
+            local checkbox = Instance.new("TextButton")
+            checkbox.Size = UDim2.new(0, 20, 0, 20)
+            checkbox.Position = UDim2.new(0, 10, 0, 15)
+            checkbox.BackgroundColor3 = default and Color3.fromRGB(50, 150, 50) or window.Theme.SliderFrameColor
+            checkbox.BackgroundTransparency = window.Theme.Transparency
+            checkbox.BorderSizePixel = 0
+            checkbox.Text = default and "✔" or ""
+            checkbox.TextColor3 = window.Theme.TextColor
+            checkbox.Font = Enum.Font.Gotham
+            checkbox.TextSize = 14
+            checkbox.Parent = toggleFrame
+            checkbox.ZIndex = 4
+            checkbox.Visible = true
+
+            local checkboxCorner = Instance.new("UICorner")
+            checkboxCorner.CornerRadius = UDim.new(0, 5)
+            checkboxCorner.Parent = checkbox
+
+            local checkboxGradient = Instance.new("UIGradient")
+            checkboxGradient.Color = default and ColorSequence.new{ColorSequenceKeypoint.new(0, Color3.fromRGB(50, 150, 50)), ColorSequenceKeypoint.new(1, Color3.fromRGB(70, 170, 70))} or window.Theme.SliderGradient
+            checkboxGradient.Rotation = 90
+            checkboxGradient.Parent = checkbox
+
+            local state = default
+            checkbox.MouseButton1Click:Connect(function()
+                state = not state
+                checkbox.Text = state and "✔" or ""
+                checkbox.BackgroundColor3 = state and Color3.fromRGB(50, 150, 50) or window.Theme.SliderFrameColor
+                checkboxGradient.Color = state and ColorSequence.new{ColorSequenceKeypoint.new(0, Color3.fromRGB(50, 150, 50)), ColorSequenceKeypoint.new(1, Color3.fromRGB(70, 170, 70))} or window.Theme.SliderGradient
+                callback(state)
+            end)
+
+            table.insert(self.Elements, toggleFrame)
+            return toggleFrame
+        end
+
+        function tab:CreateButton(options)
+            local name = options.Name or "Button"
+            local size = options.Size or "Large"
+            local callback = options.Callback or function() end
+
+            local buttonFrame = Instance.new("Frame")
+            buttonFrame.Size = UDim2.new(0, 300, 0, size == "Small" and 30 or 50)
+            buttonFrame.Position = UDim2.new(0, 15, 0, #self.Elements * 70 + 10)
+            buttonFrame.BackgroundTransparency = 1
+            buttonFrame.Parent = self.Frame
+            buttonFrame.ZIndex = 3
+            buttonFrame.Visible = true
+
+            self.Frame.CanvasSize = UDim2.new(0, 0, 0, (#self.Elements + 1) * 70 + 10)
+
+            local button = Instance.new("TextButton")
+            button.Size = UDim2.new(0, size == "Small" and 130 or 260, 0, size == "Small" and 20 or 40)
+            button.Position = UDim2.new(0, size == "Small" and 85 or 20, 0, size == "Small" and 5 or 5)
+            button.BackgroundColor3 = Color3.fromRGB(255, 105, 180)
+            button.BorderSizePixel = 0
+            button.Text = name
+            button.TextColor3 = window.Theme.TextColor
+            button.Font = Enum.Font.GothamBold
+            button.TextSize = size == "Small" and 14 or 16
+            button.Parent = buttonFrame
+            button.ZIndex = 4
+            button.Visible = true
+
+            local buttonCorner = Instance.new("UICorner")
+            buttonCorner.CornerRadius = UDim.new(0, 8)
+            buttonCorner.Parent = button
+
+            local buttonGradient = Instance.new("UIGradient")
+            buttonGradient.Color = ColorSequence.new{ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 105, 180)), ColorSequenceKeypoint.new(1, Color3.fromRGB(200, 80, 150))}
+            buttonGradient.Rotation = 45
+            buttonGradient.Parent = button
+
+            button.MouseButton1Click:Connect(function()
+                callback()
+            end)
+
+            table.insert(self.Elements, buttonFrame)
+            return buttonFrame
+        end
+
+        function tab:CreateLabel(options)
+            local text = options.Text or "Label"
+            
+            local labelFrame = Instance.new("Frame")
+            labelFrame.Size = UDim2.new(0, 300, 0, 30)
+            labelFrame.Position = UDim2.new(0, 15, 0, #self.Elements * 70 + 10)
+            labelFrame.BackgroundTransparency = 1
+            labelFrame.Parent = self.Frame
+            labelFrame.ZIndex = 3
+            labelFrame.Visible = true
+
+            self.Frame.CanvasSize = UDim2.new(0, 0, 0, (#self.Elements + 1) * 70 + 10)
+
+            local label = Instance.new("TextLabel")
+            label.Size = UDim2.new(0, 280, 0, 30)
+            label.Position = UDim2.new(0, 10, 0, 0)
+            label.BackgroundTransparency = 1
+            label.Text = text
+            label.TextColor3 = window.Theme.TextColor
+            label.Font = Enum.Font.Gotham
+            label.TextSize = 14
+            label.TextXAlignment = Enum.TextXAlignment.Left
+            label.Parent = labelFrame
+            label.ZIndex = 4
+            label.Visible = true
+
+            table.insert(self.Elements, labelFrame)
+            return labelFrame
+        end
+
+        function tab:CreateTextBox(options)
+            local name = options.Name or "TextBox"
+            local default = options.Default or ""
+            local callback = options.Callback or function() end
+
+            local textBoxFrame = Instance.new("Frame")
+            textBoxFrame.Size = UDim2.new(0, 300, 0, 50)
+            textBoxFrame.Position = UDim2.new(0, 15, 0, #self.Elements * 70 + 10)
+            textBoxFrame.BackgroundTransparency = 1
+            textBoxFrame.Parent = self.Frame
+            textBoxFrame.ZIndex = 3
+            textBoxFrame.Visible = true
+
+            self.Frame.CanvasSize = UDim2.new(0, 0, 0, (#self.Elements + 1) * 70 + 10)
+
+            local textBoxLabel = Instance.new("TextLabel")
+            textBoxLabel.Size = UDim2.new(0, 100, 0, 20)
+            textBoxLabel.Position = UDim2.new(0, 10, 0, 5)
+            textBoxLabel.BackgroundTransparency = 1
+            textBoxLabel.Text = name
+            textBoxLabel.TextColor3 = window.Theme.TextColor
+            textBoxLabel.Font = Enum.Font.GothamBold
+            textBoxLabel.TextSize = 14
+            textBoxLabel.TextXAlignment = Enum.TextXAlignment.Left
+            textBoxLabel.Parent = textBoxFrame
+            textBoxLabel.ZIndex = 4
+            textBoxLabel.Visible = true
+
+            local textBox = Instance.new("TextBox")
+            textBox.Size = UDim2.new(0, 170, 0, 30)
+            textBox.Position = UDim2.new(0, 120, 0, 10)
+            textBox.BackgroundColor3 = window.Theme.SliderFrameColor
+            textBox.BackgroundTransparency = window.Theme.Transparency
+            textBox.BorderSizePixel = 0
+            textBox.Text = default
+            textBox.TextColor3 = window.Theme.TextColor
+            textBox.Font = Enum.Font.Gotham
+            textBox.TextSize = 14
+            textBox.Parent = textBoxFrame
+            textBox.ZIndex = 4
+            textBox.Visible = true
+
+            local textBoxCorner = Instance.new("UICorner")
+            textBoxCorner.CornerRadius = UDim.new(0, 5)
+            textBoxCorner.Parent = textBox
+
+            local textBoxGradient = Instance.new("UIGradient")
+            textBoxGradient.Color = window.Theme.SliderGradient
+            textBoxGradient.Rotation = 90
+            textBoxGradient.Parent = textBox
+
+            textBox.FocusLost:Connect(function(enterPressed)
+                if enterPressed then
+                    callback(textBox.Text)
+                end
+            end)
+
+            table.insert(self.Elements, textBoxFrame)
+            return textBoxFrame
+        end
+
+        return tab
+    end
+
+    function window:Toggle()
+        if not self.IsOpen then
+            TweenService:Create(mainFrame, TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out), 
+                {Position = UDim2.new(0.5, -250, 1, -370)}):Play()
+            self.IsOpen = true
+        else
+            TweenService:Create(mainFrame, TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.In), 
+                {Position = UDim2.new(0.5, -250, 1, 400)}):Play()
+            self.IsOpen = false
+        end
+    end
+
+    UserInputService.InputBegan:Connect(function(input, gameProcessed)
+        if not gameProcessed and input.KeyCode == Enum.KeyCode.K then
+            window:Toggle()
+        end
+    end)
+
+    local homeTab = window:CreateTab("Home", "Welcome to " .. name)
+    local homeBackground = Instance.new("Frame")
+    homeBackground.Size = UDim2.new(1, 0, 1, 0)
+    homeBackground.BackgroundColor3 = selectedTheme.HomeBackgroundColor
+    homeBackground.BackgroundTransparency = selectedTheme.Transparency
+    homeBackground.BorderSizePixel = 0
+    homeBackground.Parent = homeTab.Frame
+    homeBackground.ZIndex = 1
+    homeBackground.Visible = true
+
+    local homeCorner = Instance.new("UICorner")
+    homeCorner.CornerRadius = UDim.new(0, 15)
+    homeCorner.Parent = homeBackground
+
+    local homeGradient = Instance.new("UIGradient")
+    homeGradient.Color = selectedTheme.HomeGradient
+    homeGradient.Rotation = 90
+    homeGradient.Parent = homeBackground
+
+    local avatarImage = Instance.new("ImageLabel")
+    avatarImage.Size = UDim2.new(0, 80, 0, 80)
+    avatarImage.Position = UDim2.new(0.5, -40, 0, 10)
+    avatarImage.BackgroundTransparency = 1
+    avatarImage.Image = Players:GetUserThumbnailAsync(player.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size150x150)
+    avatarImage.Parent = homeTab.Frame
+    avatarImage.ZIndex = 2
+    avatarImage.Visible = true
+
+    local avatarCorner = Instance.new("UICorner")
+    avatarCorner.CornerRadius = UDim.new(1, 0)
+    avatarCorner.Parent = avatarImage
+
+    local avatarStroke = Instance.new("UIStroke")
+    avatarStroke.Thickness = 3
+    avatarStroke.Color = Color3.fromRGB(88, 101, 242)
+    avatarStroke.Parent = avatarImage
+
+    local displayName = Instance.new("TextLabel")
+    displayName.Size = UDim2.new(0, 300, 0, 30)
+    displayName.Position = UDim2.new(0, 15, 0, 95)
+    displayName.BackgroundTransparency = 1
+    displayName.Text = player.DisplayName
+    displayName.TextColor3 = selectedTheme.TextColor
+    displayName.Font = Enum.Font.GothamBold
+    displayName.TextSize = 20
+    displayName.TextXAlignment = Enum.TextXAlignment.Center
+    displayName.Parent = homeTab.Frame
+    displayName.ZIndex = 2
+    displayName.Visible = true
+
+    local realUsername = Instance.new("TextLabel")
+    realUsername.Size = UDim2.new(0, 300, 0, 20)
+    realUsername.Position = UDim2.new(0, 15, 0, 125)
+    realUsername.BackgroundTransparency = 1
+    realUsername.Text = "@" .. player.Name
+    realUsername.TextColor3 = selectedTheme.SubTextColor
+    realUsername.Font = Enum.Font.Gotham
+    realUsername.TextSize = 14
+    realUsername.TextXAlignment = Enum.TextXAlignment.Center
+    realUsername.Parent = homeTab.Frame
+    realUsername.ZIndex = 2
+    realUsername.Visible = true
+
+    local serverPlayers = Instance.new("TextLabel")
+    serverPlayers.Size = UDim2.new(0, 300, 0, 20)
+    serverPlayers.Position = UDim2.new(0, 15, 0, 145)
+    serverPlayers.BackgroundTransparency = 1
+    serverPlayers.Text = #Players:GetPlayers() .. "/" .. game.Players.MaxPlayers .. " players"
+    serverPlayers.TextColor3 = selectedTheme.TextColor
+    serverPlayers.Font = Enum.Font.Gotham
+    serverPlayers.TextSize = 14
+    serverPlayers.TextXAlignment = Enum.TextXAlignment.Center
+    serverPlayers.Parent = homeTab.Frame
+    serverPlayers.ZIndex = 2
+    serverPlayers.Visible = true
+
+    local elapsedTime = Instance.new("TextLabel")
+    elapsedTime.Size = UDim2.new(0, 300, 0, 20)
+    elapsedTime.Position = UDim2.new(0, 15, 0, 165)
+    elapsedTime.BackgroundTransparency = 1
+    elapsedTime.Text = "0 seconds elapsed"
+    elapsedTime.TextColor3 = selectedTheme.TextColor
+    elapsedTime.Font = Enum.Font.Gotham
+    elapsedTime.TextSize = 14
+    elapsedTime.TextXAlignment = Enum.TextXAlignment.Center
+    elapsedTime.Parent = homeTab.Frame
+    elapsedTime.ZIndex = 2
+    elapsedTime.Visible = true
+
+    local gameNameLabel = Instance.new("TextLabel")
+    gameNameLabel.Size = UDim2.new(0, 300, 0, 20)
+    gameNameLabel.Position = UDim2.new(0, 15, 0, 185)
+    gameNameLabel.BackgroundTransparency = 1
+    gameNameLabel.Text = "Connected to: <b>Loading...</b>"
+    gameNameLabel.TextColor3 = selectedTheme.TextColor
+    gameNameLabel.Font = Enum.Font.Gotham
+    gameNameLabel.TextSize = 14
+    gameNameLabel.TextXAlignment = Enum.TextXAlignment.Center
+    gameNameLabel.RichText = true
+    gameNameLabel.Parent = homeTab.Frame
+    gameNameLabel.ZIndex = 2
+    gameNameLabel.Visible = true
+
+    local changelogLabel = Instance.new("TextLabel")
+    changelogLabel.Size = UDim2.new(0, 300, 0, 100)
+    changelogLabel.Position = UDim2.new(0, 15, 0, 205)
+    changelogLabel.BackgroundTransparency = 1
+    changelogLabel.Text = "Changelog:\n- v1.0: Initial release\n- v1.1: Added new themes\n- v1.2: Improved UI responsiveness"
+    changelogLabel.TextColor3 = selectedTheme.TextColor
+    changelogLabel.Font = Enum.Font.Gotham
+    changelogLabel.TextSize = 14
+    changelogLabel.TextXAlignment = Enum.TextXAlignment.Left
+    changelogLabel.TextYAlignment = Enum.TextYAlignment.Top
+    changelogLabel.Parent = homeTab.Frame
+    changelogLabel.ZIndex = 2
+    changelogLabel.Visible = true
+
+    local function updateGameInfo()
+        local success, gameInfo = pcall(function()
+            return MarketplaceService:GetProductInfo(game.PlaceId)
+        end)
+        if success and gameInfo then
+            gameNameLabel.Text = "Connected to: <b>" .. gameInfo.Name .. "</b>"
+        else
+            gameNameLabel.Text = "Connected to: <b>Unknown Game</b>"
+        end
+    end
+
+    updateGameInfo()
+
+    spawn(function()
+        while wait(1) do
+            serverPlayers.Text = #Players:GetPlayers() .. "/" .. game.Players.MaxPlayers .. " players"
+            local elapsed = os.time() - window.StartTime
+            elapsedTime.Text = elapsed .. " seconds elapsed"
+        end
+    end)
+
+    window:Toggle()
+
+    return window
 end
-function UILibrary.CreateHub(customConfig)
-	for _, instance in pairs(game:GetService("CoreGui"):GetChildren()) do
-		if instance.Name == "LomuHubLibrary" then
-			instance:Destroy()
-		end
-	end;
-	pcall(function()
-		for _, instance in pairs(game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui"):GetChildren()) do
-			if instance.Name == "LomuHubLibrary" then
-				instance:Destroy()
-			end
-		end
-	end)
-	return UILibrary.new(customConfig)
-end
-return UILibrary
+
+return RSV
