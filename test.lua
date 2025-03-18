@@ -1,37 +1,63 @@
 local UILibrary = {}
 
--- Configuration
+-- Configuration with enhanced visual appeal and comfort
 local config = {
-    Title = "Lomu Hub",
-    SubTitle = "Game Library",
-    MainColor = Color3.fromRGB(20, 20, 22), -- Warna dasar lebih gelap & halus
-    SecondaryColor = Color3.fromRGB(30, 30, 35), -- Item background lebih soft
-    AccentColor = Color3.fromRGB(225, 125, 70), -- Orange lebih soft & elegan
-    TextColor = Color3.fromRGB(240, 240, 240), -- Text putih dengan sedikit keabu-abuan
-    SecondaryTextColor = Color3.fromRGB(170, 170, 175), -- Text sekunder lebih soft
+    -- Core colors - refined dark orange palette
+    MainColor = Color3.fromRGB(18, 18, 22),         -- Deep background
+    SecondaryColor = Color3.fromRGB(28, 28, 32),    -- Item backgrounds
+    AccentColor = Color3.fromRGB(230, 126, 74),     -- Soft orange accent
+    AccentColorLight = Color3.fromRGB(245, 141, 89),-- Lighter orange for hover
+    
+    -- Text colors - improved readability
+    TextColor = Color3.fromRGB(235, 235, 235),      -- Slightly off-white
+    SecondaryTextColor = Color3.fromRGB(165, 165, 170), -- Soft gray
+    
+    -- UI element styling
     Font = Enum.Font.GothamSemibold,
     ButtonFont = Enum.Font.Gotham,
-    CornerRadius = UDim.new(0, 5), -- Sudut lebih halus
+    CornerRadius = UDim.new(0, 8),                 -- More pronounced rounding
+    ButtonCornerRadius = UDim.new(0, 6),           -- Button rounding
+    SearchBarCornerRadius = UDim.new(0, 8),        -- Search bar rounding
+    
+    -- Animation and effects
     AnimationSpeed = 0.5,
     AnimationSpeedFast = 0.25,
     AnimationEasingStyle = Enum.EasingStyle.Quint,
     AnimationEasingDirection = Enum.EasingDirection.Out,
-    ShadowTransparency = 0.7, -- Shadow lebih transparan
-    MobileScaling = true,
-    GameItemHeight = 75, -- Lebih compact
+    ShadowTransparency = 0.75,                     -- Subtle shadows
+    
+    -- Layout and spacing
+    GameItemHeight = 75,                           -- Consistent item height
     MobileGameItemHeight = 65,
     DefaultThumbnail = "rbxassetid://6894586021",
-    StartMenuHeight = 85, -- Lebih compact
-    Padding = 10,
+    StartMenuHeight = 85,
+    Padding = 12,                                  -- Consistent padding
     ButtonHeight = 32,
-    OrangeDark = Color3.fromRGB(25, 23, 25), -- Background game item lebih soft
-    OrangeDarker = Color3.fromRGB(18, 18, 20), -- Background utama lebih soft
-    IconSize = 18, -- Ukuran icon lebih kecil
-    ItemSpacing = 8,
+    ItemSpacing = 10,                              -- Balanced item spacing
+    CategorySpacing = 8,                           -- Space between categories
+    
+    -- Colors for specific elements
+    OrangeDark = Color3.fromRGB(25, 25, 29),       -- Softer game item background
+    OrangeDarker = Color3.fromRGB(18, 18, 22),     -- Main background
+    
+    -- Element dimensions
+    IconSize = 18,
     BorderRadius = 4,
-    SearchBarHeight = 28,
-    AccentTransparency = 0.1, -- Transparansi untuk aksen
-    GlowTransparency = 0.85 -- Glow lebih halus
+    SearchBarHeight = 32,
+    CategoryHeight = 30,
+    
+    -- Transparency settings
+    AccentTransparency = 0,                        -- Solid accent elements
+    HoverTransparency = 0.05,                      -- Slight transparency on hover
+    GlowTransparency = 0.8,                        -- Subtle glow
+    
+    -- Status colors - refined for visual comfort
+    StatusColors = {
+        ["Working"] = Color3.fromRGB(86, 180, 116),   -- Softer green
+        ["Updated"] = Color3.fromRGB(79, 140, 201),   -- Softer blue
+        ["Testing"] = Color3.fromRGB(220, 170, 80),   -- Warm yellow
+        ["Patched"] = Color3.fromRGB(192, 96, 86)     -- Softer red
+    }
 }
 
 -- Fungsi helper untuk membuat animasi yang lebih smooth
@@ -189,34 +215,59 @@ function UILibrary.new(customConfig)
     SearchBar.Parent = MainFrame
     
     local SearchBarCorner = Instance.new("UICorner")
-    SearchBarCorner.CornerRadius = UDim.new(0, config.BorderRadius)
+    SearchBarCorner.CornerRadius = config.SearchBarCornerRadius
     SearchBarCorner.Parent = SearchBar
     
     -- Search Icon
     SearchIcon.Name = "SearchIcon"
     SearchIcon.BackgroundTransparency = 1
-    SearchIcon.Position = UDim2.new(0, 8, 0.5, 0)
+    SearchIcon.Position = UDim2.new(0, 10, 0.5, 0)
     SearchIcon.AnchorPoint = Vector2.new(0, 0.5)
     SearchIcon.Size = UDim2.new(0, 16, 0, 16)
     SearchIcon.Image = "rbxassetid://3926305904"
     SearchIcon.ImageRectOffset = Vector2.new(964, 324)
     SearchIcon.ImageRectSize = Vector2.new(36, 36)
-    SearchIcon.ImageColor3 = config.SecondaryTextColor
+    SearchIcon.ImageColor3 = config.AccentColor
     SearchIcon.Parent = SearchBar
     
     -- Search Input
     SearchInput.Name = "SearchInput"
     SearchInput.BackgroundTransparency = 1
-    SearchInput.Position = UDim2.new(0, 32, 0, 0)
+    SearchInput.Position = UDim2.new(0, 34, 0, 0)
     SearchInput.Size = UDim2.new(1, -40, 1, 0)
     SearchInput.Font = config.ButtonFont
     SearchInput.PlaceholderText = "Search games..."
     SearchInput.Text = ""
     SearchInput.TextColor3 = config.TextColor
-    SearchInput.PlaceholderColor3 = config.SecondaryTextColor
+    SearchInput.PlaceholderColor3 = Color3.fromRGB(130, 130, 135) -- More subtle placeholder
     SearchInput.TextSize = 14
     SearchInput.TextXAlignment = Enum.TextXAlignment.Left
     SearchInput.Parent = SearchBar
+    
+    -- Subtle highlight effect on focus
+    SearchInput.Focused:Connect(function()
+        smoothTween(SearchBar, config.AnimationSpeedFast, {
+            BackgroundColor3 = Color3.fromRGB(
+                math.min(config.SecondaryColor.R * 255 + 8, 255)/255,
+                math.min(config.SecondaryColor.G * 255 + 8, 255)/255,
+                math.min(config.SecondaryColor.B * 255 + 8, 255)/255
+            )
+        }):Play()
+        
+        smoothTween(SearchIcon, config.AnimationSpeedFast, {
+            ImageColor3 = config.AccentColorLight
+        }):Play()
+    end)
+    
+    SearchInput.FocusLost:Connect(function()
+        smoothTween(SearchBar, config.AnimationSpeedFast, {
+            BackgroundColor3 = config.SecondaryColor
+        }):Play()
+        
+        smoothTween(SearchIcon, config.AnimationSpeedFast, {
+            ImageColor3 = config.AccentColor
+        }):Play()
+    end)
     
     -- Add Category Buttons
     CategoryButtons.Name = "CategoryButtons"
@@ -242,23 +293,29 @@ function UILibrary.new(customConfig)
         local CategoryButton = Instance.new("TextButton")
         CategoryButton.Name = "Category_" .. catName
         CategoryButton.BackgroundColor3 = (catName == selectedCategory) and config.AccentColor or config.SecondaryColor
-        CategoryButton.BackgroundTransparency = (catName == selectedCategory) and 0.1 or 0.8 -- Lebih transparan
         CategoryButton.Size = UDim2.new(0, 0, 1, 0)
         CategoryButton.AutomaticSize = Enum.AutomaticSize.X
         CategoryButton.Font = config.ButtonFont
         CategoryButton.Text = " " .. catName .. " "
         CategoryButton.TextColor3 = config.TextColor
-        CategoryButton.TextSize = 13 -- Ukuran teks lebih kecil
+        CategoryButton.TextSize = 14
+        CategoryButton.BackgroundTransparency = (catName == selectedCategory) and 0 or 0.7
         CategoryButton.Parent = CategoryButtons
         
         local CategoryButtonCorner = Instance.new("UICorner")
-        CategoryButtonCorner.CornerRadius = UDim.new(0, config.BorderRadius)
+        CategoryButtonCorner.CornerRadius = UDim.new(0, 6)
         CategoryButtonCorner.Parent = CategoryButton
         
+        -- Improved hover effects
         CategoryButton.MouseEnter:Connect(function()
             if catName ~= selectedCategory then
                 smoothTween(CategoryButton, config.AnimationSpeedFast, {
-                    BackgroundTransparency = 0.5
+                    BackgroundTransparency = 0.5,
+                    BackgroundColor3 = Color3.fromRGB(
+                        math.min(config.SecondaryColor.R * 255 + 10, 255)/255,
+                        math.min(config.SecondaryColor.G * 255 + 10, 255)/255,
+                        math.min(config.SecondaryColor.B * 255 + 10, 255)/255
+                    )
                 }):Play()
             end
         end)
@@ -266,11 +323,13 @@ function UILibrary.new(customConfig)
         CategoryButton.MouseLeave:Connect(function()
             if catName ~= selectedCategory then
                 smoothTween(CategoryButton, config.AnimationSpeedFast, {
-                    BackgroundTransparency = 0.7
+                    BackgroundTransparency = 0.7,
+                    BackgroundColor3 = config.SecondaryColor
                 }):Play()
             end
         end)
         
+        -- Improved selection animation
         CategoryButton.MouseButton1Click:Connect(function()
             if catName ~= selectedCategory then
                 -- Update old selected button
@@ -290,17 +349,37 @@ function UILibrary.new(customConfig)
                 }):Play()
                 
                 selectedCategory = catName
-                -- Filter games based on category
+                
+                -- Filter games with animation
                 for _, child in pairs(GameList:GetChildren()) do
                     if child:IsA("Frame") and child.Name:sub(1, 9) == "GameItem_" then
                         local gameCategory = child:GetAttribute("Category") or "All"
-                        child.Visible = (selectedCategory == "All" or gameCategory == selectedCategory)
+                        local shouldBeVisible = (selectedCategory == "All" or gameCategory == selectedCategory)
                         
-                        -- Also apply search filter if exists
+                        -- Apply search filter if exists
                         local searchText = string.lower(SearchInput.Text)
                         if searchText ~= "" then
                             local gameName = child.Name:sub(10)
-                            child.Visible = child.Visible and string.find(string.lower(gameName), searchText)
+                            shouldBeVisible = shouldBeVisible and string.find(string.lower(gameName), searchText)
+                        end
+                        
+                        -- Animate visibility change
+                        if shouldBeVisible ~= child.Visible then
+                            if shouldBeVisible then
+                                child.Visible = true
+                                child.BackgroundTransparency = 1
+                                smoothTween(child, config.AnimationSpeedFast, {
+                                    BackgroundTransparency = 0
+                                }):Play()
+                            else
+                                smoothTween(child, config.AnimationSpeedFast, {
+                                    BackgroundTransparency = 1
+                                }):Play()
+                                
+                                task.delay(config.AnimationSpeedFast, function()
+                                    child.Visible = false
+                                end)
+                            end
                         end
                     end
                 end
@@ -382,183 +461,125 @@ function UILibrary.new(customConfig)
             gameItemHeight = config.MobileGameItemHeight
         end
         
-        -- Create game item container
+        -- Create game item container with refined styling
         local GameItem = Instance.new("Frame")
         local GameItemCorner = Instance.new("UICorner")
-        local ThumbnailFrame = Instance.new("Frame")
-        local ThumbnailCorner = Instance.new("UICorner")
-        local Thumbnail = Instance.new("ImageLabel")
         local GameInfo = Instance.new("Frame")
         local GameName = Instance.new("TextLabel")
         local GameLastUpdate = Instance.new("TextLabel")
         local GameStatus = Instance.new("TextLabel")
+        local StatusIndicator = Instance.new("Frame")
         local PlayButton = Instance.new("ImageButton")
-        local PlayButtonCorner = Instance.new("UICorner")
         
-        -- Set up game item
+        -- Set up game item with improved styling
         GameItem.Name = "GameItem_" .. gameName
-        GameItem.BackgroundColor3 = config.SecondaryColor -- Konsisten dengan search bar
+        GameItem.BackgroundColor3 = config.OrangeDark
         GameItem.Size = UDim2.new(1, 0, 0, gameItemHeight)
         GameItem.Parent = GameList
-        GameItem.LayoutOrder = 10 -- Default sort order
-        
-        -- Add category attribute
+        GameItem.LayoutOrder = 10
         GameItem:SetAttribute("Category", gameCategory)
         
-        GameItemCorner.CornerRadius = UDim.new(0, config.BorderRadius)
+        GameItemCorner.CornerRadius = config.BorderRadius
         GameItemCorner.Parent = GameItem
         
-        -- Add shadow for game item
-        local itemShadow = Instance.new("ImageLabel")
-        itemShadow.Name = "Shadow"
-        itemShadow.BackgroundTransparency = 1
-        itemShadow.Image = "rbxassetid://5028857084"
-        itemShadow.ImageColor3 = Color3.fromRGB(0, 0, 0)
-        itemShadow.ImageTransparency = 0.8
-        itemShadow.Position = UDim2.new(0.5, 0, 0.5, 0)
-        itemShadow.AnchorPoint = Vector2.new(0.5, 0.5)
-        itemShadow.Size = UDim2.new(1, 8, 1, 8)
-        itemShadow.ZIndex = -1
-        itemShadow.Parent = GameItem
-        
-        -- Thumbnail container
-        ThumbnailFrame.Name = "ThumbnailFrame"
-        ThumbnailFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
-        ThumbnailFrame.Position = UDim2.new(0, 8, 0.5, 0)
-        ThumbnailFrame.AnchorPoint = Vector2.new(0, 0.5)
-        ThumbnailFrame.Size = UDim2.new(0, gameItemHeight - 16, 0, gameItemHeight - 16)
-        ThumbnailFrame.Parent = GameItem
-        
-        ThumbnailCorner.CornerRadius = UDim.new(0, config.BorderRadius)
-        ThumbnailCorner.Parent = ThumbnailFrame
-        
-        -- Game thumbnail
-        Thumbnail.Name = "Thumbnail"
-        Thumbnail.BackgroundTransparency = 1
-        Thumbnail.Size = UDim2.new(1, 0, 1, 0)
-        Thumbnail.Image = gameThumbnail
-        Thumbnail.ScaleType = Enum.ScaleType.Fit
-        Thumbnail.Parent = ThumbnailFrame
-        
-        -- Game info container
-        GameInfo.Name = "GameInfo"
-        GameInfo.BackgroundTransparency = 1
-        GameInfo.Position = UDim2.new(0, gameItemHeight, 0, 0)
-        GameInfo.Size = UDim2.new(1, -gameItemHeight - 50, 1, 0)
-        GameInfo.Parent = GameItem
-        
-        -- Game name
+        -- Game name with improved typography
         GameName.Name = "GameName"
         GameName.BackgroundTransparency = 1
-        GameName.Position = UDim2.new(0, 8, 0, 8)
-        GameName.Size = UDim2.new(1, -8, 0, 18)
+        GameName.Position = UDim2.new(0, 16, 0, 16)
+        GameName.Size = UDim2.new(1, -100, 0, 18)
         GameName.Font = config.Font
         GameName.Text = gameName
         GameName.TextColor3 = config.TextColor
-        GameName.TextSize = 15
+        GameName.TextSize = 16
         GameName.TextXAlignment = Enum.TextXAlignment.Left
-        GameName.Parent = GameInfo
+        GameName.Parent = GameItem
         
-        -- Last update info
+        -- Last update info - better positioning
         GameLastUpdate.Name = "GameLastUpdate"
         GameLastUpdate.BackgroundTransparency = 1
-        GameLastUpdate.Position = UDim2.new(0, 8, 0, 30)
-        GameLastUpdate.Size = UDim2.new(1, -8, 0, 14)
+        GameLastUpdate.Position = UDim2.new(0, 16, 0, 38)
+        GameLastUpdate.Size = UDim2.new(1, -100, 0, 14)
         GameLastUpdate.Font = config.ButtonFont
         GameLastUpdate.Text = "Last Update: " .. gameLastUpdate
         GameLastUpdate.TextColor3 = config.SecondaryTextColor
-        GameLastUpdate.TextSize = 12
+        GameLastUpdate.TextSize = 13
         GameLastUpdate.TextXAlignment = Enum.TextXAlignment.Left
-        GameLastUpdate.Parent = GameInfo
+        GameLastUpdate.Parent = GameItem
         
-        -- Game status with status badge
+        -- Status with indicator - matches screenshot
         GameStatus.Name = "GameStatus"
         GameStatus.BackgroundTransparency = 1
-        GameStatus.Position = UDim2.new(0, 8, 0, 48)
-        GameStatus.Size = UDim2.new(1, -8, 0, 14)
+        GameStatus.Position = UDim2.new(0, 16, 0, 55)
+        GameStatus.Size = UDim2.new(1, -100, 0, 14)
         GameStatus.Font = config.ButtonFont
         GameStatus.Text = "Status: " .. gameStatus
         GameStatus.TextColor3 = config.SecondaryTextColor
-        GameStatus.TextSize = 12
+        GameStatus.TextSize = 13
         GameStatus.TextXAlignment = Enum.TextXAlignment.Left
-        GameStatus.Parent = GameInfo
+        GameStatus.Parent = GameItem
         
-        -- Status indicator based on status text
-        local statusColors = {
-            ["Working"] = Color3.fromRGB(80, 180, 120), -- Warna hijau lebih soft
-            ["Updated"] = Color3.fromRGB(90, 140, 210), -- Biru lebih soft
-            ["Testing"] = Color3.fromRGB(220, 180, 80), -- Kuning lebih soft
-            ["Patched"] = Color3.fromRGB(200, 90, 80)  -- Merah lebih soft
-        }
-        
-        local StatusIndicator = Instance.new("Frame")
+        -- Colored status indicator - thin line
+        local statusColor = config.StatusColors[gameStatus] or Color3.fromRGB(150, 150, 150)
         StatusIndicator.Name = "StatusIndicator"
-        StatusIndicator.BackgroundColor3 = statusColors[gameStatus] or Color3.fromRGB(150, 150, 150)
-        StatusIndicator.Position = UDim2.new(0, -4, 0.5, 0)
+        StatusIndicator.BackgroundColor3 = statusColor
+        StatusIndicator.Position = UDim2.new(0, 0, 0.5, 0)
         StatusIndicator.AnchorPoint = Vector2.new(0, 0.5)
-        StatusIndicator.Size = UDim2.new(0, 3, 0, 12)
-        StatusIndicator.Parent = GameStatus
+        StatusIndicator.Size = UDim2.new(0, 3, 0.8, 0) -- Vertical line on left
+        StatusIndicator.Parent = GameItem
         
         local StatusCorner = Instance.new("UICorner")
         StatusCorner.CornerRadius = UDim.new(0, 2)
         StatusCorner.Parent = StatusIndicator
         
-        -- Adjust layouts for mobile
-        if isMobile and config.MobileScaling then
-            GameLastUpdate.Position = UDim2.new(0, 8, 0, 26)
-            GameStatus.Position = UDim2.new(0, 8, 0, 42)
-        end
-        
-        -- Play button with orange accent
+        -- Play button - orange accent with soft glow
         PlayButton.Name = "PlayButton"
         PlayButton.BackgroundColor3 = config.AccentColor
-        PlayButton.BackgroundTransparency = config.AccentTransparency
-        PlayButton.Position = UDim2.new(1, -40, 0.5, 0)
+        PlayButton.Position = UDim2.new(1, -50, 0.5, 0)
         PlayButton.AnchorPoint = Vector2.new(0, 0.5)
-        PlayButton.Size = UDim2.new(0, 32, 0, 32)
+        PlayButton.Size = UDim2.new(0, 34, 0, 34)
         PlayButton.Image = "rbxassetid://3926307971"
         PlayButton.ImageRectOffset = Vector2.new(764, 244)
         PlayButton.ImageRectSize = Vector2.new(36, 36)
         PlayButton.ImageColor3 = config.TextColor
-        PlayButton.ImageTransparency = 0.1
         PlayButton.Parent = GameItem
         
-        PlayButtonCorner.CornerRadius = UDim.new(0, config.BorderRadius)
+        local PlayButtonCorner = Instance.new("UICorner")
+        PlayButtonCorner.CornerRadius = UDim.new(0, 6)
         PlayButtonCorner.Parent = PlayButton
         
-        -- Add a subtle glow effect to the play button
+        -- Subtle glow effect
         local PlayButtonGlow = Instance.new("ImageLabel")
         PlayButtonGlow.Name = "Glow"
         PlayButtonGlow.BackgroundTransparency = 1
         PlayButtonGlow.Image = "rbxassetid://5028857084"
-        PlayButtonGlow.ImageColor3 = Color3.fromRGB(255, 150, 50)
+        PlayButtonGlow.ImageColor3 = config.AccentColor
         PlayButtonGlow.ImageTransparency = config.GlowTransparency
-        PlayButtonGlow.Size = UDim2.new(1.3, 0, 1.3, 0)
+        PlayButtonGlow.Size = UDim2.new(1.4, 0, 1.4, 0)
         PlayButtonGlow.Position = UDim2.new(0.5, 0, 0.5, 0)
         PlayButtonGlow.AnchorPoint = Vector2.new(0.5, 0.5)
         PlayButtonGlow.ZIndex = -1
         PlayButtonGlow.Parent = PlayButton
         
-        -- Play button hover effects
+        -- Improved hover effects for play button
         PlayButton.MouseEnter:Connect(function()
             smoothTween(PlayButton, config.AnimationSpeedFast, {
-                Size = UDim2.new(0, 34, 0, 34),
-                BackgroundTransparency = 0
+                BackgroundColor3 = config.AccentColorLight,
+                Size = UDim2.new(0, 36, 0, 36)
             }):Play()
             
             smoothTween(PlayButtonGlow, config.AnimationSpeedFast, {
-                ImageTransparency = 0.7
+                ImageTransparency = config.GlowTransparency - 0.2
             }):Play()
         end)
         
         PlayButton.MouseLeave:Connect(function()
             smoothTween(PlayButton, config.AnimationSpeedFast, {
-                Size = UDim2.new(0, 32, 0, 32),
-                BackgroundTransparency = 0
+                BackgroundColor3 = config.AccentColor,
+                Size = UDim2.new(0, 34, 0, 34)
             }):Play()
             
             smoothTween(PlayButtonGlow, config.AnimationSpeedFast, {
-                ImageTransparency = 0.8
+                ImageTransparency = config.GlowTransparency
             }):Play()
         end)
         
@@ -566,16 +587,16 @@ function UILibrary.new(customConfig)
         local hoverEnter = function()
             smoothTween(GameItem, config.AnimationSpeedFast, {
                 BackgroundColor3 = Color3.fromRGB(
-                    math.clamp(config.SecondaryColor.R * 255 + 10, 0, 255)/255,
-                    math.clamp(config.SecondaryColor.G * 255 + 10, 0, 255)/255,
-                    math.clamp(config.SecondaryColor.B * 255 + 10, 0, 255)/255
+                    math.clamp(config.OrangeDark.R * 255 + 5, 0, 255)/255,
+                    math.clamp(config.OrangeDark.G * 255 + 5, 0, 255)/255,
+                    math.clamp(config.OrangeDark.B * 255 + 5, 0, 255)/255
                 )
             }):Play()
         end
         
         local hoverLeave = function()
             smoothTween(GameItem, config.AnimationSpeedFast, {
-                BackgroundColor3 = config.SecondaryColor
+                BackgroundColor3 = config.OrangeDark
             }):Play()
         end
         
@@ -586,13 +607,13 @@ function UILibrary.new(customConfig)
         PlayButton.MouseButton1Click:Connect(function()
             -- Visual feedback
             smoothTween(PlayButton, 0.1, {
-                Size = UDim2.new(0, 28, 0, 28)
+                Size = UDim2.new(0, 30, 0, 30)
             }):Play()
             
             task.wait(0.1)
             
             smoothTween(PlayButton, 0.1, {
-                Size = UDim2.new(0, 32, 0, 32)
+                Size = UDim2.new(0, 34, 0, 34)
             }):Play()
             
             -- Callback
