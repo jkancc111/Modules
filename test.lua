@@ -1107,313 +1107,376 @@ end;
 function UILibrary:CreateStartMenu(options)
 	local startMenu = {}
 	options = options or {}
+	
+	-- Konfigurasi default
 	local logoText = options.LogoText or "Lomu Hub"
 	local description = options.Description or "Powerful script hub for all your needs"
-	local accentColor = options.AccentColor or config.AccentColor;
-	local buttonCallback = options.ButtonCallback or function()
-	end;
-	local universalCallback = options.UniversalButtonCallback or function()
-	end;
-	local customPlayerName = options.CustomPlayerName;
+	local accentColor = options.AccentColor or config.AccentColor
+	local buttonCallback = options.ButtonCallback or function() end
+	local universalCallback = options.UniversalButtonCallback or function() end
+	local customPlayerName = options.CustomPlayerName
+	
+	-- Membuat efek blur
 	local BlurEffect = Instance.new("BlurEffect")
-	BlurEffect.Size = 0;
+	BlurEffect.Size = 0
 	BlurEffect.Parent = game:GetService("Lighting")
+	
+	-- Membuat UI dasar
 	local ScreenGui = Instance.new("ScreenGui")
 	local Background = Instance.new("Frame")
-	local MainFrame = Instance.new("Frame")
-	local MainCorner = Instance.new("UICorner")
-	local MainBorder = Instance.new("UIStroke")
-	local Logo = Instance.new("TextLabel")
-	local Description = Instance.new("TextLabel")
-	local LoadButton = Instance.new("TextButton")
-	local LoadButtonCorner = Instance.new("UICorner")
-	local UniversalButton = Instance.new("TextButton")
-	local UniversalButtonCorner = Instance.new("UICorner")
+	local StartMenuFrame = Instance.new("Frame")
+	local StartMenuCorner = Instance.new("UICorner")
+	local StartMenuBorder = Instance.new("UIStroke")
+	
+	-- Membuat komponen utama
 	local PlayerInfo = Instance.new("Frame")
 	local PlayerAvatar = Instance.new("ImageLabel")
 	local PlayerAvatarCorner = Instance.new("UICorner")
 	local PlayerName = Instance.new("TextLabel")
+	local ButtonLoadHub = Instance.new("TextButton")
+	local ButtonLoadHubCorner = Instance.new("UICorner")
+	local UniversalButton = Instance.new("TextButton")
+	local UniversalButtonCorner = Instance.new("UICorner")
+	
+	-- Konfigurasi ScreenGui
 	ScreenGui.Name = "LomuStartMenu"
-	ScreenGui.ResetOnSpawn = false;
-	ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling;
-	ScreenGui.IgnoreGuiInset = true;
-	ScreenGui.DisplayOrder = 100;
+	ScreenGui.ResetOnSpawn = false
+	ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+	ScreenGui.IgnoreGuiInset = true
+	ScreenGui.DisplayOrder = 100
+	
+	-- Hapus instance lama jika ada
+	for _, instance in pairs(game:GetService("CoreGui"):GetChildren()) do
+		if instance.Name == "LomuStartMenu" then
+			instance:Destroy()
+		end
+	end
+	
+	pcall(function()
+		for _, instance in pairs(game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui"):GetChildren()) do
+			if instance.Name == "LomuStartMenu" then
+				instance:Destroy()
+			end
+		end
+	end)
+	
+	-- Background untuk blur
 	Background.Name = "Background"
 	Background.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-	Background.BackgroundTransparency = 1;
+	Background.BackgroundTransparency = 1
 	Background.Size = UDim2.new(1, 0, 1, 0)
-	Background.ZIndex = 5;
-	Background.Parent = ScreenGui;
-	MainFrame.Name = "MainFrame"
-	MainFrame.BackgroundColor3 = config.MainColor;
-	MainFrame.BorderSizePixel = 0;
-	MainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
-	MainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
-	MainFrame.Size = UDim2.new(0, 0, 0, 0)
-	MainFrame.ZIndex = 10;
-	MainFrame.Parent = ScreenGui;
-	local MainShadow = createShadow(MainFrame)
-	MainShadow.ImageTransparency = 1;
-	MainCorner.CornerRadius = UDim.new(0, 6)
-	MainCorner.Parent = MainFrame;
-	MainBorder.Color = config.BorderColor;
-	MainBorder.Thickness = 1;
-	MainBorder.Transparency = 1;
-	MainBorder.Parent = MainFrame;
-	Logo.Name = "Logo"
-	Logo.BackgroundTransparency = 1;
-	Logo.Position = UDim2.new(0, 0, 0.2, 0)
-	Logo.Size = UDim2.new(1, 0, 0, 40)
-	Logo.Font = config.HeadingFont;
-	Logo.Text = logoText;
-	Logo.TextColor3 = accentColor;
-	Logo.TextSize = 28;
-	Logo.TextTransparency = 1;
-	Logo.ZIndex = 11;
-	Logo.Parent = MainFrame;
-	Description.Name = "Description"
-	Description.BackgroundTransparency = 1;
-	Description.Position = UDim2.new(0, 0, 0.2, 45)
-	Description.Size = UDim2.new(1, 0, 0, 20)
-	Description.Font = config.BodyFont;
-	Description.Text = description;
-	Description.TextColor3 = config.SecondaryTextColor;
-	Description.TextSize = 14;
-	Description.TextTransparency = 1;
-	Description.ZIndex = 11;
-	Description.Parent = MainFrame;
-	LoadButton.Name = "LoadButton"
-	LoadButton.BackgroundColor3 = accentColor;
-	LoadButton.Position = UDim2.new(0.5, -75, 0.65, 0)
-	LoadButton.Size = UDim2.new(0, 150, 0, 36)
-	LoadButton.Font = config.ButtonFont;
-	LoadButton.Text = "Load Hub"
-	LoadButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-	LoadButton.TextSize = 16;
-	LoadButton.AutoButtonColor = false;
-	LoadButton.BackgroundTransparency = 1;
-	LoadButton.TextTransparency = 1;
-	LoadButton.ZIndex = 11;
-	LoadButton.Parent = MainFrame;
-	LoadButtonCorner.CornerRadius = UDim.new(0, 5)
-	LoadButtonCorner.Parent = LoadButton;
-	UniversalButton.Name = "UniversalButton"
-	UniversalButton.BackgroundColor3 = Color3.fromRGB(60, 60, 70)
-	UniversalButton.Position = UDim2.new(0.5, -75, 0.65, 45)
-	UniversalButton.Size = UDim2.new(0, 150, 0, 36)
-	UniversalButton.Font = config.ButtonFont;
-	UniversalButton.Text = "Universal"
-	UniversalButton.TextColor3 = Color3.fromRGB(220, 220, 230)
-	UniversalButton.TextSize = 16;
-	UniversalButton.AutoButtonColor = false;
-	UniversalButton.BackgroundTransparency = 1;
-	UniversalButton.TextTransparency = 1;
-	UniversalButton.ZIndex = 11;
-	UniversalButton.Parent = MainFrame;
-	UniversalButtonCorner.CornerRadius = UDim.new(0, 5)
-	UniversalButtonCorner.Parent = UniversalButton;
+	Background.ZIndex = 5
+	Background.Parent = ScreenGui
+	
+	-- Start Menu Frame (layout horizontal)
+	StartMenuFrame.Name = "StartMenuFrame"
+	StartMenuFrame.BackgroundColor3 = config.MainColor
+	StartMenuFrame.BorderSizePixel = 0
+	StartMenuFrame.Position = UDim2.new(0.5, 0, 1.1, 0) -- Posisi awal di bawah layar
+	StartMenuFrame.AnchorPoint = Vector2.new(0.5, 0)
+	StartMenuFrame.Size = UDim2.new(0, 600, 0, 70) -- Ukuran horizontal sesuai gambar
+	StartMenuFrame.ZIndex = 10
+	StartMenuFrame.Parent = ScreenGui
+	
+	-- Bayangan untuk Start Menu
+	local StartMenuShadow = createShadow(StartMenuFrame)
+	StartMenuShadow.ImageTransparency = 1
+	
+	-- Sudut dan Stroke untuk Start Menu
+	StartMenuCorner.CornerRadius = UDim.new(0, 6)
+	StartMenuCorner.Parent = StartMenuFrame
+	
+	StartMenuBorder.Color = config.BorderColor
+	StartMenuBorder.Thickness = 1
+	StartMenuBorder.Transparency = 1
+	StartMenuBorder.Parent = StartMenuFrame
+	
+	-- Player Info Section (kiri)
 	PlayerInfo.Name = "PlayerInfo"
-	PlayerInfo.BackgroundTransparency = 1;
-	PlayerInfo.Position = UDim2.new(0.5, 0, 0.85, 10)
-	PlayerInfo.Size = UDim2.new(0.8, 0, 0, 50)
-	PlayerInfo.AnchorPoint = Vector2.new(0.5, 0)
-	PlayerInfo.ZIndex = 11;
-	PlayerInfo.Parent = MainFrame;
+	PlayerInfo.BackgroundTransparency = 1
+	PlayerInfo.Position = UDim2.new(0, 10, 0.5, 0)
+	PlayerInfo.Size = UDim2.new(0, 180, 0, 60)
+	PlayerInfo.AnchorPoint = Vector2.new(0, 0.5)
+	PlayerInfo.ZIndex = 11
+	PlayerInfo.Parent = StartMenuFrame
+	
+	-- Avatar Player
 	PlayerAvatar.Name = "PlayerAvatar"
-	PlayerAvatar.BackgroundTransparency = 0.5;
+	PlayerAvatar.BackgroundTransparency = 0.5
 	PlayerAvatar.BackgroundColor3 = Color3.fromRGB(30, 35, 45)
-	PlayerAvatar.Position = UDim2.new(0.5, -85, 0.5, 0)
+	PlayerAvatar.Position = UDim2.new(0, 0, 0.5, 0)
 	PlayerAvatar.AnchorPoint = Vector2.new(0, 0.5)
-	PlayerAvatar.Size = UDim2.new(0, 40, 0, 40)
-	PlayerAvatar.ImageTransparency = 1;
-	PlayerAvatar.ZIndex = 12;
-	PlayerAvatar.Parent = PlayerInfo;
+	PlayerAvatar.Size = UDim2.new(0, 48, 0, 48)
+	PlayerAvatar.ImageTransparency = 1
+	PlayerAvatar.ZIndex = 12
+	PlayerAvatar.Parent = PlayerInfo
+	
 	PlayerAvatarCorner.CornerRadius = UDim.new(1, 0)
-	PlayerAvatarCorner.Parent = PlayerAvatar;
+	PlayerAvatarCorner.Parent = PlayerAvatar
+	
+	-- Nama Player
 	PlayerName.Name = "PlayerName"
-	PlayerName.BackgroundTransparency = 1;
-	PlayerName.Position = UDim2.new(0.5, -35, 0.5, 0)
+	PlayerName.BackgroundTransparency = 1
+	PlayerName.Position = UDim2.new(0, 58, 0.5, 0)
 	PlayerName.Size = UDim2.new(0, 120, 0, 40)
 	PlayerName.AnchorPoint = Vector2.new(0, 0.5)
-	PlayerName.Font = config.Font;
-	PlayerName.TextColor3 = config.TextColor;
-	PlayerName.TextSize = 14;
-	PlayerName.TextXAlignment = Enum.TextXAlignment.Left;
-	PlayerName.TextTransparency = 1;
-	PlayerName.ZIndex = 12;
-	PlayerName.Parent = PlayerInfo;
-	local player = game:GetService("Players").LocalPlayer;
+	PlayerName.Font = config.Font
+	PlayerName.TextColor3 = config.HeadingColor
+	PlayerName.TextSize = 16
+	PlayerName.TextXAlignment = Enum.TextXAlignment.Left
+	PlayerName.TextTransparency = 1
+	PlayerName.ZIndex = 12
+	PlayerName.Parent = PlayerInfo
+	
+	-- Load Game Hub Button
+	ButtonLoadHub.Name = "ButtonLoadHub"
+	ButtonLoadHub.BackgroundColor3 = accentColor
+	ButtonLoadHub.Position = UDim2.new(0.5, 0, 0.5, 0)
+	ButtonLoadHub.Size = UDim2.new(0, 180, 0, 40)
+	ButtonLoadHub.Font = config.ButtonFont
+	ButtonLoadHub.Text = "Button Load Lomu Hub"
+	ButtonLoadHub.TextColor3 = Color3.fromRGB(255, 255, 255)
+	ButtonLoadHub.TextSize = 14
+	ButtonLoadHub.AutoButtonColor = false
+	ButtonLoadHub.BackgroundTransparency = 1
+	ButtonLoadHub.TextTransparency = 1
+	ButtonLoadHub.ZIndex = 11
+	ButtonLoadHub.AnchorPoint = Vector2.new(0.5, 0.5)
+	ButtonLoadHub.Parent = StartMenuFrame
+	
+	ButtonLoadHubCorner.CornerRadius = UDim.new(0, 5)
+	ButtonLoadHubCorner.Parent = ButtonLoadHub
+	
+	-- Universal Button
+	UniversalButton.Name = "UniversalButton"
+	UniversalButton.BackgroundColor3 = Color3.fromRGB(60, 60, 70)
+	UniversalButton.Position = UDim2.new(0.82, 0, 0.5, 0)
+	UniversalButton.Size = UDim2.new(0, 180, 0, 40)
+	UniversalButton.Font = config.ButtonFont
+	UniversalButton.Text = "Button Load Universal Script"
+	UniversalButton.TextColor3 = Color3.fromRGB(220, 220, 230)
+	UniversalButton.TextSize = 14
+	UniversalButton.AutoButtonColor = false
+	UniversalButton.BackgroundTransparency = 1
+	UniversalButton.TextTransparency = 1
+	UniversalButton.ZIndex = 11
+	UniversalButton.AnchorPoint = Vector2.new(0.5, 0.5)
+	UniversalButton.Parent = StartMenuFrame
+	
+	UniversalButtonCorner.CornerRadius = UDim.new(0, 5)
+	UniversalButtonCorner.Parent = UniversalButton
+	
+	-- Ambil avatar dan nama player
+	local player = game:GetService("Players").LocalPlayer
 	pcall(function()
-		local userId = player.UserId;
+		local userId = player.UserId
 		PlayerAvatar.Image = "https://www.roblox.com/headshot-thumbnail/image?userId=" .. userId .. "&width=420&height=420&format=png"
 	end)
-	PlayerName.Text = customPlayerName or player.Name;
+	
+	PlayerName.Text = customPlayerName or player.Name
+	
+	-- Tempatkan ScreenGui di CoreGui atau PlayerGui
 	pcall(function()
 		ScreenGui.Parent = game:GetService("CoreGui")
 	end)
+	
 	if not ScreenGui.Parent then
 		ScreenGui.Parent = game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui")
-	end;
-	LoadButton.MouseEnter:Connect(function()
-		smoothTween(LoadButton, 0.3, {
+	end
+	
+	-- Hover effect untuk button Load Hub
+	ButtonLoadHub.MouseEnter:Connect(function()
+		smoothTween(ButtonLoadHub, 0.2, {
 			BackgroundColor3 = config.AccentColorHover,
-			Size = UDim2.new(0, 155, 0, 38)
+			Size = UDim2.new(0, 185, 0, 42)
 		})
 	end)
-	LoadButton.MouseLeave:Connect(function()
-		smoothTween(LoadButton, 0.3, {
+	
+	ButtonLoadHub.MouseLeave:Connect(function()
+		smoothTween(ButtonLoadHub, 0.2, {
 			BackgroundColor3 = accentColor,
-			Size = UDim2.new(0, 150, 0, 36)
+			Size = UDim2.new(0, 180, 0, 40)
 		})
 	end)
-	local isClosing = false;
-	LoadButton.MouseButton1Click:Connect(function()
+	
+	-- Hover effect untuk button Universal
+	UniversalButton.MouseEnter:Connect(function()
+		smoothTween(UniversalButton, 0.2, {
+			BackgroundColor3 = Color3.fromRGB(80, 80, 90),
+			Size = UDim2.new(0, 185, 0, 42)
+		})
+	end)
+	
+	UniversalButton.MouseLeave:Connect(function()
+		smoothTween(UniversalButton, 0.2, {
+			BackgroundColor3 = Color3.fromRGB(60, 60, 70),
+			Size = UDim2.new(0, 180, 0, 40)
+		})
+	end)
+	
+	-- Flag untuk mencegah klik ganda
+	local isClosing = false
+	
+	-- Click handler untuk Load Hub button
+	ButtonLoadHub.MouseButton1Click:Connect(function()
 		if isClosing then
 			return
-		end;
-		isClosing = true;
-		smoothTween(LoadButton, 0.1, {
-			Size = UDim2.new(0, 145, 0, 34),
-			BackgroundColor3 = config.AccentColorActive
-		})
-		task.delay(0.1, function()
-			smoothTween(LoadButton, 0.1, {
-				Size = UDim2.new(0, 150, 0, 36),
-				BackgroundColor3 = accentColor
-			})
-		end)
-		for _, child in pairs(MainFrame:GetChildren()) do
-			if child:IsA("GuiObject") and child ~= MainFrame and child.Name ~= "Shadow" then
-				if child.ClassName == "TextLabel" or child.ClassName == "TextButton" or child.ClassName == "TextBox" then
-					smoothTween(child, 0.4, {
-						TextTransparency = 1
-					})
-				elseif child.ClassName == "ImageLabel" then
-					smoothTween(child, 0.4, {
-						ImageTransparency = 1
-					})
-				end;
-				
-				if child.BackgroundTransparency < 1 then
-					smoothTween(child, 0.4, {
-						BackgroundTransparency = 1
-					})
-				end;
-				
-				if child.Name == "PlayerInfo" then
-					for _, subChild in pairs(child:GetChildren()) do
-						if subChild:IsA("GuiObject") then
-							local tweenProperties = {
-								BackgroundTransparency = 1
-							}
-							
-							if subChild.ClassName == "TextLabel" or 
-							   subChild.ClassName == "TextButton" or 
-							   subChild.ClassName == "TextBox" then
-								tweenProperties.TextTransparency = 1
-							end
-							
-							if subChild.ClassName == "ImageLabel" or 
-							   subChild.ClassName == "ImageButton" then
-								tweenProperties.ImageTransparency = 1
-							end
-							
-							smoothTween(subChild, 0.3, tweenProperties)
-						end
-					end
-					
-					task.delay(0.5, function()
-						if child and child.Parent then
-							child:Destroy()
-						end
-					end)
-				end
-			end
 		end
 		
-		task.delay(0.4, function()
-			local closeTween = game:GetService("TweenService"):Create(MainFrame, TweenInfo.new(0.7, Enum.EasingStyle.Back, Enum.EasingDirection.In), {
-				Size = UDim2.new(0, 0, 0, 0),
-				Position = UDim2.new(0.5, 0, 0.5, 0)
+		isClosing = true
+		
+		-- Efek click
+		smoothTween(ButtonLoadHub, 0.1, {
+			Size = UDim2.new(0, 175, 0, 38),
+			BackgroundColor3 = config.AccentColorActive
+		})
+		
+		task.delay(0.1, function()
+			smoothTween(ButtonLoadHub, 0.1, {
+				Size = UDim2.new(0, 180, 0, 40),
+				BackgroundColor3 = accentColor
 			})
-			smoothTween(MainShadow, 0.6, {
-				ImageTransparency = 1
+			
+			-- Fade out semua elemen UI
+			smoothTween(PlayerAvatar, 0.3, {
+				ImageTransparency = 1,
+				BackgroundTransparency = 1
 			})
-			closeTween:Play()
-			closeTween.Completed:Connect(function()
-				if ScreenGui and ScreenGui.Parent then
-					ScreenGui:Destroy()
-				end;
-				task.delay(0.1, function()
-					if BlurEffect and BlurEffect.Parent then
-						BlurEffect:Destroy()
-					end
+			
+			smoothTween(PlayerName, 0.3, {
+				TextTransparency = 1
+			})
+			
+			smoothTween(ButtonLoadHub, 0.3, {
+				TextTransparency = 1,
+				BackgroundTransparency = 1
+			})
+			
+			smoothTween(UniversalButton, 0.3, {
+				TextTransparency = 1,
+				BackgroundTransparency = 1
+			})
+			
+			-- Animasi turun
+			task.delay(0.2, function()
+				local closeTween = game:GetService("TweenService"):Create(StartMenuFrame, 
+					TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.In), 
+					{Position = UDim2.new(0.5, 0, 1.1, 0)})
+				
+				smoothTween(StartMenuBorder, 0.3, {
+					Transparency = 1
+				})
+				
+				smoothTween(StartMenuShadow, 0.3, {
+					ImageTransparency = 1
+				})
+				
+				closeTween:Play()
+				
+				closeTween.Completed:Connect(function()
+					-- Panggil callback untuk membuat Game Hub
+					task.spawn(buttonCallback)
 					
-					if Background and Background.Parent then
-						Background:Destroy()
-					end
-				end)
-			end)
+					-- Jangan hapus ScreenGui agar background blur tetap ada
+					-- Hanya hapus StartMenuFrame
+					StartMenuFrame:Destroy()
+				})
+			})
 		end)
 	end)
-	PlayerInfo.Active = false;
-	PlayerAvatar.Active = false;
-	PlayerName.Active = false;
-	PlayerInfo.InputBegan:Connect(function(input)
-		input:Destroy()
+	
+	-- Click handler untuk Universal button
+	UniversalButton.MouseButton1Click:Connect(function()
+		if isClosing then
+			return
+		end
+		
+		-- Efek click
+		smoothTween(UniversalButton, 0.1, {
+			Size = UDim2.new(0, 175, 0, 38),
+			BackgroundColor3 = Color3.fromRGB(50, 50, 60)
+		})
+		
+		task.delay(0.1, function()
+			smoothTween(UniversalButton, 0.1, {
+				Size = UDim2.new(0, 180, 0, 40),
+				BackgroundColor3 = Color3.fromRGB(60, 60, 70)
+			})
+			
+			-- Jalankan universal callback
+			task.spawn(universalCallback)
+		end)
 	end)
-	smoothTween(BlurEffect, 0.6, {
+	
+	-- Nonaktifkan interaksi pada PlayerInfo dan komponennya
+	PlayerInfo.Active = false
+	PlayerAvatar.Active = false
+	PlayerName.Active = false
+	
+	-- Tambahkan blur dan background
+	smoothTween(BlurEffect, 0.5, {
 		Size = 10
 	})
-	smoothTween(Background, 0.6, {
+	
+	smoothTween(Background, 0.5, {
 		BackgroundTransparency = 0.4
 	})
-	task.delay(0.2, function()
-		MainFrame.Size = UDim2.new(0, 320, 0, 360)
-		local sizeTween = game:GetService("TweenService"):Create(MainFrame, TweenInfo.new(0.8, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
-			Size = UDim2.new(0, 320, 0, 360)
-		})
-		sizeTween:Play()
-		smoothTween(MainBorder, 0.8, {
+	
+	-- Animasi Start Menu dari bawah layar
+	task.delay(0.1, function()
+		-- Animasi muncul dari bawah
+		local appearTween = game:GetService("TweenService"):Create(
+			StartMenuFrame, 
+			TweenInfo.new(0.6, Enum.EasingStyle.Back, Enum.EasingDirection.Out), 
+			{Position = UDim2.new(0.5, 0, 0.95, -80)} -- Posisi akhir
+		)
+		
+		appearTween:Play()
+		
+		smoothTween(StartMenuBorder, 0.4, {
 			Transparency = 0
 		})
-		smoothTween(MainShadow, 0.8, {
+		
+		smoothTween(StartMenuShadow, 0.4, {
 			ImageTransparency = 0.5
 		})
+		
+		-- Animasi fade in untuk komponen UI
 		task.delay(0.3, function()
-			smoothTween(Logo, 0.5, {
-				TextTransparency = 0
+			smoothTween(PlayerAvatar, 0.4, {
+				BackgroundTransparency = 0.2,
+				ImageTransparency = 0
 			})
-			task.delay(0.1, function()
-				smoothTween(Description, 0.5, {
+			
+			task.delay(0.05, function()
+				smoothTween(PlayerName, 0.4, {
 					TextTransparency = 0
 				})
 			end)
-			task.delay(0.2, function()
-				smoothTween(LoadButton, 0.5, {
+			
+			task.delay(0.1, function()
+				smoothTween(ButtonLoadHub, 0.4, {
 					BackgroundTransparency = 0,
 					TextTransparency = 0
 				})
-				task.delay(0.1, function()
-					smoothTween(UniversalButton, 0.5, {
+				
+				task.delay(0.05, function()
+					smoothTween(UniversalButton, 0.4, {
 						BackgroundTransparency = 0.2,
 						TextTransparency = 0
 					})
 				end)
 			end)
-			task.delay(0.3, function()
-				smoothTween(PlayerAvatar, 0.5, {
-					BackgroundTransparency = 0.2,
-					ImageTransparency = 0
-				})
-				smoothTween(PlayerName, 0.5, {
-					TextTransparency = 0
-				})
-			end)
 		end)
 	end)
+	
+	-- Membuat fungsi untuk menghubungkan dengan Game Hub
+	function startMenu:CreateGameHub(customConfig)
+		return UILibrary.CreateHub(customConfig)
+	end
+	
 	return startMenu
-end;
+end
 function UILibrary.CreateHub(customConfig)
 	for _, instance in pairs(game:GetService("CoreGui"):GetChildren()) do
 		if instance.Name == "LomuHubLibrary" then
@@ -1428,5 +1491,5 @@ function UILibrary.CreateHub(customConfig)
 		end
 	end)
 	return UILibrary.new(customConfig)
-end;
+end
 return UILibrary
