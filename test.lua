@@ -209,64 +209,110 @@ function UILibrary.new(customConfig)
     
     -- Add Search Bar
     SearchBar.Name = "SearchBar"
-    SearchBar.BackgroundColor3 = config.SecondaryColor
-    SearchBar.Position = UDim2.new(0, 12, 0, 46)
-    SearchBar.Size = UDim2.new(1, -24, 0, config.SearchBarHeight)
+    SearchBar.BackgroundColor3 = Color3.fromRGB(24, 24, 28) -- Slightly darker than secondary color
+    SearchBar.BackgroundTransparency = 0.2 -- Slight transparency for depth
+    SearchBar.BorderSizePixel = 0
+    SearchBar.Position = UDim2.new(0, 14, 0, 46)
+    SearchBar.Size = UDim2.new(1, -28, 0, 32) -- Slightly reduced height
     SearchBar.Parent = MainFrame
     
     local SearchBarCorner = Instance.new("UICorner")
-    SearchBarCorner.CornerRadius = config.SearchBarCornerRadius
+    SearchBarCorner.CornerRadius = UDim.new(0, 6) -- Smaller radius for minimalist look
     SearchBarCorner.Parent = SearchBar
     
-    -- Search Icon
+    -- Subtle border for elegant look
+    local SearchBorder = Instance.new("UIStroke")
+    SearchBorder.Color = Color3.fromRGB(40, 40, 45) -- Very subtle border
+    SearchBorder.Thickness = 1
+    SearchBorder.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+    SearchBorder.Parent = SearchBar
+    
+    -- Refined search icon
     SearchIcon.Name = "SearchIcon"
     SearchIcon.BackgroundTransparency = 1
-    SearchIcon.Position = UDim2.new(0, 10, 0.5, 0)
+    SearchIcon.Position = UDim2.new(0, 12, 0.5, 0)
     SearchIcon.AnchorPoint = Vector2.new(0, 0.5)
-    SearchIcon.Size = UDim2.new(0, 16, 0, 16)
+    SearchIcon.Size = UDim2.new(0, 14, 0, 14) -- Smaller icon
     SearchIcon.Image = "rbxassetid://3926305904"
     SearchIcon.ImageRectOffset = Vector2.new(964, 324)
     SearchIcon.ImageRectSize = Vector2.new(36, 36)
-    SearchIcon.ImageColor3 = config.AccentColor
+    SearchIcon.ImageColor3 = Color3.fromRGB(140, 140, 145) -- More subtle color
+    SearchIcon.ImageTransparency = 0.1
     SearchIcon.Parent = SearchBar
     
-    -- Search Input
+    -- Cleaner input field
     SearchInput.Name = "SearchInput"
     SearchInput.BackgroundTransparency = 1
     SearchInput.Position = UDim2.new(0, 34, 0, 0)
-    SearchInput.Size = UDim2.new(1, -40, 1, 0)
-    SearchInput.Font = config.ButtonFont
+    SearchInput.Size = UDim2.new(1, -44, 1, 0)
+    SearchInput.Font = Enum.Font.Gotham -- Cleaner font
     SearchInput.PlaceholderText = "Search games..."
     SearchInput.Text = ""
-    SearchInput.TextColor3 = config.TextColor
-    SearchInput.PlaceholderColor3 = Color3.fromRGB(130, 130, 135) -- More subtle placeholder
-    SearchInput.TextSize = 14
+    SearchInput.TextColor3 = Color3.fromRGB(220, 220, 220)
+    SearchInput.PlaceholderColor3 = Color3.fromRGB(120, 120, 125) -- Very subtle placeholder
+    SearchInput.TextSize = 13 -- Smaller text size
     SearchInput.TextXAlignment = Enum.TextXAlignment.Left
     SearchInput.Parent = SearchBar
     
-    -- Subtle highlight effect on focus
+    -- Subtle focus effects
     SearchInput.Focused:Connect(function()
-        smoothTween(SearchBar, config.AnimationSpeedFast, {
-            BackgroundColor3 = Color3.fromRGB(
-                math.min(config.SecondaryColor.R * 255 + 8, 255)/255,
-                math.min(config.SecondaryColor.G * 255 + 8, 255)/255,
-                math.min(config.SecondaryColor.B * 255 + 8, 255)/255
-            )
+        -- Animate border
+        smoothTween(SearchBorder, config.AnimationSpeedFast, {
+            Color = config.AccentColor,
+            Transparency = 0.7
         }):Play()
         
+        -- Animate icon
         smoothTween(SearchIcon, config.AnimationSpeedFast, {
-            ImageColor3 = config.AccentColorLight
+            ImageColor3 = config.AccentColor,
+            ImageTransparency = 0
         }):Play()
     end)
     
     SearchInput.FocusLost:Connect(function()
-        smoothTween(SearchBar, config.AnimationSpeedFast, {
-            BackgroundColor3 = config.SecondaryColor
+        -- Revert border
+        smoothTween(SearchBorder, config.AnimationSpeedFast, {
+            Color = Color3.fromRGB(40, 40, 45),
+            Transparency = 0
         }):Play()
         
+        -- Revert icon
         smoothTween(SearchIcon, config.AnimationSpeedFast, {
-            ImageColor3 = config.AccentColor
+            ImageColor3 = Color3.fromRGB(140, 140, 145),
+            ImageTransparency = 0.1
         }):Play()
+    end)
+    
+    -- Optional Clear button that appears when text is entered
+    local ClearButton = Instance.new("ImageButton")
+    ClearButton.Name = "ClearButton"
+    ClearButton.BackgroundTransparency = 1
+    ClearButton.Position = UDim2.new(1, -24, 0.5, 0)
+    ClearButton.AnchorPoint = Vector2.new(0, 0.5)
+    ClearButton.Size = UDim2.new(0, 14, 0, 14)
+    ClearButton.Image = "rbxassetid://3926305904"
+    ClearButton.ImageRectOffset = Vector2.new(284, 4)
+    ClearButton.ImageRectSize = Vector2.new(24, 24)
+    ClearButton.ImageColor3 = Color3.fromRGB(140, 140, 145)
+    ClearButton.ImageTransparency = 1 -- Start hidden
+    ClearButton.Parent = SearchBar
+    
+    -- Show/hide clear button based on text content
+    SearchInput:GetPropertyChangedSignal("Text"):Connect(function()
+        if SearchInput.Text ~= "" then
+            smoothTween(ClearButton, config.AnimationSpeedFast, {
+                ImageTransparency = 0.1
+            }):Play()
+        else
+            smoothTween(ClearButton, config.AnimationSpeedFast, {
+                ImageTransparency = 1
+            }):Play()
+        end
+    end)
+    
+    -- Clear text when button clicked
+    ClearButton.MouseButton1Click:Connect(function()
+        SearchInput.Text = ""
     end)
     
     -- Add Category Buttons
