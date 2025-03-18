@@ -1293,27 +1293,44 @@ function UILibrary:CreateStartMenu(options)
 						ImageTransparency = 1
 					})
 				end;
+				
 				if child.BackgroundTransparency < 1 then
 					smoothTween(child, 0.4, {
 						BackgroundTransparency = 1
 					})
 				end;
+				
 				if child.Name == "PlayerInfo" then
 					for _, subChild in pairs(child:GetChildren()) do
 						if subChild:IsA("GuiObject") then
-							smoothTween(subChild, 0.3, {
-								BackgroundTransparency = 1,
-								TextTransparency = 1,
-								ImageTransparency = 1
-							})
+							local tweenProperties = {
+								BackgroundTransparency = 1
+							}
+							
+							if subChild.ClassName == "TextLabel" or 
+							   subChild.ClassName == "TextButton" or 
+							   subChild.ClassName == "TextBox" then
+								tweenProperties.TextTransparency = 1
+							end
+							
+							if subChild.ClassName == "ImageLabel" or 
+							   subChild.ClassName == "ImageButton" then
+								tweenProperties.ImageTransparency = 1
+							end
+							
+							smoothTween(subChild, 0.3, tweenProperties)
 						end
-					end;
+					end
+					
 					task.delay(0.5, function()
-						child:Destroy()
+						if child and child.Parent then
+							child:Destroy()
+						end
 					end)
 				end
 			end
-		end;
+		end
+		
 		task.delay(0.4, function()
 			local closeTween = game:GetService("TweenService"):Create(MainFrame, TweenInfo.new(0.7, Enum.EasingStyle.Back, Enum.EasingDirection.In), {
 				Size = UDim2.new(0, 0, 0, 0),
