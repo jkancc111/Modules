@@ -93,16 +93,62 @@ function RSV:CreateWindow(options)
     screenGui.Name = name .. "_UI"
     screenGui.Enabled = true 
 
+    local topFrame = Instance.new("Frame")
+    topFrame.Parent = screenGui
+    topFrame.Size = UDim2.new(1, 0, 0, 50)
+    topFrame.Position = UDim2.new(0, 0, 0, 0)
+    topFrame.BackgroundColor3 = Color3.fromRGB(255, 147, 0)
+    topFrame.BackgroundTransparency = 1
+    topFrame.BorderSizePixel = 0
+
+    local mainText = Instance.new("TextLabel")
+    mainText.Parent = topFrame
+    mainText.Size = UDim2.new(0, 200, 0, 30)
+    mainText.Position = UDim2.new(0.5, -100, 0, 5)
+    mainText.BackgroundTransparency = 1
+    mainText.Text = name
+    mainText.TextColor3 = Color3.fromRGB(255, 255, 255)
+    mainText.Font = Enum.Font.SourceSansBold
+    mainText.TextSize = 24
+
+    local subText = Instance.new("TextLabel")
+    subText.Parent = topFrame
+    subText.Size = UDim2.new(0, 200, 0, 20)
+    subText.Position = UDim2.new(0.5, -100, 0, 30)
+    subText.BackgroundTransparency = 1
+    subText.Text = "made by " .. credits
+    subText.TextColor3 = Color3.fromRGB(200, 200, 200)
+    subText.Font = Enum.Font.SourceSansBold
+    subText.TextSize = 16
+
+    local profileFrame = Instance.new("Frame")
+    profileFrame.Size = UDim2.new(0, 300, 0, 400)
+    profileFrame.Position = UDim2.new(0, 20, 0.5, -170)
+    profileFrame.BackgroundColor3 = selectedTheme.MainFrameColor
+    profileFrame.BackgroundTransparency = selectedTheme.Transparency
+    profileFrame.BorderSizePixel = 0
+    profileFrame.Parent = screenGui
+    profileFrame.ZIndex = 1
+    profileFrame.Visible = false
+
+    local profileCorner = Instance.new("UICorner")
+    profileCorner.CornerRadius = UDim.new(0, 15)
+    profileCorner.Parent = profileFrame
+
+    local profileGradient = Instance.new("UIGradient")
+    profileGradient.Color = selectedTheme.HomeGradient
+    profileGradient.Rotation = 90
+    profileGradient.Parent = profileFrame
+
     local mainFrame = Instance.new("Frame")
     mainFrame.Size = UDim2.new(0, 350, 0, 400)
-    mainFrame.Position = UDim2.new(0.5, -175, 0.5, -220)
+    mainFrame.Position = UDim2.new(0, -350, 0, 50)
     mainFrame.BackgroundColor3 = selectedTheme.MainFrameColor
     mainFrame.BackgroundTransparency = selectedTheme.Transparency
     mainFrame.BorderSizePixel = 0
     mainFrame.ClipsDescendants = true
     mainFrame.Parent = screenGui
     mainFrame.ZIndex = 1
-    mainFrame.Visible = false
 
     local mainCorner = Instance.new("UICorner")
     mainCorner.CornerRadius = UDim.new(0, 20)
@@ -119,64 +165,14 @@ function RSV:CreateWindow(options)
     mainStroke.Transparency = 0.7
     mainStroke.Parent = mainFrame
 
-    local titleBar = Instance.new("Frame")
-    titleBar.Size = UDim2.new(1, 0, 0, 40)
-    titleBar.Position = UDim2.new(0, 0, 0, 0)
-    titleBar.BackgroundColor3 = selectedTheme.BottomBarColor
-    titleBar.BackgroundTransparency = selectedTheme.Transparency
-    titleBar.BorderSizePixel = 0
-    titleBar.Parent = mainFrame
-    titleBar.ZIndex = 2
-
-    local titleCorner = Instance.new("UICorner")
-    titleCorner.CornerRadius = UDim.new(0, 10)
-    titleCorner.Parent = titleBar
-
-    local titleCornerFix = Instance.new("Frame")
-    titleCornerFix.Size = UDim2.new(1, 0, 0.5, 0)
-    titleCornerFix.Position = UDim2.new(0, 0, 0.5, 0)
-    titleCornerFix.BackgroundColor3 = selectedTheme.BottomBarColor
-    titleCornerFix.BackgroundTransparency = selectedTheme.Transparency
-    titleCornerFix.BorderSizePixel = 0
-    titleCornerFix.Parent = titleBar
-    titleCornerFix.ZIndex = 2
-
-    local titleGradient = Instance.new("UIGradient")
-    titleGradient.Color = selectedTheme.BottomBarGradient
-    titleGradient.Rotation = 90
-    titleGradient.Parent = titleBar
-
-    local titleText = Instance.new("TextLabel")
-    titleText.Size = UDim2.new(1, -40, 1, 0)
-    titleText.Position = UDim2.new(0, 20, 0, 0)
-    titleText.BackgroundTransparency = 1
-    titleText.Text = name
-    titleText.TextColor3 = selectedTheme.TextColor
-    titleText.Font = Enum.Font.GothamBold
-    titleText.TextSize = 18
-    titleText.TextXAlignment = Enum.TextXAlignment.Left
-    titleText.Parent = titleBar
-    titleText.ZIndex = 3
-
-    local closeButton = Instance.new("TextButton")
-    closeButton.Size = UDim2.new(0, 30, 0, 30)
-    closeButton.Position = UDim2.new(1, -35, 0, 5)
-    closeButton.BackgroundTransparency = 1
-    closeButton.Text = "×"
-    closeButton.TextColor3 = selectedTheme.TextColor
-    closeButton.Font = Enum.Font.GothamBold
-    closeButton.TextSize = 24
-    closeButton.Parent = titleBar
-    closeButton.ZIndex = 3
-
     local bottomBar = Instance.new("Frame")
     bottomBar.Size = UDim2.new(0, 350, 0, 50)
-    bottomBar.Position = UDim2.new(0.5, -175, 1, -70)
+    bottomBar.Position = UDim2.new(0.5, -175, 1, 10)
     bottomBar.BackgroundColor3 = selectedTheme.BottomBarColor
     bottomBar.BackgroundTransparency = selectedTheme.Transparency
     bottomBar.BorderSizePixel = 0
     bottomBar.Parent = screenGui
-    bottomBar.ZIndex = 2
+    bottomBar.ZIndex = 5
 
     local bottomBarCorner = Instance.new("UICorner")
     bottomBarCorner.CornerRadius = UDim.new(0, 15)
@@ -193,7 +189,7 @@ function RSV:CreateWindow(options)
     highlight.BackgroundColor3 = Color3.fromRGB(255, 105, 180)
     highlight.BorderSizePixel = 0
     highlight.Parent = bottomBar
-    highlight.ZIndex = 3
+    highlight.ZIndex = 6
 
     local highlightCorner = Instance.new("UICorner")
     highlightCorner.CornerRadius = UDim.new(0, 10)
@@ -206,6 +202,7 @@ function RSV:CreateWindow(options)
 
     local window = {
         MainFrame = mainFrame,
+        ProfileFrame = profileFrame,
         ScreenGui = screenGui,
         Tabs = {},
         CurrentTab = nil,
@@ -220,21 +217,19 @@ function RSV:CreateWindow(options)
     function window:CreateTab(name, description)
         local tabCount = #self.Tabs + 1
         
-        local maxTabsPerRow = 5
-        local tabWidth = math.min(bottomBar.Size.X.Offset / math.min(tabCount, maxTabsPerRow), 70)
+        local tabWidth = math.min(350 / tabCount, 70)
         
-        local rowCount = math.ceil(tabCount / maxTabsPerRow)
-        local totalWidth = math.min(tabCount, maxTabsPerRow) * tabWidth
-        bottomBar.Size = UDim2.new(0, totalWidth, 0, 50)
-        bottomBar.Position = UDim2.new(0.5, -totalWidth/2, 1, -70)
+        local newWidth = tabCount * tabWidth
+        bottomBar.Size = UDim2.new(0, newWidth, 0, 50)
+        bottomBar.Position = UDim2.new(0.5, -newWidth / 2, 1, 10)
         
         if tabCount == 1 then
             highlight.Size = UDim2.new(0, tabWidth, 1, 0)
         end
 
         local tabFrame = Instance.new("ScrollingFrame")
-        tabFrame.Size = UDim2.new(0, 330, 0, 350)
-        tabFrame.Position = UDim2.new(0, 10, 0, 45)
+        tabFrame.Size = UDim2.new(0, 330, 0, 340)
+        tabFrame.Position = UDim2.new(0, 10, 0, 50)
         tabFrame.BackgroundTransparency = 1
         tabFrame.ScrollBarThickness = 5
         tabFrame.ScrollBarImageColor3 = Color3.fromRGB(255, 105, 180)
@@ -243,44 +238,21 @@ function RSV:CreateWindow(options)
         tabFrame.Visible = false
         tabFrame.ZIndex = 2
 
-        local row = math.floor((tabCount-1) / maxTabsPerRow)
-        local col = (tabCount-1) % maxTabsPerRow
-        
         local tabButton = Instance.new("TextButton")
         tabButton.Size = UDim2.new(0, tabWidth, 1, 0)
-        tabButton.Position = UDim2.new(0, col * tabWidth, 0, 0)
+        tabButton.Position = UDim2.new(0, (tabCount - 1) * tabWidth, 0, 0)
         tabButton.BackgroundTransparency = 1
         tabButton.Text = name
-        tabButton.TextColor3 = window.Theme == themes.Light and Color3.fromRGB(0, 0, 0) or Color3.fromRGB(255, 255, 255)
+        tabButton.TextColor3 = tabCount == 1 and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(180, 180, 180)
         tabButton.Font = Enum.Font.GothamBold
         tabButton.TextSize = 14
         tabButton.BorderSizePixel = 0
         tabButton.Parent = bottomBar
-        tabButton.ZIndex = 4
-
-        local tabIcon = Instance.new("ImageLabel")
-        tabIcon.Size = UDim2.new(0, 20, 0, 20)
-        tabIcon.Position = UDim2.new(0.5, -10, 0, 5)
-        tabIcon.BackgroundTransparency = 1
-        tabIcon.Image = ""
-        tabIcon.Parent = tabButton
-        tabIcon.ZIndex = 5
-        tabIcon.Visible = false
-        
-        local tabLabel = Instance.new("TextLabel")
-        tabLabel.Size = UDim2.new(1, 0, 0, 20)
-        tabLabel.Position = UDim2.new(0, 0, 0.5, -10)
-        tabLabel.BackgroundTransparency = 1
-        tabLabel.Text = name
-        tabLabel.TextColor3 = window.Theme.TextColor
-        tabLabel.Font = Enum.Font.GothamBold
-        tabLabel.TextSize = 12
-        tabLabel.Parent = tabButton
-        tabLabel.ZIndex = 5
+        tabButton.ZIndex = 7
 
         local descLabel = Instance.new("TextLabel")
         descLabel.Size = UDim2.new(0, 150, 0, 30)
-        descLabel.Position = UDim2.new(0.5, -75, -0.6, 0)
+        descLabel.Position = UDim2.new(0.5, -75, -0.8, 0)
         descLabel.BackgroundColor3 = window.Theme.BottomBarColor
         descLabel.BackgroundTransparency = 0.2
         descLabel.BorderSizePixel = 0
@@ -291,28 +263,18 @@ function RSV:CreateWindow(options)
         descLabel.TextWrapped = true
         descLabel.Visible = false
         descLabel.Parent = tabButton
-        descLabel.ZIndex = 10
+        descLabel.ZIndex = 8
 
         local descCorner = Instance.new("UICorner")
         descCorner.CornerRadius = UDim.new(0, 5)
         descCorner.Parent = descLabel
-        
-        local descStroke = Instance.new("UIStroke")
-        descStroke.Thickness = 1
-        descStroke.Color = Color3.fromRGB(255, 105, 180)
-        descStroke.Transparency = 0.5
-        descStroke.Parent = descLabel
 
         tabButton.MouseEnter:Connect(function()
             descLabel.Visible = true
-            TweenService:Create(tabButton, TweenInfo.new(0.3), {TextTransparency = 0}):Play()
         end)
 
         tabButton.MouseLeave:Connect(function()
             descLabel.Visible = false
-            if self.CurrentTab ~= tab then
-                TweenService:Create(tabButton, TweenInfo.new(0.3), {TextTransparency = 0.3}):Play()
-            end
         end)
 
         local tab = {
@@ -326,33 +288,31 @@ function RSV:CreateWindow(options)
         if not self.CurrentTab then
             self.CurrentTab = tab
             tab.Frame.Visible = true
-            tabButton.TextTransparency = 0
-        else
-            tabButton.TextTransparency = 0.3
+            tabButton.TextColor3 = Color3.fromRGB(255, 255, 255)
         end
 
         tabButton.MouseButton1Click:Connect(function()
             if self.CurrentTab ~= tab then
                 local oldTab = self.CurrentTab
-                oldTab.Button.TextTransparency = 0.3
+                oldTab.Button.TextColor3 = Color3.fromRGB(180, 180, 180)
                 
-                local oldTween = TweenService:Create(oldTab.Frame, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Position = UDim2.new(-1, 10, 0, 45)})
+                local oldTween = TweenService:Create(oldTab.Frame, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Position = UDim2.new(-1, 10, 0, 50)})
                 oldTween:Play()
                 oldTween.Completed:Connect(function()
                     oldTab.Frame.Visible = false
-                    oldTab.Frame.Position = UDim2.new(0, 10, 0, 45)
+                    oldTab.Frame.Position = UDim2.new(0, 10, 0, 50)
                 end)
 
                 tab.Frame.Visible = true
-                tab.Frame.Position = UDim2.new(1, 10, 0, 45)
-                TweenService:Create(tab.Frame, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Position = UDim2.new(0, 10, 0, 45)}):Play()
+                tab.Frame.Position = UDim2.new(1, 10, 0, 50)
+                TweenService:Create(tab.Frame, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Position = UDim2.new(0, 10, 0, 50)}):Play()
                 
-                tab.Button.TextTransparency = 0
+                tabButton.TextColor3 = Color3.fromRGB(255, 255, 255)
                 self.CurrentTab = tab
                 self.ActiveIndex = table.find(self.Tabs, tab)
                 
-                local targetPosition = UDim2.new(0, (col * tabWidth), 0, 0)
-                TweenService:Create(highlight, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Position = targetPosition}):Play()
+                local targetPosition = UDim2.new(0, (self.ActiveIndex - 1) * tabWidth, 0, 0)
+                TweenService:Create(highlight, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Position = targetPosition}):Play()
             end
         end)
 
@@ -701,19 +661,20 @@ function RSV:CreateWindow(options)
         
         if self.IsOpen then
             mainFrame.Visible = true
-            mainFrame.Position = UDim2.new(0.5, -175, 0, -400)
-            TweenService:Create(mainFrame, TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {Position = UDim2.new(0.5, -175, 0.5, -220)}):Play()
+            profileFrame.Visible = true
             
-            bottomBar.Position = UDim2.new(0.5, -bottomBar.Size.X.Offset/2, 1, 50)
-            TweenService:Create(bottomBar, TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {Position = UDim2.new(0.5, -bottomBar.Size.X.Offset/2, 1, -70)}):Play()
+            TweenService:Create(mainFrame, TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Position = UDim2.new(0, 340, 0, 50)}):Play()
+            
+            TweenService:Create(bottomBar, TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {Position = UDim2.new(0.5, -bottomBar.Size.X.Offset / 2, 1, -70)}):Play()
         else
-            TweenService:Create(mainFrame, TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {Position = UDim2.new(0.5, -175, 0, -400)}):Play()
+            TweenService:Create(mainFrame, TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {Position = UDim2.new(0, -350, 0, 50)}):Play()
             
-            TweenService:Create(bottomBar, TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {Position = UDim2.new(0.5, -bottomBar.Size.X.Offset/2, 1, 50)}):Play()
+            TweenService:Create(bottomBar, TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {Position = UDim2.new(0.5, -bottomBar.Size.X.Offset / 2, 1, 10)}):Play()
             
             delay(0.5, function()
                 if not self.IsOpen then
                     mainFrame.Visible = false
+                    profileFrame.Visible = false
                 end
             end)
         end
@@ -723,40 +684,6 @@ function RSV:CreateWindow(options)
         if not gameProcessed and input.KeyCode == Enum.KeyCode.RightControl then
             window:Toggle()
         end
-    end)
-
-    local dragging = false
-    local dragInput, dragStart, startPos
-
-    titleBar.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then
-            dragging = true
-            dragStart = input.Position
-            startPos = mainFrame.Position
-        end
-    end)
-
-    titleBar.InputEnded:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then
-            dragging = false
-        end
-    end)
-
-    UserInputService.InputChanged:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
-            dragInput = input
-        end
-    end)
-
-    RunService.RenderStepped:Connect(function()
-        if dragging and dragInput and dragStart then
-            local delta = dragInput.Position - dragStart
-            mainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
-        end
-    end)
-    
-    closeButton.MouseButton1Click:Connect(function()
-        window:Toggle()
     end)
 
     local homeTab = window:CreateTab("Home", "Welcome to " .. name)
@@ -780,12 +707,11 @@ function RSV:CreateWindow(options)
 
     local avatarImage = Instance.new("ImageLabel")
     avatarImage.Size = UDim2.new(0, 80, 0, 80)
-    avatarImage.Position = UDim2.new(0.5, -40, 0, 10)
+    avatarImage.Position = UDim2.new(0.5, -40, 0, 30)
     avatarImage.BackgroundTransparency = 1
     avatarImage.Image = Players:GetUserThumbnailAsync(player.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size150x150)
-    avatarImage.Parent = homeTab.Frame
+    avatarImage.Parent = profileFrame
     avatarImage.ZIndex = 2
-    avatarImage.Visible = true
 
     local avatarCorner = Instance.new("UICorner")
     avatarCorner.CornerRadius = UDim.new(1, 0)
@@ -797,60 +723,56 @@ function RSV:CreateWindow(options)
     avatarStroke.Parent = avatarImage
 
     local displayName = Instance.new("TextLabel")
-    displayName.Size = UDim2.new(0, 300, 0, 30)
-    displayName.Position = UDim2.new(0, 15, 0, 95)
+    displayName.Size = UDim2.new(0, 280, 0, 30)
+    displayName.Position = UDim2.new(0.5, -140, 0, 120)
     displayName.BackgroundTransparency = 1
     displayName.Text = player.DisplayName
     displayName.TextColor3 = selectedTheme.TextColor
     displayName.Font = Enum.Font.GothamBold
     displayName.TextSize = 20
     displayName.TextXAlignment = Enum.TextXAlignment.Center
-    displayName.Parent = homeTab.Frame
+    displayName.Parent = profileFrame
     displayName.ZIndex = 2
-    displayName.Visible = true
 
     local realUsername = Instance.new("TextLabel")
-    realUsername.Size = UDim2.new(0, 300, 0, 20)
-    realUsername.Position = UDim2.new(0, 15, 0, 125)
+    realUsername.Size = UDim2.new(0, 280, 0, 20)
+    realUsername.Position = UDim2.new(0.5, -140, 0, 150)
     realUsername.BackgroundTransparency = 1
     realUsername.Text = "@" .. player.Name
     realUsername.TextColor3 = selectedTheme.SubTextColor
     realUsername.Font = Enum.Font.Gotham
     realUsername.TextSize = 14
     realUsername.TextXAlignment = Enum.TextXAlignment.Center
-    realUsername.Parent = homeTab.Frame
+    realUsername.Parent = profileFrame
     realUsername.ZIndex = 2
-    realUsername.Visible = true
 
     local serverPlayers = Instance.new("TextLabel")
-    serverPlayers.Size = UDim2.new(0, 300, 0, 20)
-    serverPlayers.Position = UDim2.new(0, 15, 0, 145)
+    serverPlayers.Size = UDim2.new(0, 280, 0, 20)
+    serverPlayers.Position = UDim2.new(0.5, -140, 0, 180)
     serverPlayers.BackgroundTransparency = 1
     serverPlayers.Text = #Players:GetPlayers() .. "/" .. game.Players.MaxPlayers .. " players"
     serverPlayers.TextColor3 = selectedTheme.TextColor
     serverPlayers.Font = Enum.Font.Gotham
     serverPlayers.TextSize = 14
     serverPlayers.TextXAlignment = Enum.TextXAlignment.Center
-    serverPlayers.Parent = homeTab.Frame
+    serverPlayers.Parent = profileFrame
     serverPlayers.ZIndex = 2
-    serverPlayers.Visible = true
 
     local elapsedTime = Instance.new("TextLabel")
-    elapsedTime.Size = UDim2.new(0, 300, 0, 20)
-    elapsedTime.Position = UDim2.new(0, 15, 0, 165)
+    elapsedTime.Size = UDim2.new(0, 280, 0, 20)
+    elapsedTime.Position = UDim2.new(0.5, -140, 0, 210)
     elapsedTime.BackgroundTransparency = 1
     elapsedTime.Text = "0 seconds elapsed"
     elapsedTime.TextColor3 = selectedTheme.TextColor
     elapsedTime.Font = Enum.Font.Gotham
     elapsedTime.TextSize = 14
     elapsedTime.TextXAlignment = Enum.TextXAlignment.Center
-    elapsedTime.Parent = homeTab.Frame
+    elapsedTime.Parent = profileFrame
     elapsedTime.ZIndex = 2
-    elapsedTime.Visible = true
 
     local gameNameLabel = Instance.new("TextLabel")
-    gameNameLabel.Size = UDim2.new(0, 300, 0, 20)
-    gameNameLabel.Position = UDim2.new(0, 15, 0, 185)
+    gameNameLabel.Size = UDim2.new(0, 280, 0, 20)
+    gameNameLabel.Position = UDim2.new(0.5, -140, 0, 240)
     gameNameLabel.BackgroundTransparency = 1
     gameNameLabel.Text = "Connected to: <b>Loading...</b>"
     gameNameLabel.TextColor3 = selectedTheme.TextColor
@@ -858,13 +780,12 @@ function RSV:CreateWindow(options)
     gameNameLabel.TextSize = 14
     gameNameLabel.TextXAlignment = Enum.TextXAlignment.Center
     gameNameLabel.RichText = true
-    gameNameLabel.Parent = homeTab.Frame
+    gameNameLabel.Parent = profileFrame
     gameNameLabel.ZIndex = 2
-    gameNameLabel.Visible = true
 
     local changelogLabel = Instance.new("TextLabel")
-    changelogLabel.Size = UDim2.new(0, 300, 0, 100)
-    changelogLabel.Position = UDim2.new(0, 15, 0, 205)
+    changelogLabel.Size = UDim2.new(0, 280, 0, 100)
+    changelogLabel.Position = UDim2.new(0.5, -140, 0, 270)
     changelogLabel.BackgroundTransparency = 1
     changelogLabel.Text = "Changelog:\n- v1.0: Initial release\n- v1.1: Added new themes\n- v1.2: Improved UI responsiveness"
     changelogLabel.TextColor3 = selectedTheme.TextColor
@@ -872,9 +793,8 @@ function RSV:CreateWindow(options)
     changelogLabel.TextSize = 14
     changelogLabel.TextXAlignment = Enum.TextXAlignment.Left
     changelogLabel.TextYAlignment = Enum.TextYAlignment.Top
-    changelogLabel.Parent = homeTab.Frame
+    changelogLabel.Parent = profileFrame
     changelogLabel.ZIndex = 2
-    changelogLabel.Visible = true
 
     local function updateGameInfo()
         local success, gameInfo = pcall(function()
