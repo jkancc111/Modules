@@ -69,11 +69,20 @@ local function createShadow(parent, transparency)
 	return shadow
 end;
 local function animateLoading(loadingIndicator)
+	if not loadingIndicator then return end
+	
 	local dots = {
 		loadingIndicator.LoadingDot1,
 		loadingIndicator.LoadingDot2,
 		loadingIndicator.LoadingDot3
 	}
+	
+	for i, dot in ipairs(dots) do
+		if not dot then
+			return
+		end
+	end
+	
 	local connection;
 	connection = game:GetService("RunService").Heartbeat:Connect(function()
 		if not loadingIndicator or not loadingIndicator.Parent then
@@ -341,7 +350,7 @@ function UILibrary.new(customConfig)
 		CategoryButtonCorner.CornerRadius = config.ButtonCornerRadius;
 		CategoryButtonCorner.Parent = CategoryButton;
 		CategoryButton.MouseEnter:Connect(function()
-			if categoryName ~= selectedCategory then
+			if catName ~= selectedCategory then
 				smoothTween(CategoryButton, config.AnimationSpeedFast, {
 					BackgroundColor3 = Color3.fromRGB(45, 55, 75),
 					BackgroundTransparency = 0.75,
@@ -350,7 +359,7 @@ function UILibrary.new(customConfig)
 			end
 		end)
 		CategoryButton.MouseLeave:Connect(function()
-			if categoryName ~= selectedCategory then
+			if catName ~= selectedCategory then
 				smoothTween(CategoryButton, config.AnimationSpeedFast, {
 					BackgroundColor3 = config.SecondaryColor,
 					BackgroundTransparency = config.ElementTransparency,
@@ -482,13 +491,12 @@ function UILibrary.new(customConfig)
 					ScreenGui:Destroy()
 				end;
 				task.delay(0.1, function()
-					if type(buttonCallback) == "function" then
-						local success, err = pcall(function()
-							buttonCallback(BlurEffect, Background)
-						end)
-						if not success then
-							warn("Error in buttonCallback:", err)
-						end
+					if BlurEffect and BlurEffect.Parent then
+						BlurEffect:Destroy()
+					end
+					
+					if Background and Background.Parent then
+						Background:Destroy()
 					end
 				end)
 			end)
@@ -1258,18 +1266,6 @@ function UILibrary:CreateStartMenu(options)
 			Size = UDim2.new(0, 150, 0, 36)
 		})
 	end)
-	UniversalButton.MouseEnter:Connect(function()
-		smoothTween(UniversalButton, 0.3, {
-			BackgroundColor3 = Color3.fromRGB(70, 70, 85),
-			Size = UDim2.new(0, 155, 0, 38)
-		})
-	end)
-	UniversalButton.MouseLeave:Connect(function()
-		smoothTween(UniversalButton, 0.3, {
-			BackgroundColor3 = Color3.fromRGB(60, 60, 70),
-			Size = UDim2.new(0, 150, 0, 36)
-		})
-	end)
 	local isClosing = false;
 	LoadButton.MouseButton1Click:Connect(function()
 		if isClosing then
@@ -1332,13 +1328,12 @@ function UILibrary:CreateStartMenu(options)
 					ScreenGui:Destroy()
 				end;
 				task.delay(0.1, function()
-					if type(buttonCallback) == "function" then
-						local success, err = pcall(function()
-							buttonCallback(BlurEffect, Background)
-						end)
-						if not success then
-							warn("Error in buttonCallback:", err)
-						end
+					if BlurEffect and BlurEffect.Parent then
+						BlurEffect:Destroy()
+					end
+					
+					if Background and Background.Parent then
+						Background:Destroy()
 					end
 				end)
 			end)
