@@ -106,16 +106,16 @@ local function createShadow(parent, transparency)
 end
 
 -- Loading animation function with improved effects
-function animateLoading()
+local function animateLoading(loadingIndicator)
     local dots = {
-        LoadingIndicator.LoadingDot1,
-        LoadingIndicator.LoadingDot2,
-        LoadingIndicator.LoadingDot3
+        loadingIndicator.LoadingDot1,
+        loadingIndicator.LoadingDot2,
+        loadingIndicator.LoadingDot3
     }
     
     local connection
     connection = game:GetService("RunService").Heartbeat:Connect(function()
-        if not LoadingIndicator.Parent then
+        if not loadingIndicator or not loadingIndicator.Parent then
             connection:Disconnect()
             return
         end
@@ -310,16 +310,16 @@ function UILibrary.new(customConfig)
     SearchInput.Name = "SearchInput"
     SearchInput.BackgroundTransparency = 1
     SearchInput.Position = UDim2.new(0, 34, 0, 0) -- Increased left padding
-    SearchInput.Size = UDim2.new(1, -40, 1, 0)
+    SearchInput.Size = UDim2.new(1, -48, 1, 0) -- Mengubah dari -40 menjadi -48 untuk mencegah teks terpotong
     SearchInput.Font = config.BodyFont
     SearchInput.PlaceholderText = "Search games..."
     SearchInput.Text = ""
     SearchInput.TextColor3 = config.TextColor
     SearchInput.PlaceholderColor3 = Color3.fromRGB(100, 110, 130)
-    SearchInput.TextSize = 14 -- Increased text size
+    SearchInput.TextSize = 14
     SearchInput.TextXAlignment = Enum.TextXAlignment.Left
     SearchInput.ClearTextOnFocus = false
-    SearchInput.TextTransparency = 1 -- Start transparent
+    SearchInput.TextTransparency = 1
     SearchInput.ZIndex = 12
     SearchInput.Parent = SearchBar
     
@@ -440,30 +440,30 @@ function UILibrary.new(customConfig)
         
         -- More advanced hover/click effects
         CategoryButton.MouseEnter:Connect(function()
-            if catName ~= selectedCategory then
+            if categoryName ~= selectedCategory then
                 smoothTween(CategoryButton, config.AnimationSpeedFast, {
                     BackgroundColor3 = Color3.fromRGB(45, 55, 75),
                     BackgroundTransparency = 0.75,
                     Size = UDim2.new(0, CategoryButton.AbsoluteSize.X * config.HoverScale, 1, 0)
                 })
-            end
+            end -- Perbaikan indentasi
         end)
         
         CategoryButton.MouseLeave:Connect(function()
-            if catName ~= selectedCategory then
+            if categoryName ~= selectedCategory then
                 smoothTween(CategoryButton, config.AnimationSpeedFast, {
                     BackgroundColor3 = config.SecondaryColor,
                     BackgroundTransparency = config.ElementTransparency,
                     Size = UDim2.new(0, 0, 1, 0)
                 })
-            end
+            end -- Perbaikan indentasi
         end)
         
         CategoryButton.MouseButton1Click:Connect(function()
-            if categoryName ~= selectedCategory then
+            if catName ~= selectedCategory then
                 -- Show loading indicator
                 LoadingIndicator.Visible = true
-                animateLoading()
+                animateLoading(LoadingIndicator)
                 
                 -- Update old selected button
                 for _, btn in pairs(categoryButtons) do
@@ -482,7 +482,7 @@ function UILibrary.new(customConfig)
                     Size = UDim2.new(0, 0, 1, 0)
                 })
                 
-                selectedCategory = categoryName
+                selectedCategory = catName -- Fixed: Menggunakan catName, bukan categoryName
                 
                 -- Filter games with subtle animation - but make sure they appear
                 local visibleCount = 0
@@ -525,7 +525,9 @@ function UILibrary.new(customConfig)
                 
                 -- Hide loading indicator after filtering
                 task.delay(0.3, function()
-                    LoadingIndicator.Visible = false
+                    if LoadingIndicator and LoadingIndicator.Parent then
+                        LoadingIndicator.Visible = false
+                    end
                 end)
             end
         end)
@@ -560,42 +562,46 @@ function UILibrary.new(customConfig)
             BackgroundTransparency = 1
         })
         
-        -- Fade out ALL content first
-        for _, child in pairs(MainFrame:GetChildren()) do
-            if child:IsA("GuiObject") and child ~= MainFrame and child.Name ~= "Shadow" then
-                if child.ClassName == "TextLabel" or child.ClassName == "TextButton" or child.ClassName == "TextBox" then
-                    smoothTween(child, 0.4, {
-                        TextTransparency = 1
-                    })
-                elseif child.ClassName == "ImageLabel" then
-                    smoothTween(child, 0.4, {
-                        ImageTransparency = 1
-                    })
-                end
-                
-                if child.BackgroundTransparency < 1 then
-                    smoothTween(child, 0.4, {
-                        BackgroundTransparency = 1
-                    })
-                end
-                
-                -- Hilangkan PlayerInfo sepenuhnya
-                if child.Name == "PlayerInfo" then
-                    -- Sembunyikan semua children dari PlayerInfo
-                    for _, subChild in pairs(child:GetChildren()) do
-                        if subChild:IsA("GuiObject") then
-                            smoothTween(subChild, 0.3, {
-                                BackgroundTransparency = 1,
-                                TextTransparency = 1,
-                                ImageTransparency = 1
-                            })
-                        end
+        -- Fade out ALL content first dengan pemeriksaan null
+        if MainFrame and MainFrame.Parent then
+            for _, child in pairs(MainFrame:GetChildren()) do
+                if child and child:IsA("GuiObject") and child ~= MainFrame and child.Name ~= "Shadow" then
+                    if child.ClassName == "TextLabel" or child.ClassName == "TextButton" or child.ClassName == "TextBox" then
+                        smoothTween(child, 0.4, {
+                            TextTransparency = 1
+                        })
+                    elseif child.ClassName == "ImageLabel" then
+                        smoothTween(child, 0.4, {
+                            ImageTransparency = 1
+                        })
                     end
                     
-                    -- Nanti akan dihapus sepenuhnya
-                    task.delay(0.5, function()
-                        child:Destroy()
-                    end)
+                    if child.BackgroundTransparency < 1 then
+                        smoothTween(child, 0.4, {
+                            BackgroundTransparency = 1
+                        })
+                    end
+                    
+                    -- Hilangkan PlayerInfo sepenuhnya dengan pemeriksaan null
+                    if child.Name == "PlayerInfo" then
+                        -- Sembunyikan semua children dari PlayerInfo
+                        for _, subChild in pairs(child:GetChildren()) do
+                            if subChild and subChild:IsA("GuiObject") then
+                                smoothTween(subChild, 0.3, {
+                                    BackgroundTransparency = 1,
+                                    TextTransparency = 1,
+                                    ImageTransparency = 1
+                                })
+                            end
+                        end
+                        
+                        -- Nanti akan dihapus sepenuhnya
+                        task.delay(0.5, function()
+                            if child and child.Parent then
+                                child:Destroy()
+                            end
+                        end)
+                    end
                 end
             end
         end
@@ -623,13 +629,22 @@ function UILibrary.new(customConfig)
             
             closeTween.Completed:Connect(function()
                 -- Penting: Destroy ScreenGui sebelum membuat GameHub baru
-                ScreenGui:Destroy()
+                if ScreenGui and ScreenGui.Parent then
+                    ScreenGui:Destroy()
+                end
                 
-                -- Setelah ScreenGui dimusnahkan, baru jalankan callback
-                -- Dengan delay kecil untuk memastikan cleanup selesai
+                -- Menerapkan safe callback
                 task.delay(0.1, function()
-                    -- Execute callback but keep blur and background
-                    buttonCallback(BlurEffect, Background)
+                    -- Pastikan callback ada dan valid
+                    if type(buttonCallback) == "function" then
+                        local success, err = pcall(function()
+                            buttonCallback(BlurEffect, Background)
+                        end)
+                        
+                        if not success then
+                            warn("Error in buttonCallback:", err)
+                        end
+                    end
                 end)
             end)
         end)
@@ -899,15 +914,19 @@ function UILibrary.new(customConfig)
         end)
         
         -- Connect to search filter
-        local function updateVisibility()
-            local searchText = string.lower(SearchInput.Text)
+        local function updateVisibility(gameItem, gameName, gameCategory)
+            if not gameItem or not gameItem.Parent then return end
+            
+            local searchText = string.lower(SearchInput.Text or "")
             local shouldBeVisible = (selectedCategory == "All" or gameCategory == selectedCategory)
             
             if searchText ~= "" then
-                shouldBeVisible = shouldBeVisible and string.find(string.lower(gameName), searchText)
+                local gameNameLower = string.lower(gameName or "")
+                shouldBeVisible = shouldBeVisible and string.find(gameNameLower, searchText, 1, true) ~= nil
             end
             
-            GameItem.Visible = shouldBeVisible
+            gameItem.Visible = shouldBeVisible
+            return shouldBeVisible
         end
         
         -- Initial visibility check dengan memastikan item terlihat jika kategori "All"
@@ -957,9 +976,9 @@ function UILibrary.new(customConfig)
                     BackgroundTransparency = 0.75,
                     Size = UDim2.new(0, CategoryButton.AbsoluteSize.X * config.HoverScale, 1, 0)
                 })
-            end
-        end)
-        
+        end
+    end)
+    
         CategoryButton.MouseLeave:Connect(function()
             if categoryName ~= selectedCategory then
                 smoothTween(CategoryButton, config.AnimationSpeedFast, {
@@ -967,14 +986,14 @@ function UILibrary.new(customConfig)
                     BackgroundTransparency = config.ElementTransparency,
                     Size = UDim2.new(0, 0, 1, 0)
                 })
-            end
-        end)
-        
+        end
+    end)
+    
         CategoryButton.MouseButton1Click:Connect(function()
             if categoryName ~= selectedCategory then
                 -- Show loading indicator
                 LoadingIndicator.Visible = true
-                animateLoading()
+                animateLoading(LoadingIndicator)
                 
                 -- Update old selected button
                 for _, btn in pairs(categoryButtons) do
@@ -1036,7 +1055,9 @@ function UILibrary.new(customConfig)
                 
                 -- Hide loading indicator after filtering
                 task.delay(0.3, function()
-                    LoadingIndicator.Visible = false
+                    if LoadingIndicator and LoadingIndicator.Parent then
+                        LoadingIndicator.Visible = false
+                    end
                 end)
             end
         end)
@@ -1561,18 +1582,19 @@ function UILibrary:CreateStartMenu(options)
     -- Player info section
     PlayerInfo.Name = "PlayerInfo"
     PlayerInfo.BackgroundTransparency = 1
-    PlayerInfo.Position = UDim2.new(0.5, 0, 0.85, 10) -- Diubah agar di tengah
-    PlayerInfo.Size = UDim2.new(1, 0, 0, 50)
-    PlayerInfo.AnchorPoint = Vector2.new(0.5, 0) -- Tambah anchor point agar center
+    PlayerInfo.Position = UDim2.new(0.5, 0, 0.85, 10)
+    PlayerInfo.Size = UDim2.new(0.8, 0, 0, 50) -- Mengubah ukuran agar tidak terlalu lebar
+    PlayerInfo.AnchorPoint = Vector2.new(0.5, 0)
     PlayerInfo.ZIndex = 11
     PlayerInfo.Parent = MainFrame
     
     PlayerAvatar.Name = "PlayerAvatar"
     PlayerAvatar.BackgroundTransparency = 0.5
     PlayerAvatar.BackgroundColor3 = Color3.fromRGB(30, 35, 45)
-    PlayerAvatar.Position = UDim2.new(0.5, -60, 0, 0) -- Diubah posisinya
+    PlayerAvatar.Position = UDim2.new(0.5, -85, 0.5, 0) -- Menggeser avatar ke kiri
+    PlayerAvatar.AnchorPoint = Vector2.new(0, 0.5) -- Center vertikal
     PlayerAvatar.Size = UDim2.new(0, 40, 0, 40)
-    PlayerAvatar.ImageTransparency = 1 -- Start transparent for animation
+    PlayerAvatar.ImageTransparency = 1
     PlayerAvatar.ZIndex = 12
     PlayerAvatar.Parent = PlayerInfo
     
@@ -1581,8 +1603,9 @@ function UILibrary:CreateStartMenu(options)
     
     PlayerName.Name = "PlayerName"
     PlayerName.BackgroundTransparency = 1
-    PlayerName.Position = UDim2.new(0.5, -10, 0, 0) -- Diubah posisinya
-    PlayerName.Size = UDim2.new(0, 200, 0, 40)
+    PlayerName.Position = UDim2.new(0.5, -35, 0.5, 0) -- Menggeser nama agar sejajar dengan avatar
+    PlayerName.Size = UDim2.new(0, 120, 0, 40)
+    PlayerName.AnchorPoint = Vector2.new(0, 0.5) -- Center vertikal
     PlayerName.Font = config.Font
     PlayerName.TextColor3 = config.TextColor
     PlayerName.TextSize = 14
@@ -1726,13 +1749,22 @@ function UILibrary:CreateStartMenu(options)
             
             closeTween.Completed:Connect(function()
                 -- Penting: Destroy ScreenGui sebelum membuat GameHub baru
-                ScreenGui:Destroy()
+                if ScreenGui and ScreenGui.Parent then
+                    ScreenGui:Destroy()
+                end
                 
-                -- Setelah ScreenGui dimusnahkan, baru jalankan callback
-                -- Dengan delay kecil untuk memastikan cleanup selesai
+                -- Menerapkan safe callback
                 task.delay(0.1, function()
-                    -- Execute callback but keep blur and background
-                    buttonCallback(BlurEffect, Background)
+                    -- Pastikan callback ada dan valid
+                    if type(buttonCallback) == "function" then
+                        local success, err = pcall(function()
+                            buttonCallback(BlurEffect, Background)
+                        end)
+                        
+                        if not success then
+                            warn("Error in buttonCallback:", err)
+                        end
+                    end
                 end)
             end)
         end)
