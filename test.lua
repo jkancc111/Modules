@@ -105,6 +105,40 @@ local function createShadow(parent, transparency)
     return shadow
 end
 
+-- Loading animation function with improved effects
+function animateLoading()
+    local dots = {
+        LoadingIndicator.LoadingDot1,
+        LoadingIndicator.LoadingDot2,
+        LoadingIndicator.LoadingDot3
+    }
+    
+    local connection
+    connection = game:GetService("RunService").Heartbeat:Connect(function()
+        if not LoadingIndicator.Parent then
+            connection:Disconnect()
+            return
+        end
+        
+        for i, dot in ipairs(dots) do
+            local angle = (os.clock() * 2 + (i-1) * (math.pi*2/3)) % (math.pi * 2)
+            local radius = 12
+            local x = math.cos(angle) * radius
+            local y = math.sin(angle) * radius
+            dot.Position = UDim2.new(0.5, x - 3, 0.5, y - 3)
+            
+            -- Pulsing effect
+            local scale = 0.7 + 0.5 * ((math.sin(angle) + 1) / 2)
+            local transparency = 0.3 - 0.3 * ((math.sin(angle) + 1) / 2)
+            
+            dot.Size = UDim2.new(0, 6 * scale, 0, 6 * scale)
+            dot.BackgroundTransparency = transparency
+        end
+    end)
+    
+    return connection
+end
+
 -- Create a new hub instance with minimalist acrylic design
 function UILibrary.new(customConfig)
     local hub = {}
@@ -982,8 +1016,8 @@ function UILibrary.new(customConfig)
                                         if element:IsA("TextLabel") or element:IsA("TextButton") then
                                             element.TextTransparency = 1
                                             smoothTween(element, 0.3, {
-            TextTransparency = 0
-        })
+                                                TextTransparency = 0
+                                            })
                                         elseif element:IsA("ImageLabel") then
                                             element.ImageTransparency = 1
                                             smoothTween(element, 0.3, {
@@ -1082,40 +1116,6 @@ function UILibrary.new(customConfig)
                 TextTransparency = 0
             })
         end)
-    end
-    
-    -- Loading animation function with improved effects
-    function animateLoading()
-        local dots = {
-            LoadingIndicator.LoadingDot1,
-            LoadingIndicator.LoadingDot2,
-            LoadingIndicator.LoadingDot3
-        }
-        
-        local connection
-        connection = game:GetService("RunService").Heartbeat:Connect(function()
-            if not LoadingIndicator.Parent then
-                connection:Disconnect()
-                return
-            end
-            
-            for i, dot in ipairs(dots) do
-                local angle = (os.clock() * 2 + (i-1) * (math.pi*2/3)) % (math.pi * 2)
-                local radius = 12
-                local x = math.cos(angle) * radius
-                local y = math.sin(angle) * radius
-                dot.Position = UDim2.new(0.5, x - 3, 0.5, y - 3)
-                
-                -- Pulsing effect
-                local scale = 0.7 + 0.5 * ((math.sin(angle) + 1) / 2)
-                local transparency = 0.3 - 0.3 * ((math.sin(angle) + 1) / 2)
-                
-                dot.Size = UDim2.new(0, 6 * scale, 0, 6 * scale)
-                dot.BackgroundTransparency = transparency
-            end
-        end)
-        
-        return connection
     end
     
     -- Improved notification system with animations
