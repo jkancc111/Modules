@@ -4,24 +4,28 @@ local UILibrary = {}
 local config = {
     Title = "Lomu Hub",
     SubTitle = "Game Library",
-    MainColor = Color3.fromRGB(15, 15, 15),
-    SecondaryColor = Color3.fromRGB(25, 25, 25),
-    AccentColor = Color3.fromRGB(86, 180, 220),
+    MainColor = Color3.fromRGB(20, 20, 25), -- Dark background
+    SecondaryColor = Color3.fromRGB(30, 30, 35), -- Slightly lighter for game items
+    AccentColor = Color3.fromRGB(255, 120, 20), -- Dark Orange accent
     TextColor = Color3.fromRGB(255, 255, 255),
-    SecondaryTextColor = Color3.fromRGB(180, 180, 180),
+    SecondaryTextColor = Color3.fromRGB(200, 200, 200),
     Font = Enum.Font.GothamSemibold,
     ButtonFont = Enum.Font.Gotham,
-    CornerRadius = UDim.new(0, 8),
+    CornerRadius = UDim.new(0, 8), -- Rounded corners
     AnimationSpeed = 0.6,
     AnimationSpeedFast = 0.3,
     AnimationEasingStyle = Enum.EasingStyle.Quint,
     AnimationEasingDirection = Enum.EasingDirection.Out,
-    ShadowTransparency = 0.8,
+    ShadowTransparency = 0.5, -- Clearer shadow
     MobileScaling = true,
-    GameItemHeight = 80,
-    MobileGameItemHeight = 70,
+    GameItemHeight = 90, -- Slightly smaller
+    MobileGameItemHeight = 75, -- Slightly smaller
     DefaultThumbnail = "rbxassetid://6894586021",
-    StartMenuHeight = 100
+    StartMenuHeight = 110, -- Slightly smaller
+    Padding = 12, -- Consistent padding
+    ButtonHeight = 36, -- Consistent button height
+    OrangeDark = Color3.fromRGB(40, 25, 15), -- Dark orange backdrop
+    OrangeDarker = Color3.fromRGB(30, 20, 10) -- Darker orange for top bar
 }
 
 -- Fungsi helper untuk membuat animasi yang lebih smooth
@@ -72,26 +76,26 @@ function UILibrary.new(customConfig)
     
     -- Setup MainFrame
     MainFrame.Name = "MainFrame"
-    MainFrame.BackgroundColor3 = config.MainColor
+    MainFrame.BackgroundColor3 = config.OrangeDarker -- Dark orange background
     MainFrame.BorderSizePixel = 0
     MainFrame.Position = UDim2.new(-1, 0, 0.5, 0) -- Start off screen from left
-    MainFrame.Size = UDim2.new(0, 400, 0, 350)
+    MainFrame.Size = UDim2.new(0, 480, 0, 380) -- More compact size
     MainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
     MainFrame.ClipsDescendants = true
     
     if isMobile and config.MobileScaling then
-        MainFrame.Size = UDim2.new(0.8, 0, 0.6, 0)
+        MainFrame.Size = UDim2.new(0.85, 0, 0.65, 0) -- Slightly smaller on mobile
     end
     
-    -- Add shadow
+    -- Add shadow with orange tint
     Shadow.Name = "Shadow"
     Shadow.BackgroundTransparency = 1
     Shadow.Image = "rbxassetid://5028857084" -- Drop shadow image
-    Shadow.ImageColor3 = Color3.fromRGB(0, 0, 0)
+    Shadow.ImageColor3 = Color3.fromRGB(50, 25, 0) -- Orange-tinted shadow
     Shadow.ImageTransparency = config.ShadowTransparency
     Shadow.Position = UDim2.new(0.5, 0, 0.5, 0)
     Shadow.AnchorPoint = Vector2.new(0.5, 0.5)
-    Shadow.Size = UDim2.new(1, 40, 1, 40)
+    Shadow.Size = UDim2.new(1, 50, 1, 50) -- Larger shadow
     Shadow.ZIndex = -1
     Shadow.Parent = MainFrame
     
@@ -101,11 +105,7 @@ function UILibrary.new(customConfig)
     
     -- Setup TopBar
     TopBar.Name = "TopBar"
-    TopBar.BackgroundColor3 = Color3.fromRGB(
-        math.clamp(config.MainColor.R * 255 - 15, 0, 255)/255,
-        math.clamp(config.MainColor.G * 255 - 15, 0, 255)/255,
-        math.clamp(config.MainColor.B * 255 - 15, 0, 255)/255
-    )
+    TopBar.BackgroundColor3 = Color3.fromRGB(25, 15, 5) -- Darker orange for top bar
     TopBar.BorderSizePixel = 0
     TopBar.Size = UDim2.new(1, 0, 0, 40)
     TopBar.Parent = MainFrame
@@ -171,14 +171,14 @@ function UILibrary.new(customConfig)
     GameList.BorderSizePixel = 0
     GameList.Size = UDim2.new(1, 0, 1, 0)
     GameList.CanvasSize = UDim2.new(0, 0, 0, 0)
-    GameList.ScrollBarThickness = 4
-    GameList.ScrollBarImageColor3 = config.AccentColor
+    GameList.ScrollBarThickness = 3 -- Thinner scrollbar
+    GameList.ScrollBarImageColor3 = config.AccentColor -- Orange scrollbar
     GameList.Parent = ContentContainer
     
     -- Game List Layout
     GameListLayout.Name = "GameListLayout"
     GameListLayout.SortOrder = Enum.SortOrder.LayoutOrder
-    GameListLayout.Padding = UDim.new(0, 10)
+    GameListLayout.Padding = UDim.new(0, config.Padding) -- Consistent padding
     GameListLayout.Parent = GameList
     
     -- Auto-adjust canvas size when game items are added
@@ -244,12 +244,19 @@ function UILibrary.new(customConfig)
         
         -- Set up game item
         GameItem.Name = "GameItem_" .. gameName
-        GameItem.BackgroundColor3 = config.SecondaryColor
+        GameItem.BackgroundColor3 = config.OrangeDark -- Dark orange for game items
         GameItem.Size = UDim2.new(1, 0, 0, gameItemHeight)
         GameItem.Parent = GameList
         
         GameItemCorner.CornerRadius = UDim.new(0, 6)
         GameItemCorner.Parent = GameItem
+        
+        -- Add orange-tinted shadow for each game item
+        local itemShadow = Shadow:Clone()
+        itemShadow.Size = UDim2.new(1, 16, 1, 16)
+        itemShadow.ZIndex = 0
+        itemShadow.ImageTransparency = 0.8
+        itemShadow.Parent = GameItem
         
         -- Thumbnail container
         ThumbnailFrame.Name = "ThumbnailFrame"
@@ -319,12 +326,12 @@ function UILibrary.new(customConfig)
             GameStatus.Position = UDim2.new(0, 10, 0, 45)
         end
         
-        -- Play button
+        -- Play button with orange accent
         PlayButton.Name = "PlayButton"
-        PlayButton.BackgroundColor3 = config.AccentColor
-        PlayButton.Position = UDim2.new(1, -50, 0.5, 0)
+        PlayButton.BackgroundColor3 = config.AccentColor -- Orange accent
+        PlayButton.Position = UDim2.new(1, -45, 0.5, 0)
         PlayButton.AnchorPoint = Vector2.new(0, 0.5)
-        PlayButton.Size = UDim2.new(0, 40, 0, 40)
+        PlayButton.Size = UDim2.new(0, 35, 0, 35) -- Slightly smaller
         PlayButton.Image = "rbxassetid://3926307971"
         PlayButton.ImageRectOffset = Vector2.new(764, 244)
         PlayButton.ImageRectSize = Vector2.new(36, 36)
@@ -334,40 +341,33 @@ function UILibrary.new(customConfig)
         PlayButtonCorner.CornerRadius = UDim.new(0, 6)
         PlayButtonCorner.Parent = PlayButton
         
-        -- Play button hover effects
-        PlayButton.MouseEnter:Connect(function()
-            smoothTween(PlayButton, config.AnimationSpeedFast, {
-                Size = UDim2.new(0, 45, 0, 45),
-                BackgroundTransparency = 0.1
-            }):Play()
-        end)
+        -- Add a subtle glow effect to the play button
+        local PlayButtonGlow = Instance.new("ImageLabel")
+        PlayButtonGlow.Name = "Glow"
+        PlayButtonGlow.BackgroundTransparency = 1
+        PlayButtonGlow.Image = "rbxassetid://5028857084"
+        PlayButtonGlow.ImageColor3 = Color3.fromRGB(255, 150, 50)
+        PlayButtonGlow.ImageTransparency = 0.7
+        PlayButtonGlow.Size = UDim2.new(1.5, 0, 1.5, 0)
+        PlayButtonGlow.Position = UDim2.new(0.5, 0, 0.5, 0)
+        PlayButtonGlow.AnchorPoint = Vector2.new(0.5, 0.5)
+        PlayButtonGlow.ZIndex = -1
+        PlayButtonGlow.Parent = PlayButton
         
-        PlayButton.MouseLeave:Connect(function()
-            smoothTween(PlayButton, config.AnimationSpeedFast, {
-                Size = UDim2.new(0, 40, 0, 40),
-                BackgroundTransparency = 0
-            }):Play()
-        end)
-        
-        -- Play button click functionality
-        PlayButton.MouseButton1Click:Connect(function()
-            gameCallback()
-        end)
-        
-        -- Game item hover effects
+        -- Play button hover effects with orange highlight
         local hoverEnter = function()
             smoothTween(GameItem, config.AnimationSpeedFast, {
                 BackgroundColor3 = Color3.fromRGB(
-                    math.clamp(config.SecondaryColor.R * 255 + 15, 0, 255)/255,
-                    math.clamp(config.SecondaryColor.G * 255 + 15, 0, 255)/255,
-                    math.clamp(config.SecondaryColor.B * 255 + 15, 0, 255)/255
+                    math.clamp(config.OrangeDark.R * 255 + 15, 0, 255)/255,
+                    math.clamp(config.OrangeDark.G * 255 + 10, 0, 255)/255,
+                    math.clamp(config.OrangeDark.B * 255 + 5, 0, 255)/255
                 )
             }):Play()
         end
         
         local hoverLeave = function()
             smoothTween(GameItem, config.AnimationSpeedFast, {
-                BackgroundColor3 = config.SecondaryColor
+                BackgroundColor3 = config.OrangeDark
             }):Play()
         end
         
@@ -375,6 +375,11 @@ function UILibrary.new(customConfig)
         GameItem.MouseLeave:Connect(hoverLeave)
         Thumbnail.MouseEnter:Connect(hoverEnter)
         Thumbnail.MouseLeave:Connect(hoverLeave)
+        
+        -- Play button click functionality
+        PlayButton.MouseButton1Click:Connect(function()
+            gameCallback()
+        end)
         
         return GameItem
     end
@@ -454,16 +459,6 @@ function UILibrary.new(customConfig)
     
     positionTween:Play()
     
-    -- Tambahkan background overlay hitam
-    local BackgroundOverlay = Instance.new("Frame")
-    BackgroundOverlay.Name = "BackgroundOverlay"
-    BackgroundOverlay.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-    BackgroundOverlay.BackgroundTransparency = 0.3
-    BackgroundOverlay.Size = UDim2.new(1, 0, 1, 0)
-    BackgroundOverlay.Position = UDim2.new(0, 0, 0, 0)
-    BackgroundOverlay.ZIndex = -2
-    BackgroundOverlay.Parent = ScreenGui
-    
     return hub
 end
 
@@ -498,8 +493,8 @@ function UILibrary.CreateStartMenu(customConfig, hubCallback, universalCallback)
     ScreenGui.Name = "LomuStartMenuGui"
     ScreenGui.ResetOnSpawn = false
     ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-    ScreenGui.DisplayOrder = 9999 -- Nilai sangat tinggi agar muncul di depan
-    ScreenGui.IgnoreGuiInset = true -- Penting! Agar tidak terpotong oleh UI Roblox
+    ScreenGui.DisplayOrder = 9999
+    ScreenGui.IgnoreGuiInset = true
     
     -- Check if game is running on mobile
     local isMobile = (game:GetService("UserInputService").TouchEnabled and 
@@ -508,34 +503,36 @@ function UILibrary.CreateStartMenu(customConfig, hubCallback, universalCallback)
     
     -- Setup MainFrame for start menu (bar at the bottom)
     MainFrame.Name = "StartMenuFrame"
-    MainFrame.BackgroundColor3 = Color3.fromRGB(10, 10, 10) -- Hitam yang lebih gelap
+    MainFrame.BackgroundColor3 = Color3.fromRGB(25, 15, 5) -- Dark orange background
     MainFrame.BorderSizePixel = 0
-    MainFrame.Position = UDim2.new(0.5, 0, 0.95, 0) -- Sedikit lebih ke atas
-    MainFrame.AnchorPoint = Vector2.new(0.5, 0) -- Anchor di tengah atas
-    MainFrame.Size = UDim2.new(0, 600, 0, config.StartMenuHeight) -- Lebih kecil dan compact
+    MainFrame.Position = UDim2.new(0.5, 0, 1, -config.StartMenuHeight - 15) -- Slightly higher from bottom
+    MainFrame.AnchorPoint = Vector2.new(0.5, 0) -- Anchor at center top
+    MainFrame.Size = UDim2.new(0, 700, 0, config.StartMenuHeight) -- Smaller but proportional
     
     -- Ensure visibility
     MainFrame.BackgroundTransparency = 0
     MainFrame.ZIndex = 10000
     
-    -- Tambahkan AbsoluteSize fallback untuk layar kecil
-    if MainFrame.AbsoluteSize.X > 800 then
-        MainFrame.Size = UDim2.new(0.8, 0, 0, config.StartMenuHeight)
+    -- Mobile and small screen adjustments
+    if isMobile then
+        MainFrame.Size = UDim2.new(0.9, 0, 0, config.StartMenuHeight)
+    elseif MainFrame.AbsoluteSize.X > 800 then
+        MainFrame.Size = UDim2.new(0.7, 0, 0, config.StartMenuHeight)
     end
     
     -- Add rounded corners
-    UICorner.CornerRadius = config.CornerRadius
+    UICorner.CornerRadius = UDim.new(0, 10) -- More rounded corners
     UICorner.Parent = MainFrame
     
-    -- Add shadow
+    -- Add orange-tinted shadow
     Shadow.Name = "Shadow"
     Shadow.BackgroundTransparency = 1
     Shadow.Image = "rbxassetid://5028857084" -- Drop shadow image
-    Shadow.ImageColor3 = Color3.fromRGB(0, 0, 0)
-    Shadow.ImageTransparency = config.ShadowTransparency
+    Shadow.ImageColor3 = Color3.fromRGB(50, 25, 0) -- Orange-tinted shadow
+    Shadow.ImageTransparency = 0.5 -- Stronger shadow
     Shadow.Position = UDim2.new(0.5, 0, 0.5, 0)
     Shadow.AnchorPoint = Vector2.new(0.5, 0.5)
-    Shadow.Size = UDim2.new(1, 40, 1, 40)
+    Shadow.Size = UDim2.new(1, 50, 1, 50) -- Larger shadow
     Shadow.ZIndex = -1
     Shadow.Parent = MainFrame
     
@@ -576,14 +573,29 @@ function UILibrary.CreateStartMenu(customConfig, hubCallback, universalCallback)
     AvatarSection = Instance.new("Frame")
     AvatarSection.Name = "AvatarSection"
     AvatarSection.BackgroundTransparency = 1
-    AvatarSection.Size = UDim2.new(0, 150, 0, config.StartMenuHeight - 20)
+    AvatarSection.Size = UDim2.new(0, 130, 0, config.StartMenuHeight - 20)
     AvatarSection.Parent = MainFrame
     
-    -- Avatar Image - pastikan ukurannya benar
-    AvatarImage.Position = UDim2.new(0.5, 0, 0, 5)
-    AvatarImage.Size = UDim2.new(0, 70, 0, 70)
+    -- Avatar Image with orange border
+    AvatarImage = Instance.new("ImageLabel")
+    AvatarImage.BackgroundTransparency = 1
+    AvatarImage.Position = UDim2.new(0.5, 0, 0, 8)
+    AvatarImage.Size = UDim2.new(0, 60, 0, 60)
     AvatarImage.AnchorPoint = Vector2.new(0.5, 0)
+    AvatarImage.Image = ""
+    
+    -- Add orange border to avatar
+    local AvatarBorder = Instance.new("UIStroke")
+    AvatarBorder.Color = config.AccentColor
+    AvatarBorder.Thickness = 2
+    AvatarBorder.Parent = AvatarImage
+    
     AvatarImage.Parent = AvatarSection
+    
+    -- Add circular shape to avatar
+    local AvatarCorner = Instance.new("UICorner")
+    AvatarCorner.CornerRadius = UDim.new(1, 0) -- Perfectly round
+    AvatarCorner.Parent = AvatarImage
     
     -- Avatar Label - perbaiki posisi dan ukuran
     AvatarLabel.Position = UDim2.new(0.5, 0, 0, 80)
@@ -613,14 +625,36 @@ function UILibrary.CreateStartMenu(customConfig, hubCallback, universalCallback)
     ButtonHubSection.Size = UDim2.new(0, 200, 0, config.StartMenuHeight - 20)
     ButtonHubSection.Parent = MainFrame
     
-    -- Button Hub - perbaiki tampilan
+    -- Orange-themed Hub button
+    ButtonHub = Instance.new("TextButton")
+    ButtonHub.Name = "ButtonHub"
+    ButtonHub.BackgroundColor3 = config.AccentColor
     ButtonHub.Position = UDim2.new(0.5, 0, 0.5, -15)
-    ButtonHub.Size = UDim2.new(0, 160, 0, 35)
+    ButtonHub.Size = UDim2.new(0, 160, 0, config.ButtonHeight)
     ButtonHub.AnchorPoint = Vector2.new(0.5, 0.5)
-    ButtonHub.TextSize = 16
-    ButtonHub.TextColor3 = config.TextColor
+    ButtonHub.TextSize = 14
     ButtonHub.Font = config.ButtonFont
+    ButtonHub.Text = "Load Lomu Hub"
+    ButtonHub.TextColor3 = Color3.fromRGB(255, 255, 255)
+    ButtonHub.AutoButtonColor = false
     ButtonHub.Parent = ButtonHubSection
+    
+    -- Add subtle glow to button
+    local ButtonHubGlow = Instance.new("ImageLabel")
+    ButtonHubGlow.Name = "Glow"
+    ButtonHubGlow.BackgroundTransparency = 1
+    ButtonHubGlow.Image = "rbxassetid://5028857084"
+    ButtonHubGlow.ImageColor3 = Color3.fromRGB(255, 150, 50)
+    ButtonHubGlow.ImageTransparency = 0.8
+    ButtonHubGlow.Size = UDim2.new(1.2, 0, 1.5, 0)
+    ButtonHubGlow.Position = UDim2.new(0.5, 0, 0.5, 0)
+    ButtonHubGlow.AnchorPoint = Vector2.new(0.5, 0.5)
+    ButtonHubGlow.ZIndex = -1
+    ButtonHubGlow.Parent = ButtonHub
+    
+    ButtonHubCorner = Instance.new("UICorner")
+    ButtonHubCorner.CornerRadius = UDim.new(0, 6)
+    ButtonHubCorner.Parent = ButtonHub
     
     -- Buat ulang section Button Universal Script dengan ukuran tetap
     ButtonUniversalSection = Instance.new("Frame")
@@ -629,14 +663,27 @@ function UILibrary.CreateStartMenu(customConfig, hubCallback, universalCallback)
     ButtonUniversalSection.Size = UDim2.new(0, 200, 0, config.StartMenuHeight - 20)
     ButtonUniversalSection.Parent = MainFrame
     
-    -- Button Universal - perbaiki tampilan
+    -- Orange-themed Universal Button
+    ButtonUniversal = Instance.new("TextButton")
+    ButtonUniversal.Name = "ButtonUniversal"
+    ButtonUniversal.BackgroundColor3 = config.AccentColor
     ButtonUniversal.Position = UDim2.new(0.5, 0, 0.5, -15)
-    ButtonUniversal.Size = UDim2.new(0, 160, 0, 35)
+    ButtonUniversal.Size = UDim2.new(0, 160, 0, config.ButtonHeight)
     ButtonUniversal.AnchorPoint = Vector2.new(0.5, 0.5)
-    ButtonUniversal.TextSize = 16
-    ButtonUniversal.TextColor3 = config.TextColor
+    ButtonUniversal.TextSize = 14
     ButtonUniversal.Font = config.ButtonFont
+    ButtonUniversal.Text = "Load Universal Script"
+    ButtonUniversal.TextColor3 = Color3.fromRGB(255, 255, 255)
+    ButtonUniversal.AutoButtonColor = false
     ButtonUniversal.Parent = ButtonUniversalSection
+    
+    -- Add subtle glow to universal button
+    local ButtonUniversalGlow = ButtonHubGlow:Clone()
+    ButtonUniversalGlow.Parent = ButtonUniversal
+    
+    ButtonUniversalCorner = Instance.new("UICorner")
+    ButtonUniversalCorner.CornerRadius = UDim.new(0, 6)
+    ButtonUniversalCorner.Parent = ButtonUniversal
     
     -- Get player avatar
     local Players = game:GetService("Players")
@@ -657,29 +704,59 @@ function UILibrary.CreateStartMenu(customConfig, hubCallback, universalCallback)
     -- Avatar Label
     AvatarLabel.Text = player.Name
     
-    -- Button hover effects for Hub button
-    local function createButtonHoverEffect(button, defaultColor)
-        button.MouseEnter:Connect(function()
-            smoothTween(button, config.AnimationSpeedFast, {
-                BackgroundColor3 = Color3.fromRGB(
-                    math.clamp(defaultColor.R * 255 + 20, 0, 255)/255,
-                    math.clamp(defaultColor.G * 255 + 20, 0, 255)/255,
-                    math.clamp(defaultColor.B * 255 + 20, 0, 255)/255
-                ),
-                Size = UDim2.new(button.Size.X.Scale, button.Size.X.Offset + 5, button.Size.Y.Scale, button.Size.Y.Offset)
-            }):Play()
-        end)
+    -- Button hover effects for Hub button with orange glow
+    ButtonHub.MouseEnter:Connect(function()
+        smoothTween(ButtonHub, config.AnimationSpeedFast, {
+            BackgroundColor3 = Color3.fromRGB(
+                math.clamp(config.AccentColor.R * 255 + 30, 0, 255)/255,
+                math.clamp(config.AccentColor.G * 255 + 20, 0, 255)/255,
+                math.clamp(config.AccentColor.B * 255 + 5, 0, 255)/255
+            ),
+            Size = UDim2.new(0, 164, 0, config.ButtonHeight + 2)
+        }):Play()
         
-        button.MouseLeave:Connect(function()
-            smoothTween(button, config.AnimationSpeedFast, {
-                BackgroundColor3 = defaultColor,
-                Size = UDim2.new(button.Size.X.Scale, button.Size.X.Offset - 5, button.Size.Y.Scale, button.Size.Y.Offset)
-            }):Play()
-        end)
-    end
+        smoothTween(ButtonHubGlow, config.AnimationSpeedFast, {
+            ImageTransparency = 0.6
+        }):Play()
+    end)
     
-    createButtonHoverEffect(ButtonHub, config.AccentColor)
-    createButtonHoverEffect(ButtonUniversal, config.SecondaryColor)
+    ButtonHub.MouseLeave:Connect(function()
+        smoothTween(ButtonHub, config.AnimationSpeedFast, {
+            BackgroundColor3 = config.AccentColor,
+            Size = UDim2.new(0, 160, 0, config.ButtonHeight)
+        }):Play()
+        
+        smoothTween(ButtonHubGlow, config.AnimationSpeedFast, {
+            ImageTransparency = 0.8
+        }):Play()
+    end)
+    
+    -- Button hover effects for Universal button with orange glow
+    ButtonUniversal.MouseEnter:Connect(function()
+        smoothTween(ButtonUniversal, config.AnimationSpeedFast, {
+            BackgroundColor3 = Color3.fromRGB(
+                math.clamp(config.AccentColor.R * 255 + 30, 0, 255)/255,
+                math.clamp(config.AccentColor.G * 255 + 20, 0, 255)/255,
+                math.clamp(config.AccentColor.B * 255 + 5, 0, 255)/255
+            ),
+            Size = UDim2.new(0, 164, 0, config.ButtonHeight + 2)
+        }):Play()
+        
+        smoothTween(ButtonUniversalGlow, config.AnimationSpeedFast, {
+            ImageTransparency = 0.6
+        }):Play()
+    end)
+    
+    ButtonUniversal.MouseLeave:Connect(function()
+        smoothTween(ButtonUniversal, config.AnimationSpeedFast, {
+            BackgroundColor3 = config.AccentColor,
+            Size = UDim2.new(0, 160, 0, config.ButtonHeight)
+        }):Play()
+        
+        smoothTween(ButtonUniversalGlow, config.AnimationSpeedFast, {
+            ImageTransparency = 0.8
+        }):Play()
+    end)
     
     -- Button click functionality
     ButtonHub.MouseButton1Click:Connect(function()
@@ -748,7 +825,7 @@ function UILibrary.CreateStartMenu(customConfig, hubCallback, universalCallback)
     
     -- Animasi UI - dimulai dari posisi awal, bukan dari luar layar
     smoothTween(MainFrame, config.AnimationSpeed, {
-        Position = UDim2.new(0.5, 0, 0.85, 0), -- Cukup bergerak sedikit
+        Position = UDim2.new(0.5, 0, 0.9, 0), -- Slightly lower
         BackgroundTransparency = 0
     }):Play()
     
@@ -770,7 +847,7 @@ function UILibrary.CreateStartMenu(customConfig, hubCallback, universalCallback)
         MainFrame.BackgroundTransparency = 0.2
         
         smoothTween(MainFrame, config.AnimationSpeed, {
-            Position = UDim2.new(0.5, 0, 0.85, 0),
+            Position = UDim2.new(0.5, 0, 0.9, 0),
             BackgroundTransparency = 0
         }):Play()
     end
