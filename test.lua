@@ -488,7 +488,8 @@ function UILibrary.CreateStartMenu(customConfig, hubCallback, universalCallback)
     ScreenGui.Name = "LomuStartMenuGui"
     ScreenGui.ResetOnSpawn = false
     ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-    ScreenGui.DisplayOrder = 100 -- Pastikan tampil di atas UI lain
+    ScreenGui.DisplayOrder = 9999 -- Nilai sangat tinggi agar muncul di depan
+    ScreenGui.IgnoreGuiInset = true -- Penting! Agar tidak terpotong oleh UI Roblox
     
     -- Check if game is running on mobile
     local isMobile = (game:GetService("UserInputService").TouchEnabled and 
@@ -499,12 +500,18 @@ function UILibrary.CreateStartMenu(customConfig, hubCallback, universalCallback)
     MainFrame.Name = "StartMenuFrame"
     MainFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0) -- Black background
     MainFrame.BorderSizePixel = 0
-    MainFrame.Position = UDim2.new(0.5, 0, 0.8, 0) -- Mulai di tengah layar secara horizontal, agak ke bawah
+    MainFrame.Position = UDim2.new(0.5, 0, 1, -config.StartMenuHeight - 10) -- Tepat di bawah layar
     MainFrame.AnchorPoint = Vector2.new(0.5, 0) -- Anchor di tengah atas
     MainFrame.Size = UDim2.new(0, 800, 0, config.StartMenuHeight)
     
-    -- Tambahkan ZIndex lebih tinggi untuk memastikan UI terlihat
-    MainFrame.ZIndex = 10
+    -- Ensure visibility
+    MainFrame.BackgroundTransparency = 0
+    MainFrame.ZIndex = 10000
+    
+    -- Tambahkan AbsoluteSize fallback untuk layar kecil
+    if MainFrame.AbsoluteSize.X > 800 then
+        MainFrame.Size = UDim2.new(0.8, 0, 0, config.StartMenuHeight)
+    end
     
     -- Add rounded corners
     UICorner.CornerRadius = config.CornerRadius
@@ -775,6 +782,64 @@ function UILibrary.CreateStartMenu(customConfig, hubCallback, universalCallback)
     end
     
     return startMenu
+end
+
+-- Debug helper untuk memastikan script berjalan
+local function DebugUI(msg)
+    print("[LOMU HUB DEBUG] " .. msg)
+    
+    -- Tambahkan visual feedback agar terlihat saat debugging
+    local debugLabel = Instance.new("TextLabel")
+    debugLabel.Size = UDim2.new(0, 300, 0, 30)
+    debugLabel.Position = UDim2.new(0.5, -150, 0.2, 0)
+    debugLabel.AnchorPoint = Vector2.new(0, 0)
+    debugLabel.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    debugLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    debugLabel.TextSize = 14
+    debugLabel.Text = msg
+    debugLabel.ZIndex = 10001
+    
+    -- Pastikan debugLabel muncul
+    local screenGui = Instance.new("ScreenGui")
+    screenGui.ResetOnSpawn = false
+    screenGui.DisplayOrder = 10000
+    screenGui.Parent = game:GetService("CoreGui")
+    debugLabel.Parent = screenGui
+    
+    -- Hapus setelah beberapa detik
+    task.delay(5, function()
+        screenGui:Destroy()
+    end)
+end
+
+-- Alternatif manual jika masih tidak muncul
+local function CreateManualBar()
+    DebugUI("Creating manual bar as fallback...")
+    
+    local screenGui = Instance.new("ScreenGui")
+    screenGui.Name = "ManualLomuBar"
+    screenGui.ResetOnSpawn = false
+    screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    screenGui.DisplayOrder = 10000
+    
+    -- Pastikan IgnoreGuiInset true agar tidak terpotong
+    screenGui.IgnoreGuiInset = true
+    
+    local frame = Instance.new("Frame")
+    frame.Size = UDim2.new(0, 800, 0, 120)
+    frame.Position = UDim2.new(0.5, 0, 1, -130)
+    frame.AnchorPoint = Vector2.new(0.5, 0)
+    frame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    frame.BorderSizePixel = 0
+    frame.ZIndex = 10000
+    frame.Parent = screenGui
+    
+    -- Add avatar button, name, and function buttons
+    -- ... (kode untuk menambahkan elemen UI)
+    
+    -- Parent to CoreGui
+    screenGui.Parent = game:GetService("CoreGui")
+    return screenGui
 end
 
 return UILibrary
