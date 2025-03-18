@@ -365,7 +365,7 @@ function UILibrary.new(customConfig)
     -- Loading Indicator - improved design
     LoadingIndicator.Name = "LoadingIndicator"
     LoadingIndicator.BackgroundTransparency = 1
-    LoadingIndicator.Position = UDim2.new(0.5, 0, 0.5, 0)
+    LoadingIndicator.Position = UDim2.new(0.5, 0, 0.25, 0) -- Ubah posisi ke bagian atas
     LoadingIndicator.AnchorPoint = Vector2.new(0.5, 0.5)
     LoadingIndicator.Size = UDim2.new(0, 40, 0, 40)
     LoadingIndicator.Visible = false
@@ -445,7 +445,7 @@ function UILibrary.new(customConfig)
         end)
         
         CategoryButton.MouseButton1Click:Connect(function()
-            if catName ~= selectedCategory then
+            if categoryName ~= selectedCategory then
                 -- Show loading indicator
                 LoadingIndicator.Visible = true
                 animateLoading()
@@ -467,9 +467,9 @@ function UILibrary.new(customConfig)
                     Size = UDim2.new(0, 0, 1, 0)
                 })
                 
-                selectedCategory = catName
+                selectedCategory = categoryName
                 
-                -- Filter games based on category with animation
+                -- Filter games with subtle animation - but make sure they appear
                 local visibleCount = 0
                 
                 for _, child in pairs(GameList:GetChildren()) do
@@ -484,24 +484,23 @@ function UILibrary.new(customConfig)
                             shouldBeVisible = shouldBeVisible and string.find(string.lower(gameName), searchText)
                         end
                         
-                        -- Animate visibility change
+                        -- Perbaiki visibilitas: langsung tampilkan item yang seharusnya terlihat
                         if shouldBeVisible then
                             visibleCount = visibleCount + 1
-                            if not child.Visible then
-                                child.Visible = true
-                                child.BackgroundTransparency = 1
-                                smoothTween(child, config.AnimationSpeedFast, {
+                            child.Visible = true
+                            
+                            -- Jika sebelumnya invisible, berikan animasi sederhana
+                            if child.BackgroundTransparency > config.ElementTransparency then
+                                smoothTween(child, 0.2, {
                                     BackgroundTransparency = config.ElementTransparency
                                 })
                             end
                         else
-                            if child.Visible then
-                                smoothTween(child, config.AnimationSpeedFast, {
-                                    BackgroundTransparency = 1
-                                }, function()
-                                    child.Visible = false
-                                end)
-                            end
+                            smoothTween(child, 0.2, {
+                                BackgroundTransparency = 1
+                            }, function()
+                                child.Visible = false
+                            end)
                         end
                     end
                 end
@@ -616,12 +615,13 @@ function UILibrary.new(customConfig)
         
         GameItem.Name = "GameItem_" .. gameName
         GameItem.BackgroundColor3 = config.SecondaryColor
-        GameItem.BackgroundTransparency = 1 -- Start transparent untuk animasi masuk
+        GameItem.BackgroundTransparency = config.ElementTransparency -- Ubah ini agar langsung terlihat
         GameItem.Size = UDim2.new(1, 0, 0, config.GameItemHeight)
         GameItem.ClipsDescendants = true
         GameItem.Parent = GameList
         GameItem:SetAttribute("Category", gameCategory)
         GameItem.ZIndex = 12
+        GameItem.Visible = true -- Pastikan terlihat
         
         GameCorner.CornerRadius = config.CornerRadius
         GameCorner.Parent = GameItem
@@ -646,7 +646,7 @@ function UILibrary.new(customConfig)
         Thumbnail.AnchorPoint = Vector2.new(0, 0.5)
         Thumbnail.Size = UDim2.new(0, 45, 0, 45)
         Thumbnail.Image = gameThumbnail
-        Thumbnail.ImageTransparency = 1 -- Start transparent
+        Thumbnail.ImageTransparency = 0
         Thumbnail.ZIndex = 14
         Thumbnail.Parent = GameItemInner
         
@@ -663,7 +663,7 @@ function UILibrary.new(customConfig)
         GameName.TextColor3 = config.TextColor
         GameName.TextSize = config.SubheadingSize
         GameName.TextXAlignment = Enum.TextXAlignment.Left
-        GameName.TextTransparency = 1 -- Start transparent
+        GameName.TextTransparency = 0
         GameName.ZIndex = 14
         GameName.Parent = GameItemInner
         
@@ -672,7 +672,7 @@ function UILibrary.new(customConfig)
         
         StatusIndicator.Name = "StatusIndicator"
         StatusIndicator.BackgroundColor3 = statusColor
-        StatusIndicator.BackgroundTransparency = 1 -- Start transparent
+        StatusIndicator.BackgroundTransparency = 0
         StatusIndicator.Position = UDim2.new(0, 68, 0, GameName.Position.Y.Offset + GameName.Size.Y.Offset + 7)
         StatusIndicator.Size = UDim2.new(0, 6, 0, 6)
         StatusIndicator.ZIndex = 14
@@ -691,14 +691,14 @@ function UILibrary.new(customConfig)
         StatusLabel.TextColor3 = config.SecondaryTextColor
         StatusLabel.TextSize = config.SmallTextSize
         StatusLabel.TextXAlignment = Enum.TextXAlignment.Left
-        StatusLabel.TextTransparency = 1 -- Start transparent
+        StatusLabel.TextTransparency = 0
         StatusLabel.ZIndex = 14
         StatusLabel.Parent = GameItemInner
         
         -- Play button - better spacing
         PlayButton.Name = "PlayButton"
         PlayButton.BackgroundColor3 = config.AccentColor
-        PlayButton.BackgroundTransparency = 1 -- Start transparent
+        PlayButton.BackgroundTransparency = 0
         PlayButton.Position = UDim2.new(1, -70, 0.5, 0) -- Increased spacing
         PlayButton.AnchorPoint = Vector2.new(0, 0.5)
         PlayButton.Size = UDim2.new(0, 58, 0, 30)
@@ -707,7 +707,7 @@ function UILibrary.new(customConfig)
         PlayButton.Text = "PLAY"
         PlayButton.TextColor3 = Color3.fromRGB(255, 255, 255)
         PlayButton.TextSize = 13
-        PlayButton.TextTransparency = 1 -- Start transparent
+        PlayButton.TextTransparency = 0
         PlayButton.ZIndex = 14
         PlayButton.Parent = GameItemInner
         
@@ -865,49 +865,12 @@ function UILibrary.new(customConfig)
             GameItem.Visible = shouldBeVisible
         end
         
-        -- Initial visibility check
-        updateVisibility()
-        
-        -- Delayed animation for game item appearance
-        task.delay(0.1 + math.random() * 0.3, function() -- Random delay for staggered effect
-            -- Fade in the item with slide effect
-            GameItem.Position = UDim2.new(0.05, 0, 0, GameItem.Position.Y.Offset)
-            
-            -- Animate all elements
-            smoothTween(GameItem, 0.4, {
-                BackgroundTransparency = config.ElementTransparency,
-                Position = UDim2.new(0, 0, 0, GameItem.Position.Y.Offset)
-            })
-            
-            smoothTween(GameBorder, 0.4, {
-                Transparency = 0
-            })
-            
-            smoothTween(Thumbnail, 0.4, {
-                ImageTransparency = 0
-            })
-            
-            smoothTween(GameName, 0.4, {
-                TextTransparency = 0
-            })
-            
-            smoothTween(StatusIndicator, 0.4, {
-                BackgroundTransparency = 0
-            })
-            
-            smoothTween(StatusLabel, 0.4, {
-                TextTransparency = 0
-            })
-            
-            smoothTween(PlayButton, 0.4, {
-                BackgroundTransparency = 0,
-                TextTransparency = 0
-            })
-            
-            smoothTween(playShadow, 0.5, {
-                ImageTransparency = 0.2
-            })
-        end)
+        -- Initial visibility check dengan memastikan item terlihat jika kategori "All"
+        if selectedCategory == "All" or gameCategory == selectedCategory then
+            GameItem.Visible = true
+        else
+            GameItem.Visible = false
+        end
         
         return GameItem
     end
@@ -987,7 +950,7 @@ function UILibrary.new(customConfig)
                 
                 selectedCategory = categoryName
                 
-                -- Filter games with subtle animation
+                -- Filter games with subtle animation - but make sure they appear
                 local visibleCount = 0
                 
                 for _, child in pairs(GameList:GetChildren()) do
@@ -1002,87 +965,31 @@ function UILibrary.new(customConfig)
                             shouldBeVisible = shouldBeVisible and string.find(string.lower(gameName), searchText)
                         end
                         
-                        -- Animate visibility with subtle slide
+                        -- Perbaiki visibilitas: langsung tampilkan item yang seharusnya terlihat
                         if shouldBeVisible then
                             visibleCount = visibleCount + 1
-                            if not child.Visible then
-                                task.delay(visibleCount * 0.02, function()
-                                    child.Visible = true
-                                    child.BackgroundTransparency = 1
-                                    child.Position = UDim2.new(0.03, 0, 0, child.Position.Y.Offset)
-                                    
-                                    -- Animate all child elements
-                                    for _, element in pairs(child:GetDescendants()) do
-                                        if element:IsA("TextLabel") or element:IsA("TextButton") then
-                                            element.TextTransparency = 1
-                                            smoothTween(element, 0.3, {
-                                                TextTransparency = 0
-                                            })
-                                        elseif element:IsA("ImageLabel") then
-                                            element.ImageTransparency = 1
-                                            smoothTween(element, 0.3, {
-                                                ImageTransparency = 0
-                                            })
-                                        elseif element:IsA("Frame") and element.Name ~= "Shadow" then
-                                            if element.BackgroundTransparency < 1 then
-                                                local originalTransparency = element.BackgroundTransparency
-                                                element.BackgroundTransparency = 1
-                                                smoothTween(element, 0.3, {
-                                                    BackgroundTransparency = originalTransparency
-                                                })
-                                            end
-                                        end
-                                    end
-                                    
-                                    smoothTween(child, 0.3, {
-                                        BackgroundTransparency = config.ElementTransparency,
-                                        Position = UDim2.new(0, 0, 0, child.Position.Y.Offset)
-                                    })
-                                end)
+                            child.Visible = true
+                            
+                            -- Jika sebelumnya invisible, berikan animasi sederhana
+                            if child.BackgroundTransparency > config.ElementTransparency then
+                                smoothTween(child, 0.2, {
+                                    BackgroundTransparency = config.ElementTransparency
+                                })
                             end
                         else
-                            if child.Visible then
-                                -- Animate fade out
-                                for _, element in pairs(child:GetDescendants()) do
-                                    if element:IsA("TextLabel") or element:IsA("TextButton") then
-                                        smoothTween(element, 0.2, {
-                                            TextTransparency = 1
-                                        })
-                                    elseif element:IsA("ImageLabel") then
-                                        smoothTween(element, 0.2, {
-                                            ImageTransparency = 1
-                                        })
-                                    elseif element:IsA("Frame") and element.Name ~= "Shadow" then
-                                        if element.BackgroundTransparency < 1 then
-                                            smoothTween(element, 0.2, {
-                                                BackgroundTransparency = 1
-                                            })
-                                        end
-                                    end
-                                end
-                                
-                                smoothTween(child, 0.2, {
-                                    BackgroundTransparency = 1,
-                                    Position = UDim2.new(-0.03, 0, 0, child.Position.Y.Offset)
-                                }, function()
-                                    child.Visible = false
-                                    child.Position = UDim2.new(0, 0, 0, child.Position.Y.Offset)
-                                end)
-                            end
+                            smoothTween(child, 0.2, {
+                                BackgroundTransparency = 1
+                            }, function()
+                                child.Visible = false
+                            end)
                         end
                     end
                 end
                 
                 -- Update empty state
                 EmptyStateLabel.Visible = (visibleCount == 0)
-                if EmptyStateLabel.Visible then
-                    EmptyStateLabel.TextTransparency = 1
-                    smoothTween(EmptyStateLabel, 0.3, {
-                        TextTransparency = 0
-                    })
-                end
                 
-                -- Hide loading after filtering
+                -- Hide loading indicator after filtering
                 task.delay(0.3, function()
                     LoadingIndicator.Visible = false
                 end)
@@ -1609,15 +1516,16 @@ function UILibrary:CreateStartMenu(options)
     -- Player info section
     PlayerInfo.Name = "PlayerInfo"
     PlayerInfo.BackgroundTransparency = 1
-    PlayerInfo.Position = UDim2.new(0, 0, 0.85, 10)
+    PlayerInfo.Position = UDim2.new(0.5, 0, 0.85, 10) -- Diubah agar di tengah
     PlayerInfo.Size = UDim2.new(1, 0, 0, 50)
+    PlayerInfo.AnchorPoint = Vector2.new(0.5, 0) -- Tambah anchor point agar center
     PlayerInfo.ZIndex = 11
     PlayerInfo.Parent = MainFrame
     
     PlayerAvatar.Name = "PlayerAvatar"
     PlayerAvatar.BackgroundTransparency = 0.5
     PlayerAvatar.BackgroundColor3 = Color3.fromRGB(30, 35, 45)
-    PlayerAvatar.Position = UDim2.new(0.5, -100, 0, 0)
+    PlayerAvatar.Position = UDim2.new(0.5, -60, 0, 0) -- Diubah posisinya
     PlayerAvatar.Size = UDim2.new(0, 40, 0, 40)
     PlayerAvatar.ImageTransparency = 1 -- Start transparent for animation
     PlayerAvatar.ZIndex = 12
@@ -1628,13 +1536,13 @@ function UILibrary:CreateStartMenu(options)
     
     PlayerName.Name = "PlayerName"
     PlayerName.BackgroundTransparency = 1
-    PlayerName.Position = UDim2.new(0.5, -50, 0, 0)
+    PlayerName.Position = UDim2.new(0.5, -10, 0, 0) -- Diubah posisinya
     PlayerName.Size = UDim2.new(0, 200, 0, 40)
     PlayerName.Font = config.Font
     PlayerName.TextColor3 = config.TextColor
     PlayerName.TextSize = 14
     PlayerName.TextXAlignment = Enum.TextXAlignment.Left
-    PlayerName.TextTransparency = 1 -- Start transparent for animation
+    PlayerName.TextTransparency = 1
     PlayerName.ZIndex = 12
     PlayerName.Parent = PlayerInfo
     
