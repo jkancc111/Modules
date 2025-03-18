@@ -24,6 +24,19 @@ local config = {
     StartMenuHeight = 120
 }
 
+-- Fungsi helper untuk membuat animasi yang lebih smooth
+local function smoothTween(object, duration, properties)
+    return game:GetService("TweenService"):Create(
+        object,
+        TweenInfo.new(
+            duration or config.AnimationSpeed,
+            config.AnimationEasingStyle,
+            config.AnimationEasingDirection
+        ),
+        properties
+    )
+end
+
 -- Create a new hub instance
 function UILibrary.new(customConfig)
     local hub = {}
@@ -483,11 +496,10 @@ function UILibrary.CreateStartMenu(customConfig, hubCallback, universalCallback)
     
     -- Setup MainFrame for start menu (bar at the bottom)
     MainFrame.Name = "StartMenuFrame"
-    MainFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0) -- Black background
+    MainFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0) -- Hitam solid
     MainFrame.BorderSizePixel = 0
     MainFrame.Position = UDim2.new(0.5, 0, 1.1, 0) -- Start off screen at bottom
-    MainFrame.Size = UDim2.new(0, 600, 0, config.StartMenuHeight)
-    MainFrame.AnchorPoint = Vector2.new(0.5, 1)
+    MainFrame.Size = UDim2.new(0, 800, 0, config.StartMenuHeight) -- Lebih lebar
     
     if isMobile and config.MobileScaling then
         MainFrame.Size = UDim2.new(0.95, 0, 0, config.StartMenuHeight)
@@ -509,26 +521,100 @@ function UILibrary.CreateStartMenu(customConfig, hubCallback, universalCallback)
     Shadow.ZIndex = -1
     Shadow.Parent = MainFrame
     
-    -- Create a UIListLayout for sections
-    local SectionLayout = Instance.new("UIGridLayout")
-    SectionLayout.CellSize = UDim2.new(0.25, -10, 1, -20) -- Four equal sections
-    SectionLayout.CellPadding = UDim2.new(0, 10, 0, 10)
-    SectionLayout.SortOrder = Enum.SortOrder.LayoutOrder
-    SectionLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
-    SectionLayout.VerticalAlignment = Enum.VerticalAlignment.Center
-    SectionLayout.Parent = MainFrame
-    
-    -- Adjust for mobile if needed
-    if isMobile and config.MobileScaling then
-        SectionLayout.CellSize = UDim2.new(0.25, -6, 1, -10)
-        SectionLayout.CellPadding = UDim2.new(0, 5, 0, 5)
+    -- Hapus SectionLayout lama dan ganti dengan HorizontalLayout
+    if MainFrame:FindFirstChild("UIGridLayout") then
+        MainFrame:FindFirstChild("UIGridLayout"):Destroy()
     end
     
-    -- Avatar Section
+    -- Buat layout horizontal yang tetap dengan 4 bagian yang sama
+    local HorizontalLayout = Instance.new("UIListLayout")
+    HorizontalLayout.FillDirection = Enum.FillDirection.Horizontal
+    HorizontalLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+    HorizontalLayout.VerticalAlignment = Enum.VerticalAlignment.Center
+    HorizontalLayout.Padding = UDim.new(0, 20)
+    HorizontalLayout.Parent = MainFrame
+    
+    -- Buat padding untuk margin kiri dan kanan
+    local FramePadding = Instance.new("UIPadding")
+    FramePadding.PaddingLeft = UDim.new(0, 20)
+    FramePadding.PaddingRight = UDim.new(0, 20)
+    FramePadding.Parent = MainFrame
+    
+    -- Reset dan buat ulang semua section
+    if MainFrame:FindFirstChild("AvatarSection") then
+        MainFrame:FindFirstChild("AvatarSection"):Destroy()
+    end
+    if MainFrame:FindFirstChild("NameSection") then 
+        MainFrame:FindFirstChild("NameSection"):Destroy()
+    end
+    if MainFrame:FindFirstChild("ButtonHubSection") then
+        MainFrame:FindFirstChild("ButtonHubSection"):Destroy()
+    end
+    if MainFrame:FindFirstChild("ButtonUniversalSection") then
+        MainFrame:FindFirstChild("ButtonUniversalSection"):Destroy()
+    end
+    
+    -- Buat ulang section Avatar dengan ukuran tetap
+    AvatarSection = Instance.new("Frame")
     AvatarSection.Name = "AvatarSection"
     AvatarSection.BackgroundTransparency = 1
-    AvatarSection.LayoutOrder = 1
+    AvatarSection.Size = UDim2.new(0, 150, 0, config.StartMenuHeight - 20)
     AvatarSection.Parent = MainFrame
+    
+    -- Avatar Image - pastikan ukurannya benar
+    AvatarImage.Position = UDim2.new(0.5, 0, 0, 5)
+    AvatarImage.Size = UDim2.new(0, 70, 0, 70)
+    AvatarImage.AnchorPoint = Vector2.new(0.5, 0)
+    AvatarImage.Parent = AvatarSection
+    
+    -- Avatar Label - perbaiki posisi dan ukuran
+    AvatarLabel.Position = UDim2.new(0.5, 0, 0, 80)
+    AvatarLabel.Size = UDim2.new(1, 0, 0, 20)
+    AvatarLabel.TextSize = 16
+    AvatarLabel.TextXAlignment = Enum.TextXAlignment.Center
+    AvatarLabel.Parent = AvatarSection
+    
+    -- Buat ulang section Nama dengan ukuran tetap
+    NameSection = Instance.new("Frame")
+    NameSection.Name = "NameSection"
+    NameSection.BackgroundTransparency = 1
+    NameSection.Size = UDim2.new(0, 150, 0, config.StartMenuHeight - 20)
+    NameSection.Parent = MainFrame
+    
+    -- Name Label - perbaiki tampilan
+    NameLabel.Position = UDim2.new(0.5, 0, 0.5, -10)
+    NameLabel.Size = UDim2.new(1, 0, 0, 20)
+    NameLabel.TextSize = 18
+    NameLabel.TextXAlignment = Enum.TextXAlignment.Center
+    NameLabel.Parent = NameSection
+    
+    -- Buat ulang section Button Lomu Hub dengan ukuran tetap
+    ButtonHubSection = Instance.new("Frame")
+    ButtonHubSection.Name = "ButtonHubSection"
+    ButtonHubSection.BackgroundTransparency = 1
+    ButtonHubSection.Size = UDim2.new(0, 200, 0, config.StartMenuHeight - 20)
+    ButtonHubSection.Parent = MainFrame
+    
+    -- Button Hub - perbaiki tampilan
+    ButtonHub.Position = UDim2.new(0.5, 0, 0.5, -15)
+    ButtonHub.Size = UDim2.new(0, 180, 0, 40)
+    ButtonHub.AnchorPoint = Vector2.new(0.5, 0.5)
+    ButtonHub.TextSize = 16
+    ButtonHub.Parent = ButtonHubSection
+    
+    -- Buat ulang section Button Universal Script dengan ukuran tetap
+    ButtonUniversalSection = Instance.new("Frame")
+    ButtonUniversalSection.Name = "ButtonUniversalSection"
+    ButtonUniversalSection.BackgroundTransparency = 1
+    ButtonUniversalSection.Size = UDim2.new(0, 200, 0, config.StartMenuHeight - 20)
+    ButtonUniversalSection.Parent = MainFrame
+    
+    -- Button Universal - perbaiki tampilan
+    ButtonUniversal.Position = UDim2.new(0.5, 0, 0.5, -15)
+    ButtonUniversal.Size = UDim2.new(0, 180, 0, 40)
+    ButtonUniversal.AnchorPoint = Vector2.new(0.5, 0.5)
+    ButtonUniversal.TextSize = 16
+    ButtonUniversal.Parent = ButtonUniversalSection
     
     -- Get player avatar
     local Players = game:GetService("Players")
@@ -544,83 +630,16 @@ function UILibrary.CreateStartMenu(customConfig, hubCallback, universalCallback)
     end)
     
     -- Avatar Image
-    AvatarImage.Name = "AvatarImage"
-    AvatarImage.BackgroundTransparency = 1
-    AvatarImage.Position = UDim2.new(0.5, 0, 0, 5)
-    AvatarImage.Size = UDim2.new(0.8, 0, 0.8, 0)
-    AvatarImage.AnchorPoint = Vector2.new(0.5, 0)
     AvatarImage.Image = avatarUrl
-    AvatarImage.Parent = AvatarSection
     
     -- Avatar Label
-    AvatarLabel.Name = "AvatarLabel"
-    AvatarLabel.BackgroundTransparency = 1
-    AvatarLabel.Position = UDim2.new(0, 0, 0.8, 5)
-    AvatarLabel.Size = UDim2.new(1, 0, 0.2, -5)
-    AvatarLabel.Font = config.Font
-    AvatarLabel.Text = "Avatar Player"
-    AvatarLabel.TextColor3 = config.TextColor
-    AvatarLabel.TextSize = 14
-    AvatarLabel.Parent = AvatarSection
-    
-    -- Name Section
-    NameSection.Name = "NameSection"
-    NameSection.BackgroundTransparency = 1
-    NameSection.LayoutOrder = 2
-    NameSection.Parent = MainFrame
-    
-    -- Name Label
-    NameLabel.Name = "NameLabel"
-    NameLabel.BackgroundTransparency = 1
-    NameLabel.Position = UDim2.new(0, 0, 0.5, -10)
-    NameLabel.Size = UDim2.new(1, 0, 0, 20)
-    NameLabel.Font = config.Font
-    NameLabel.Text = player.Name
-    NameLabel.TextColor3 = config.TextColor
-    NameLabel.TextSize = 16
-    NameLabel.Parent = NameSection
-    
-    -- Button Hub Section
-    ButtonHubSection.Name = "ButtonHubSection"
-    ButtonHubSection.BackgroundTransparency = 1
-    ButtonHubSection.LayoutOrder = 3
-    ButtonHubSection.Parent = MainFrame
+    AvatarLabel.Text = player.Name
     
     -- Button Hub
-    ButtonHub.Name = "ButtonHub"
-    ButtonHub.BackgroundColor3 = config.AccentColor
-    ButtonHub.Position = UDim2.new(0, 5, 0.5, -15)
-    ButtonHub.Size = UDim2.new(1, -10, 0, 30)
-    ButtonHub.Font = config.ButtonFont
     ButtonHub.Text = "Button Load Lomu Hub"
-    ButtonHub.TextColor3 = config.TextColor
-    ButtonHub.TextSize = 14
-    ButtonHub.AutoButtonColor = false
-    ButtonHub.Parent = ButtonHubSection
-    
-    ButtonHubCorner.CornerRadius = UDim.new(0, 4)
-    ButtonHubCorner.Parent = ButtonHub
-    
-    -- Button Universal Section
-    ButtonUniversalSection.Name = "ButtonUniversalSection"
-    ButtonUniversalSection.BackgroundTransparency = 1
-    ButtonUniversalSection.LayoutOrder = 4
-    ButtonUniversalSection.Parent = MainFrame
     
     -- Button Universal
-    ButtonUniversal.Name = "ButtonUniversal"
-    ButtonUniversal.BackgroundColor3 = config.AccentColor
-    ButtonUniversal.Position = UDim2.new(0, 5, 0.5, -15)
-    ButtonUniversal.Size = UDim2.new(1, -10, 0, 30)
-    ButtonUniversal.Font = config.ButtonFont
     ButtonUniversal.Text = "Button Load Universal Script"
-    ButtonUniversal.TextColor3 = config.TextColor
-    ButtonUniversal.TextSize = 14
-    ButtonUniversal.AutoButtonColor = false
-    ButtonUniversal.Parent = ButtonUniversalSection
-    
-    ButtonUniversalCorner.CornerRadius = UDim.new(0, 4)
-    ButtonUniversalCorner.Parent = ButtonUniversal
     
     -- Button hover effects for Hub button
     ButtonHub.MouseEnter:Connect(function()
@@ -740,19 +759,6 @@ function UILibrary.CreateStartMenu(customConfig, hubCallback, universalCallback)
     end
     
     return startMenu
-end
-
--- Fungsi helper untuk membuat animasi yang lebih smooth
-local function smoothTween(object, duration, properties)
-    return game:GetService("TweenService"):Create(
-        object,
-        TweenInfo.new(
-            duration or config.AnimationSpeed,
-            config.AnimationEasingStyle,
-            config.AnimationEasingDirection
-        ),
-        properties
-    )
 end
 
 return UILibrary
