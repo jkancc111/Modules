@@ -485,9 +485,10 @@ function UILibrary.CreateStartMenu(customConfig, hubCallback, universalCallback)
     local ButtonUniversalCorner = Instance.new("UICorner")
     
     -- Set up ScreenGui
-    ScreenGui.Name = "LomuStartMenu"
+    ScreenGui.Name = "LomuStartMenuGui"
     ScreenGui.ResetOnSpawn = false
     ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    ScreenGui.DisplayOrder = 100 -- Pastikan tampil di atas UI lain
     
     -- Check if game is running on mobile
     local isMobile = (game:GetService("UserInputService").TouchEnabled and 
@@ -496,14 +497,14 @@ function UILibrary.CreateStartMenu(customConfig, hubCallback, universalCallback)
     
     -- Setup MainFrame for start menu (bar at the bottom)
     MainFrame.Name = "StartMenuFrame"
-    MainFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0) -- Hitam solid
+    MainFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0) -- Black background
     MainFrame.BorderSizePixel = 0
-    MainFrame.Position = UDim2.new(0.5, 0, 1.1, 0) -- Start off screen at bottom
-    MainFrame.Size = UDim2.new(0, 800, 0, config.StartMenuHeight) -- Lebih lebar
+    MainFrame.Position = UDim2.new(0.5, 0, 0.8, 0) -- Mulai di tengah layar secara horizontal, agak ke bawah
+    MainFrame.AnchorPoint = Vector2.new(0.5, 0) -- Anchor di tengah atas
+    MainFrame.Size = UDim2.new(0, 800, 0, config.StartMenuHeight)
     
-    if isMobile and config.MobileScaling then
-        MainFrame.Size = UDim2.new(0.95, 0, 0, config.StartMenuHeight)
-    end
+    -- Tambahkan ZIndex lebih tinggi untuk memastikan UI terlihat
+    MainFrame.ZIndex = 10
     
     -- Add rounded corners
     UICorner.CornerRadius = config.CornerRadius
@@ -726,12 +727,27 @@ function UILibrary.CreateStartMenu(customConfig, hubCallback, universalCallback)
     
     -- Animation for opening the UI with improved smoothness
     MainFrame.Parent = ScreenGui
-    ScreenGui.Parent = game:GetService("CoreGui")
     
-    MainFrame.BackgroundTransparency = 0.2
+    -- Coba dengan dua pendekatan berbeda untuk menampilkan UI
+    -- Opsi 1: Menggunakan game.CoreGui
+    pcall(function()
+        ScreenGui.Parent = game:GetService("CoreGui")
+    end)
     
+    -- Opsi 2: Jika opsi 1 gagal, gunakan PlayerGui
+    if not ScreenGui.Parent then
+        ScreenGui.Parent = game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui")
+    end
+    
+    -- Tambahkan debug message untuk memeriksa apakah UI berhasil dibuat
+    print("UI Menu created and parented to: " .. tostring(ScreenGui.Parent))
+    
+    -- Mulai dengan transparan 0
+    MainFrame.BackgroundTransparency = 0
+    
+    -- Animasi UI - dimulai dari posisi awal, bukan dari luar layar
     smoothTween(MainFrame, config.AnimationSpeed, {
-        Position = UDim2.new(0.5, 0, 1, -10),
+        Position = UDim2.new(0.5, 0, 0.85, 0), -- Cukup bergerak sedikit
         BackgroundTransparency = 0
     }):Play()
     
@@ -753,7 +769,7 @@ function UILibrary.CreateStartMenu(customConfig, hubCallback, universalCallback)
         MainFrame.BackgroundTransparency = 0.2
         
         smoothTween(MainFrame, config.AnimationSpeed, {
-            Position = UDim2.new(0.5, 0, 1, -10),
+            Position = UDim2.new(0.5, 0, 0.85, 0),
             BackgroundTransparency = 0
         }):Play()
     end
