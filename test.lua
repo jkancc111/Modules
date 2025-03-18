@@ -4,24 +4,24 @@ local UILibrary = {}
 local config = {
     Title = "Lomu Hub",
     SubTitle = "Game Library",
-    MainColor = Color3.fromRGB(25, 25, 35),
-    SecondaryColor = Color3.fromRGB(35, 35, 45),
+    MainColor = Color3.fromRGB(15, 15, 15),
+    SecondaryColor = Color3.fromRGB(25, 25, 25),
     AccentColor = Color3.fromRGB(86, 180, 220),
     TextColor = Color3.fromRGB(255, 255, 255),
     SecondaryTextColor = Color3.fromRGB(180, 180, 180),
     Font = Enum.Font.GothamSemibold,
     ButtonFont = Enum.Font.Gotham,
-    CornerRadius = UDim.new(0, 6),
+    CornerRadius = UDim.new(0, 8),
     AnimationSpeed = 0.6,
     AnimationSpeedFast = 0.3,
     AnimationEasingStyle = Enum.EasingStyle.Quint,
     AnimationEasingDirection = Enum.EasingDirection.Out,
-    ShadowTransparency = 0.6,
+    ShadowTransparency = 0.8,
     MobileScaling = true,
-    GameItemHeight = 100,
-    MobileGameItemHeight = 80,
+    GameItemHeight = 80,
+    MobileGameItemHeight = 70,
     DefaultThumbnail = "rbxassetid://6894586021",
-    StartMenuHeight = 120
+    StartMenuHeight = 100
 }
 
 -- Fungsi helper untuk membuat animasi yang lebih smooth
@@ -75,12 +75,12 @@ function UILibrary.new(customConfig)
     MainFrame.BackgroundColor3 = config.MainColor
     MainFrame.BorderSizePixel = 0
     MainFrame.Position = UDim2.new(-1, 0, 0.5, 0) -- Start off screen from left
-    MainFrame.Size = UDim2.new(0, 500, 0, 400)
+    MainFrame.Size = UDim2.new(0, 400, 0, 350)
     MainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
     MainFrame.ClipsDescendants = true
     
     if isMobile and config.MobileScaling then
-        MainFrame.Size = UDim2.new(0.9, 0, 0.7, 0)
+        MainFrame.Size = UDim2.new(0.8, 0, 0.6, 0)
     end
     
     -- Add shadow
@@ -454,6 +454,16 @@ function UILibrary.new(customConfig)
     
     positionTween:Play()
     
+    -- Tambahkan background overlay hitam
+    local BackgroundOverlay = Instance.new("Frame")
+    BackgroundOverlay.Name = "BackgroundOverlay"
+    BackgroundOverlay.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    BackgroundOverlay.BackgroundTransparency = 0.3
+    BackgroundOverlay.Size = UDim2.new(1, 0, 1, 0)
+    BackgroundOverlay.Position = UDim2.new(0, 0, 0, 0)
+    BackgroundOverlay.ZIndex = -2
+    BackgroundOverlay.Parent = ScreenGui
+    
     return hub
 end
 
@@ -498,11 +508,11 @@ function UILibrary.CreateStartMenu(customConfig, hubCallback, universalCallback)
     
     -- Setup MainFrame for start menu (bar at the bottom)
     MainFrame.Name = "StartMenuFrame"
-    MainFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0) -- Black background
+    MainFrame.BackgroundColor3 = Color3.fromRGB(10, 10, 10) -- Hitam yang lebih gelap
     MainFrame.BorderSizePixel = 0
-    MainFrame.Position = UDim2.new(0.5, 0, 1, -config.StartMenuHeight - 10) -- Tepat di bawah layar
+    MainFrame.Position = UDim2.new(0.5, 0, 0.95, 0) -- Sedikit lebih ke atas
     MainFrame.AnchorPoint = Vector2.new(0.5, 0) -- Anchor di tengah atas
-    MainFrame.Size = UDim2.new(0, 800, 0, config.StartMenuHeight)
+    MainFrame.Size = UDim2.new(0, 600, 0, config.StartMenuHeight) -- Lebih kecil dan compact
     
     -- Ensure visibility
     MainFrame.BackgroundTransparency = 0
@@ -605,9 +615,11 @@ function UILibrary.CreateStartMenu(customConfig, hubCallback, universalCallback)
     
     -- Button Hub - perbaiki tampilan
     ButtonHub.Position = UDim2.new(0.5, 0, 0.5, -15)
-    ButtonHub.Size = UDim2.new(0, 180, 0, 40)
+    ButtonHub.Size = UDim2.new(0, 160, 0, 35)
     ButtonHub.AnchorPoint = Vector2.new(0.5, 0.5)
     ButtonHub.TextSize = 16
+    ButtonHub.TextColor3 = config.TextColor
+    ButtonHub.Font = config.ButtonFont
     ButtonHub.Parent = ButtonHubSection
     
     -- Buat ulang section Button Universal Script dengan ukuran tetap
@@ -619,9 +631,11 @@ function UILibrary.CreateStartMenu(customConfig, hubCallback, universalCallback)
     
     -- Button Universal - perbaiki tampilan
     ButtonUniversal.Position = UDim2.new(0.5, 0, 0.5, -15)
-    ButtonUniversal.Size = UDim2.new(0, 180, 0, 40)
+    ButtonUniversal.Size = UDim2.new(0, 160, 0, 35)
     ButtonUniversal.AnchorPoint = Vector2.new(0.5, 0.5)
     ButtonUniversal.TextSize = 16
+    ButtonUniversal.TextColor3 = config.TextColor
+    ButtonUniversal.Font = config.ButtonFont
     ButtonUniversal.Parent = ButtonUniversalSection
     
     -- Get player avatar
@@ -643,49 +657,29 @@ function UILibrary.CreateStartMenu(customConfig, hubCallback, universalCallback)
     -- Avatar Label
     AvatarLabel.Text = player.Name
     
-    -- Button Hub
-    ButtonHub.Text = "Button Load Lomu Hub"
-    
-    -- Button Universal
-    ButtonUniversal.Text = "Button Load Universal Script"
-    
     -- Button hover effects for Hub button
-    ButtonHub.MouseEnter:Connect(function()
-        smoothTween(ButtonHub, config.AnimationSpeedFast, {
-            BackgroundColor3 = Color3.fromRGB(
-                math.clamp(config.AccentColor.R * 255 + 30, 0, 255)/255,
-                math.clamp(config.AccentColor.G * 255 + 30, 0, 255)/255,
-                math.clamp(config.AccentColor.B * 255 + 30, 0, 255)/255
-            ),
-            Size = UDim2.new(1, -8, 0, 32)
-        }):Play()
-    end)
+    local function createButtonHoverEffect(button, defaultColor)
+        button.MouseEnter:Connect(function()
+            smoothTween(button, config.AnimationSpeedFast, {
+                BackgroundColor3 = Color3.fromRGB(
+                    math.clamp(defaultColor.R * 255 + 20, 0, 255)/255,
+                    math.clamp(defaultColor.G * 255 + 20, 0, 255)/255,
+                    math.clamp(defaultColor.B * 255 + 20, 0, 255)/255
+                ),
+                Size = UDim2.new(button.Size.X.Scale, button.Size.X.Offset + 5, button.Size.Y.Scale, button.Size.Y.Offset)
+            }):Play()
+        end)
+        
+        button.MouseLeave:Connect(function()
+            smoothTween(button, config.AnimationSpeedFast, {
+                BackgroundColor3 = defaultColor,
+                Size = UDim2.new(button.Size.X.Scale, button.Size.X.Offset - 5, button.Size.Y.Scale, button.Size.Y.Offset)
+            }):Play()
+        end)
+    end
     
-    ButtonHub.MouseLeave:Connect(function()
-        smoothTween(ButtonHub, config.AnimationSpeedFast, {
-            BackgroundColor3 = config.AccentColor,
-            Size = UDim2.new(1, -10, 0, 30)
-        }):Play()
-    end)
-    
-    -- Button hover effects for Universal button
-    ButtonUniversal.MouseEnter:Connect(function()
-        smoothTween(ButtonUniversal, config.AnimationSpeedFast, {
-            BackgroundColor3 = Color3.fromRGB(
-                math.clamp(config.AccentColor.R * 255 + 30, 0, 255)/255,
-                math.clamp(config.AccentColor.G * 255 + 30, 0, 255)/255,
-                math.clamp(config.AccentColor.B * 255 + 30, 0, 255)/255
-            ),
-            Size = UDim2.new(1, -8, 0, 32)
-        }):Play()
-    end)
-    
-    ButtonUniversal.MouseLeave:Connect(function()
-        smoothTween(ButtonUniversal, config.AnimationSpeedFast, {
-            BackgroundColor3 = config.AccentColor,
-            Size = UDim2.new(1, -10, 0, 30)
-        }):Play()
-    end)
+    createButtonHoverEffect(ButtonHub, config.AccentColor)
+    createButtonHoverEffect(ButtonUniversal, config.SecondaryColor)
     
     -- Button click functionality
     ButtonHub.MouseButton1Click:Connect(function()
