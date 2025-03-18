@@ -12,12 +12,16 @@ local config = {
     Font = Enum.Font.GothamSemibold,
     ButtonFont = Enum.Font.Gotham,
     CornerRadius = UDim.new(0, 6),
-    AnimationSpeed = 0.5,
+    AnimationSpeed = 0.6,
+    AnimationSpeedFast = 0.3,
+    AnimationEasingStyle = Enum.EasingStyle.Quint,
+    AnimationEasingDirection = Enum.EasingDirection.Out,
     ShadowTransparency = 0.6,
     MobileScaling = true,
     GameItemHeight = 100,
     MobileGameItemHeight = 80,
-    DefaultThumbnail = "rbxassetid://6894586021" -- Default image if thumbnail isn't available
+    DefaultThumbnail = "rbxassetid://6894586021",
+    StartMenuHeight = 120
 }
 
 -- Create a new hub instance
@@ -319,19 +323,19 @@ function UILibrary.new(customConfig)
         
         -- Play button hover effects
         PlayButton.MouseEnter:Connect(function()
-            game:GetService("TweenService"):Create(PlayButton, 
-                TweenInfo.new(0.3), 
-                {Size = UDim2.new(0, 45, 0, 45)}
-                ):Play()
-            end)
-            
+            smoothTween(PlayButton, config.AnimationSpeedFast, {
+                Size = UDim2.new(0, 45, 0, 45),
+                BackgroundTransparency = 0.1
+            }):Play()
+        end)
+        
         PlayButton.MouseLeave:Connect(function()
-            game:GetService("TweenService"):Create(PlayButton, 
-                TweenInfo.new(0.3), 
-                {Size = UDim2.new(0, 40, 0, 40)}
-                ):Play()
-            end)
-            
+            smoothTween(PlayButton, config.AnimationSpeedFast, {
+                Size = UDim2.new(0, 40, 0, 40),
+                BackgroundTransparency = 0
+            }):Play()
+        end)
+        
         -- Play button click functionality
         PlayButton.MouseButton1Click:Connect(function()
             gameCallback()
@@ -339,23 +343,21 @@ function UILibrary.new(customConfig)
         
         -- Game item hover effects
         local hoverEnter = function()
-            game:GetService("TweenService"):Create(GameItem, 
-                TweenInfo.new(0.3), 
-                {BackgroundColor3 = Color3.fromRGB(
-                    math.clamp(config.SecondaryColor.R * 255 + 10, 0, 255)/255,
-                    math.clamp(config.SecondaryColor.G * 255 + 10, 0, 255)/255,
-                    math.clamp(config.SecondaryColor.B * 255 + 10, 0, 255)/255
-                )}
-            ):Play()
+            smoothTween(GameItem, config.AnimationSpeedFast, {
+                BackgroundColor3 = Color3.fromRGB(
+                    math.clamp(config.SecondaryColor.R * 255 + 15, 0, 255)/255,
+                    math.clamp(config.SecondaryColor.G * 255 + 15, 0, 255)/255,
+                    math.clamp(config.SecondaryColor.B * 255 + 15, 0, 255)/255
+                )
+            }):Play()
         end
         
         local hoverLeave = function()
-            game:GetService("TweenService"):Create(GameItem, 
-                TweenInfo.new(0.3), 
-                {BackgroundColor3 = config.SecondaryColor}
-                    ):Play()
-                end
-                
+            smoothTween(GameItem, config.AnimationSpeedFast, {
+                BackgroundColor3 = config.SecondaryColor
+            }):Play()
+        end
+        
         GameItem.MouseEnter:Connect(hoverEnter)
         GameItem.MouseLeave:Connect(hoverLeave)
         Thumbnail.MouseEnter:Connect(hoverEnter)
@@ -380,12 +382,12 @@ function UILibrary.new(customConfig)
     
     -- Close button functionality
     CloseButton.MouseButton1Click:Connect(function()
-        game:GetService("TweenService"):Create(MainFrame, 
-            TweenInfo.new(config.AnimationSpeed, Enum.EasingStyle.Quint), 
-            {Position = UDim2.new(-1, 0, 0.5, 0)}
-        ):Play()
+        smoothTween(MainFrame, config.AnimationSpeed, {
+            Position = UDim2.new(-1, 0, 0.5, 0),
+            BackgroundTransparency = 0.1
+        }):Play()
         
-        wait(config.AnimationSpeed + 0.1)
+        task.wait(config.AnimationSpeed + 0.1)
         ScreenGui:Destroy()
     end)
     
@@ -426,16 +428,331 @@ function UILibrary.new(customConfig)
         end
     end)
     
-    -- Animation for opening the UI (slide from left to right)
+    -- Animation for opening the UI (slide from left to right with improved smoothness)
     MainFrame.Parent = ScreenGui
     ScreenGui.Parent = game:GetService("CoreGui")
     
-    game:GetService("TweenService"):Create(MainFrame, 
-        TweenInfo.new(config.AnimationSpeed, Enum.EasingStyle.Quint), 
-        {Position = UDim2.new(0.5, 0, 0.5, 0)}
-    ):Play()
+    MainFrame.BackgroundTransparency = 0.1
+    
+    local positionTween = smoothTween(MainFrame, config.AnimationSpeed, {
+        Position = UDim2.new(0.5, 0, 0.5, 0),
+        BackgroundTransparency = 0
+    })
+    
+    positionTween:Play()
     
     return hub
+end
+
+-- Create Start Menu Function
+function UILibrary.CreateStartMenu(customConfig, hubCallback, universalCallback)
+    local startMenu = {}
+    local userConfig = customConfig or {}
+    
+    -- Apply custom config if provided
+    for key, value in pairs(userConfig) do
+        config[key] = value
+    end
+    
+    -- Main GUI elements for start menu
+    local ScreenGui = Instance.new("ScreenGui")
+    local MainFrame = Instance.new("Frame")
+    local UICorner = Instance.new("UICorner")
+    local Shadow = Instance.new("ImageLabel")
+    local AvatarSection = Instance.new("Frame")
+    local AvatarImage = Instance.new("ImageLabel")
+    local AvatarLabel = Instance.new("TextLabel")
+    local NameSection = Instance.new("Frame")
+    local NameLabel = Instance.new("TextLabel")
+    local ButtonHubSection = Instance.new("Frame")
+    local ButtonHub = Instance.new("TextButton")
+    local ButtonHubCorner = Instance.new("UICorner")
+    local ButtonUniversalSection = Instance.new("Frame")
+    local ButtonUniversal = Instance.new("TextButton")
+    local ButtonUniversalCorner = Instance.new("UICorner")
+    
+    -- Set up ScreenGui
+    ScreenGui.Name = "LomuStartMenu"
+    ScreenGui.ResetOnSpawn = false
+    ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    
+    -- Check if game is running on mobile
+    local isMobile = (game:GetService("UserInputService").TouchEnabled and 
+                      not game:GetService("UserInputService").KeyboardEnabled and
+                      not game:GetService("UserInputService").MouseEnabled)
+    
+    -- Setup MainFrame for start menu (bar at the bottom)
+    MainFrame.Name = "StartMenuFrame"
+    MainFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0) -- Black background
+    MainFrame.BorderSizePixel = 0
+    MainFrame.Position = UDim2.new(0.5, 0, 1.1, 0) -- Start off screen at bottom
+    MainFrame.Size = UDim2.new(0, 600, 0, config.StartMenuHeight)
+    MainFrame.AnchorPoint = Vector2.new(0.5, 1)
+    
+    if isMobile and config.MobileScaling then
+        MainFrame.Size = UDim2.new(0.95, 0, 0, config.StartMenuHeight)
+    end
+    
+    -- Add rounded corners
+    UICorner.CornerRadius = config.CornerRadius
+    UICorner.Parent = MainFrame
+    
+    -- Add shadow
+    Shadow.Name = "Shadow"
+    Shadow.BackgroundTransparency = 1
+    Shadow.Image = "rbxassetid://5028857084" -- Drop shadow image
+    Shadow.ImageColor3 = Color3.fromRGB(0, 0, 0)
+    Shadow.ImageTransparency = config.ShadowTransparency
+    Shadow.Position = UDim2.new(0.5, 0, 0.5, 0)
+    Shadow.AnchorPoint = Vector2.new(0.5, 0.5)
+    Shadow.Size = UDim2.new(1, 40, 1, 40)
+    Shadow.ZIndex = -1
+    Shadow.Parent = MainFrame
+    
+    -- Create a UIListLayout for sections
+    local SectionLayout = Instance.new("UIGridLayout")
+    SectionLayout.CellSize = UDim2.new(0.25, -10, 1, -20) -- Four equal sections
+    SectionLayout.CellPadding = UDim2.new(0, 10, 0, 10)
+    SectionLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    SectionLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+    SectionLayout.VerticalAlignment = Enum.VerticalAlignment.Center
+    SectionLayout.Parent = MainFrame
+    
+    -- Adjust for mobile if needed
+    if isMobile and config.MobileScaling then
+        SectionLayout.CellSize = UDim2.new(0.25, -6, 1, -10)
+        SectionLayout.CellPadding = UDim2.new(0, 5, 0, 5)
+    end
+    
+    -- Avatar Section
+    AvatarSection.Name = "AvatarSection"
+    AvatarSection.BackgroundTransparency = 1
+    AvatarSection.LayoutOrder = 1
+    AvatarSection.Parent = MainFrame
+    
+    -- Get player avatar
+    local Players = game:GetService("Players")
+    local player = Players.LocalPlayer
+    local userId = player.UserId
+    local thumbType = Enum.ThumbnailType.HeadShot
+    local thumbSize = Enum.ThumbnailSize.Size420x420
+    local avatarUrl = ""
+    
+    -- Try to get avatar thumbnail
+    pcall(function()
+        avatarUrl = Players:GetUserThumbnailAsync(userId, thumbType, thumbSize)
+    end)
+    
+    -- Avatar Image
+    AvatarImage.Name = "AvatarImage"
+    AvatarImage.BackgroundTransparency = 1
+    AvatarImage.Position = UDim2.new(0.5, 0, 0, 5)
+    AvatarImage.Size = UDim2.new(0.8, 0, 0.8, 0)
+    AvatarImage.AnchorPoint = Vector2.new(0.5, 0)
+    AvatarImage.Image = avatarUrl
+    AvatarImage.Parent = AvatarSection
+    
+    -- Avatar Label
+    AvatarLabel.Name = "AvatarLabel"
+    AvatarLabel.BackgroundTransparency = 1
+    AvatarLabel.Position = UDim2.new(0, 0, 0.8, 5)
+    AvatarLabel.Size = UDim2.new(1, 0, 0.2, -5)
+    AvatarLabel.Font = config.Font
+    AvatarLabel.Text = "Avatar Player"
+    AvatarLabel.TextColor3 = config.TextColor
+    AvatarLabel.TextSize = 14
+    AvatarLabel.Parent = AvatarSection
+    
+    -- Name Section
+    NameSection.Name = "NameSection"
+    NameSection.BackgroundTransparency = 1
+    NameSection.LayoutOrder = 2
+    NameSection.Parent = MainFrame
+    
+    -- Name Label
+    NameLabel.Name = "NameLabel"
+    NameLabel.BackgroundTransparency = 1
+    NameLabel.Position = UDim2.new(0, 0, 0.5, -10)
+    NameLabel.Size = UDim2.new(1, 0, 0, 20)
+    NameLabel.Font = config.Font
+    NameLabel.Text = player.Name
+    NameLabel.TextColor3 = config.TextColor
+    NameLabel.TextSize = 16
+    NameLabel.Parent = NameSection
+    
+    -- Button Hub Section
+    ButtonHubSection.Name = "ButtonHubSection"
+    ButtonHubSection.BackgroundTransparency = 1
+    ButtonHubSection.LayoutOrder = 3
+    ButtonHubSection.Parent = MainFrame
+    
+    -- Button Hub
+    ButtonHub.Name = "ButtonHub"
+    ButtonHub.BackgroundColor3 = config.AccentColor
+    ButtonHub.Position = UDim2.new(0, 5, 0.5, -15)
+    ButtonHub.Size = UDim2.new(1, -10, 0, 30)
+    ButtonHub.Font = config.ButtonFont
+    ButtonHub.Text = "Button Load Lomu Hub"
+    ButtonHub.TextColor3 = config.TextColor
+    ButtonHub.TextSize = 14
+    ButtonHub.AutoButtonColor = false
+    ButtonHub.Parent = ButtonHubSection
+    
+    ButtonHubCorner.CornerRadius = UDim.new(0, 4)
+    ButtonHubCorner.Parent = ButtonHub
+    
+    -- Button Universal Section
+    ButtonUniversalSection.Name = "ButtonUniversalSection"
+    ButtonUniversalSection.BackgroundTransparency = 1
+    ButtonUniversalSection.LayoutOrder = 4
+    ButtonUniversalSection.Parent = MainFrame
+    
+    -- Button Universal
+    ButtonUniversal.Name = "ButtonUniversal"
+    ButtonUniversal.BackgroundColor3 = config.AccentColor
+    ButtonUniversal.Position = UDim2.new(0, 5, 0.5, -15)
+    ButtonUniversal.Size = UDim2.new(1, -10, 0, 30)
+    ButtonUniversal.Font = config.ButtonFont
+    ButtonUniversal.Text = "Button Load Universal Script"
+    ButtonUniversal.TextColor3 = config.TextColor
+    ButtonUniversal.TextSize = 14
+    ButtonUniversal.AutoButtonColor = false
+    ButtonUniversal.Parent = ButtonUniversalSection
+    
+    ButtonUniversalCorner.CornerRadius = UDim.new(0, 4)
+    ButtonUniversalCorner.Parent = ButtonUniversal
+    
+    -- Button hover effects for Hub button
+    ButtonHub.MouseEnter:Connect(function()
+        smoothTween(ButtonHub, config.AnimationSpeedFast, {
+            BackgroundColor3 = Color3.fromRGB(
+                math.clamp(config.AccentColor.R * 255 + 30, 0, 255)/255,
+                math.clamp(config.AccentColor.G * 255 + 30, 0, 255)/255,
+                math.clamp(config.AccentColor.B * 255 + 30, 0, 255)/255
+            ),
+            Size = UDim2.new(1, -8, 0, 32)
+        }):Play()
+    end)
+    
+    ButtonHub.MouseLeave:Connect(function()
+        smoothTween(ButtonHub, config.AnimationSpeedFast, {
+            BackgroundColor3 = config.AccentColor,
+            Size = UDim2.new(1, -10, 0, 30)
+        }):Play()
+    end)
+    
+    -- Button hover effects for Universal button
+    ButtonUniversal.MouseEnter:Connect(function()
+        smoothTween(ButtonUniversal, config.AnimationSpeedFast, {
+            BackgroundColor3 = Color3.fromRGB(
+                math.clamp(config.AccentColor.R * 255 + 30, 0, 255)/255,
+                math.clamp(config.AccentColor.G * 255 + 30, 0, 255)/255,
+                math.clamp(config.AccentColor.B * 255 + 30, 0, 255)/255
+            ),
+            Size = UDim2.new(1, -8, 0, 32)
+        }):Play()
+    end)
+    
+    ButtonUniversal.MouseLeave:Connect(function()
+        smoothTween(ButtonUniversal, config.AnimationSpeedFast, {
+            BackgroundColor3 = config.AccentColor,
+            Size = UDim2.new(1, -10, 0, 30)
+        }):Play()
+    end)
+    
+    -- Button click functionality
+    ButtonHub.MouseButton1Click:Connect(function()
+        smoothTween(ButtonHub, 0.1, {
+            BackgroundTransparency = 0.2,
+            Size = UDim2.new(1, -12, 0, 28)
+        }):Play()
+        
+        task.wait(0.1)
+        
+        local hideTween = smoothTween(MainFrame, config.AnimationSpeed, {
+            Position = UDim2.new(0.5, 0, 1.1, 0),
+            BackgroundTransparency = 0.2
+        })
+        
+        hideTween:Play()
+        
+        hideTween.Completed:Connect(function()
+            if hubCallback then
+                hubCallback()
+            end
+        end)
+    end)
+    
+    ButtonUniversal.MouseButton1Click:Connect(function()
+        smoothTween(ButtonUniversal, 0.1, {
+            BackgroundTransparency = 0.2,
+            Size = UDim2.new(1, -12, 0, 28)
+        }):Play()
+        
+        task.wait(0.1)
+        
+        local hideTween = smoothTween(MainFrame, config.AnimationSpeed, {
+            Position = UDim2.new(0.5, 0, 1.1, 0),
+            BackgroundTransparency = 0.2
+        })
+        
+        hideTween:Play()
+        
+        hideTween.Completed:Connect(function()
+            if universalCallback then
+                universalCallback()
+            end
+        end)
+    end)
+    
+    -- Animation for opening the UI with improved smoothness
+    MainFrame.Parent = ScreenGui
+    ScreenGui.Parent = game:GetService("CoreGui")
+    
+    MainFrame.BackgroundTransparency = 0.2
+    
+    smoothTween(MainFrame, config.AnimationSpeed, {
+        Position = UDim2.new(0.5, 0, 1, -10),
+        BackgroundTransparency = 0
+    }):Play()
+    
+    -- Smoother hide and show functions
+    function startMenu:Hide()
+        local hideTween = smoothTween(MainFrame, config.AnimationSpeed, {
+            Position = UDim2.new(0.5, 0, 1.1, 0),
+            BackgroundTransparency = 0.2
+        })
+        
+        hideTween:Play()
+        
+        hideTween.Completed:Connect(function()
+            ScreenGui:Destroy()
+        end)
+    end
+    
+    function startMenu:Show()
+        MainFrame.BackgroundTransparency = 0.2
+        
+        smoothTween(MainFrame, config.AnimationSpeed, {
+            Position = UDim2.new(0.5, 0, 1, -10),
+            BackgroundTransparency = 0
+        }):Play()
+    end
+    
+    return startMenu
+end
+
+-- Fungsi helper untuk membuat animasi yang lebih smooth
+local function smoothTween(object, duration, properties)
+    return game:GetService("TweenService"):Create(
+        object,
+        TweenInfo.new(
+            duration or config.AnimationSpeed,
+            config.AnimationEasingStyle,
+            config.AnimationEasingDirection
+        ),
+        properties
+    )
 end
 
 return UILibrary
