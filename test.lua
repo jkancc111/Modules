@@ -1462,7 +1462,7 @@ function UILibrary.CreateStartMenu(hubCallback, universalCallback)
     UsernameLabel.BackgroundTransparency = 1
     UsernameLabel.Position = UDim2.new(0, 0, 0, 65)
     UsernameLabel.Size = UDim2.new(0, 60, 0, 15)
-    UsernameLabel.Font = config.ButtonFont
+    UsernameLabel.Font = config.BodyFont
     UsernameLabel.Text = "Username"
     UsernameLabel.TextColor3 = config.TextColor
     UsernameLabel.TextSize = 13
