@@ -1290,7 +1290,7 @@ function UILibrary.new(customConfig)
             hideTween.Completed:Connect(function()
                 notification:Destroy()
             end)
-        }
+        end
         
         -- Close button click
         closeButton.MouseButton1Click:Connect(function()
