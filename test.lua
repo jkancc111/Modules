@@ -925,7 +925,7 @@ function UILibrary.new(customConfig)
         -- Play button enhanced effects
         PlayButton.MouseEnter:Connect(function()
             smoothTween(PlayButton, config.AnimationSpeedFast, {
-                BackgroundColor3 = config.AccentColorHover,
+                BackgroundColor3 = Color3.fromRGB(255, 180, 40),
                 Size = UDim2.new(0, 74, 0, 36)
             })
             
@@ -964,7 +964,7 @@ function UILibrary.new(customConfig)
         PlayButton.MouseButton1Up:Connect(function()
             smoothTween(PlayButton, 0.1, {
                 Size = UDim2.new(0, 70, 0, 34),
-                BackgroundColor3 = config.AccentColorHover
+                BackgroundColor3 = Color3.fromRGB(255, 180, 40)
             })
         end)
         
@@ -1396,286 +1396,286 @@ function UILibrary.CreateHub(customConfig)
     return UILibrary.new(customConfig)
 end
 
--- Redesigned Start Menu function - minimalist, positioned at bottom center, with bottom-up animation
-function UILibrary.CreateStartMenu(hubCallback, universalCallback)
-    local startMenu = {}
+-- Create Start Menu function
+function UILibrary:CreateStartMenu(options)
+    local startOptions = options or {}
+    local logoText = startOptions.LogoText or "Lomu Hub"
+    local description = startOptions.Description or "Premium script hub"
+    local accentColor = startOptions.AccentColor or config.AccentColor
+    local buttonCallback = startOptions.ButtonCallback or function() end
+    local universalButtonCallback = startOptions.UniversalButtonCallback or function() end
     
-    -- Main GUI elements for start menu
-    local ScreenGui = Instance.new("ScreenGui")
+    -- Create Start Menu container
+    local StartMenu = Instance.new("ScreenGui")
     local MainFrame = Instance.new("Frame")
-    local MainCorner = Instance.new("UICorner")
-    local MainBorder = Instance.new("UIStroke")
-    local Title = Instance.new("TextLabel")
-    local Subtitle = Instance.new("TextLabel") 
-    local AvatarFrame = Instance.new("Frame")
-    local AvatarImage = Instance.new("ImageLabel")
-    local AvatarCorner = Instance.new("UICorner")
-    local UsernameLabel = Instance.new("TextLabel")
-    local ButtonContainer = Instance.new("Frame")
-    local ButtonLayout = Instance.new("UIListLayout")
-    local HubButton = Instance.new("TextButton")
+    local Corner = Instance.new("UICorner")
+    local Shadow = Instance.new("ImageLabel")
+    local LogoContainer = Instance.new("Frame")
+    local Logo = Instance.new("TextLabel")
+    local Description = Instance.new("TextLabel")
+    local TitleDivider = Instance.new("Frame")
+    local ButtonsContainer = Instance.new("Frame")
+    local LoadHubButton = Instance.new("TextButton")
     local HubButtonCorner = Instance.new("UICorner")
-    local UniversalButton = Instance.new("TextButton")
+    local LoadUniversalButton = Instance.new("TextButton")
     local UniversalButtonCorner = Instance.new("UICorner")
+    local PlayerInfoContainer = Instance.new("Frame")
+    local PlayerAvatar = Instance.new("ImageLabel")
+    local PlayerAvatarCorner = Instance.new("UICorner")
+    local PlayerName = Instance.new("TextLabel")
     
-    -- Set up ScreenGui
-    ScreenGui.Name = "LomuStartMenu"
-    ScreenGui.ResetOnSpawn = false
-    ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    -- Set up Start Menu
+    StartMenu.Name = "StartMenu"
+    StartMenu.ResetOnSpawn = false
+    StartMenu.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
     
-    -- Main frame - clean modern design positioned at bottom center
-    MainFrame.Name = "StartMenuFrame"
-    MainFrame.BackgroundColor3 = config.MainColor
-    MainFrame.BorderSizePixel = 0
-    MainFrame.Position = UDim2.new(0.5, 0, 1, 100) -- Start from below the screen
-    MainFrame.AnchorPoint = Vector2.new(0.5, 1) -- Anchor to bottom center
-    MainFrame.Size = UDim2.new(0, 400, 0, 180) -- More compact, minimalist size
-    MainFrame.Visible = false -- Hide initially
-    MainFrame.Parent = ScreenGui
+    -- Try to use CoreGui for better performance
+    pcall(function()
+        if not game:GetService("CoreGui"):FindFirstChild("StartMenu") then
+            StartMenu.Parent = game:GetService("CoreGui")
+        else
+            StartMenu.Parent = game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui")
+        end
+    end)
     
-    MainCorner.CornerRadius = config.CornerRadius
-    MainCorner.Parent = MainFrame
-    
-    MainBorder.Color = config.BorderColor
-    MainBorder.Thickness = 1.5
-    MainBorder.Parent = MainFrame
-    
-    -- Avatar and Username - more elegant layout
-    AvatarFrame.Name = "AvatarFrame"
-    AvatarFrame.BackgroundTransparency = 1
-    AvatarFrame.Position = UDim2.new(0, 15, 0, 15)
-    AvatarFrame.Size = UDim2.new(0, 60, 0, 80)
-    AvatarFrame.Parent = MainFrame
-    
-    AvatarImage.Name = "AvatarImage"
-    AvatarImage.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-    AvatarImage.BackgroundTransparency = 0.5
-    AvatarImage.Position = UDim2.new(0, 0, 0, 0)
-    AvatarImage.Size = UDim2.new(0, 60, 0, 60)
-    AvatarImage.Image = "" -- Will be set to player avatar
-    AvatarImage.Parent = AvatarFrame
-    
-    AvatarCorner.CornerRadius = UDim.new(0, 8)
-    AvatarCorner.Parent = AvatarImage
-    
-    UsernameLabel.Name = "Username"
-    UsernameLabel.BackgroundTransparency = 1
-    UsernameLabel.Position = UDim2.new(0, 0, 0, 65)
-    UsernameLabel.Size = UDim2.new(0, 60, 0, 15)
-    UsernameLabel.Font = config.BodyFont
-    UsernameLabel.Text = "Username"
-    UsernameLabel.TextColor3 = config.TextColor
-    UsernameLabel.TextSize = 13
-    UsernameLabel.Parent = AvatarFrame
-    
-    -- Get player avatar and username
-    local Players = game:GetService("Players")
-    local player = Players.LocalPlayer
-    
-    if player then
-        -- Get player avatar
-        local userId = player.UserId
-        local thumbType = Enum.ThumbnailType.HeadShot
-        local thumbSize = Enum.ThumbnailSize.Size420x420
-        
-        pcall(function()
-            local content = Players:GetUserThumbnailAsync(userId, thumbType, thumbSize)
-            AvatarImage.Image = content
-        end)
-        
-        -- Set username
-        UsernameLabel.Text = player.Name
+    if not StartMenu.Parent then
+        StartMenu.Parent = game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui")
     end
     
-    -- Title and subtitle - clean minimalist design
-    Title.Name = "Title"
-    Title.BackgroundTransparency = 1
-    Title.Position = UDim2.new(0, 85, 0, 20)
-    Title.Size = UDim2.new(0, 200, 0, 25)
-    Title.Font = config.Font
-    Title.Text = "Lomu Hub"
-    Title.TextColor3 = config.TextColor
-    Title.TextSize = 20
-    Title.TextXAlignment = Enum.TextXAlignment.Left
-    Title.Parent = MainFrame
+    -- Main frame that's positioned at the bottom (for slide-up animation)
+    MainFrame.Name = "MainFrame"
+    MainFrame.BackgroundColor3 = Color3.fromRGB(22, 22, 24)
+    MainFrame.BorderSizePixel = 0
+    MainFrame.Position = UDim2.new(0.5, 0, 1, 100) -- Start offscreen
+    MainFrame.AnchorPoint = Vector2.new(0.5, 1)
+    MainFrame.Size = UDim2.new(0, 300, 0, 170)
+    MainFrame.Parent = StartMenu
     
-    Subtitle.Name = "Subtitle"
-    Subtitle.BackgroundTransparency = 1
-    Subtitle.Position = UDim2.new(0, 85, 0, 45)
-    Subtitle.Size = UDim2.new(0, 200, 0, 20)
-    Subtitle.Font = config.ButtonFont
-    Subtitle.Text = "Choose an option to continue"
-    Subtitle.TextColor3 = config.SecondaryTextColor
-    Subtitle.TextSize = 14
-    Subtitle.TextXAlignment = Enum.TextXAlignment.Left
-    Subtitle.Parent = MainFrame
+    Corner.CornerRadius = config.CornerRadius
+    Corner.Parent = MainFrame
     
-    -- Button Container - right aligned for balance
-    ButtonContainer.Name = "ButtonContainer"
-    ButtonContainer.BackgroundTransparency = 1
-    ButtonContainer.Position = UDim2.new(0, 85, 0, 80)
-    ButtonContainer.Size = UDim2.new(0, 300, 0, 90)
-    ButtonContainer.Parent = MainFrame
+    -- Add shadow for depth
+    Shadow.Name = "Shadow"
+    Shadow.AnchorPoint = Vector2.new(0.5, 0.5)
+    Shadow.BackgroundTransparency = 1
+    Shadow.Position = UDim2.new(0.5, 0, 0.5, 0)
+    Shadow.Size = UDim2.new(1, 20, 1, 20)
+    Shadow.ZIndex = 0
+    Shadow.Image = "rbxassetid://6015897843"
+    Shadow.ImageColor3 = Color3.new(0, 0, 0)
+    Shadow.ImageTransparency = 0.4
+    Shadow.ScaleType = Enum.ScaleType.Slice
+    Shadow.SliceCenter = Rect.new(49, 49, 450, 450)
+    Shadow.Parent = MainFrame
     
-    ButtonLayout.Name = "ButtonLayout"
-    ButtonLayout.FillDirection = Enum.FillDirection.Vertical
-    ButtonLayout.HorizontalAlignment = Enum.HorizontalAlignment.Left
-    ButtonLayout.SortOrder = Enum.SortOrder.LayoutOrder
-    ButtonLayout.Padding = UDim.new(0, 10)
-    ButtonLayout.Parent = ButtonContainer
+    -- Logo section
+    LogoContainer.Name = "LogoContainer"
+    LogoContainer.BackgroundTransparency = 1
+    LogoContainer.Position = UDim2.new(0, 0, 0, 0)
+    LogoContainer.Size = UDim2.new(1, 0, 0, 60)
+    LogoContainer.Parent = MainFrame
     
-    -- Hub Button - clean modern design
-    HubButton.Name = "HubButton"
-    HubButton.BackgroundColor3 = config.AccentColor
-    HubButton.Size = UDim2.new(1, -20, 0, 36)
-    HubButton.Font = config.ButtonFont
-    HubButton.Text = "Load Lomu Hub"
-    HubButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-    HubButton.TextSize = 14
-    HubButton.AutoButtonColor = false
-    HubButton.Parent = ButtonContainer
+    Logo.Name = "Logo"
+    Logo.BackgroundTransparency = 1
+    Logo.Position = UDim2.new(0, 20, 0, 15)
+    Logo.Size = UDim2.new(1, -40, 0, 25)
+    Logo.Font = Enum.Font.GothamBold -- Hardcoded font
+    Logo.Text = logoText
+    Logo.TextColor3 = accentColor
+    Logo.TextSize = 20
+    Logo.TextXAlignment = Enum.TextXAlignment.Left
+    Logo.Parent = LogoContainer
+    
+    Description.Name = "Description"
+    Description.BackgroundTransparency = 1
+    Description.Position = UDim2.new(0, 20, 0, 35)
+    Description.Size = UDim2.new(1, -40, 0, 20)
+    Description.Font = Enum.Font.Gotham -- Hardcoded font
+    Description.Text = description
+    Description.TextColor3 = config.SecondaryTextColor
+    Description.TextSize = 13
+    Description.TextXAlignment = Enum.TextXAlignment.Left
+    Description.Parent = LogoContainer
+    
+    -- Divider between logo and buttons
+    TitleDivider.Name = "TitleDivider"
+    TitleDivider.BackgroundColor3 = Color3.fromRGB(40, 40, 45)
+    TitleDivider.BorderSizePixel = 0
+    TitleDivider.Position = UDim2.new(0, 20, 0, 60)
+    TitleDivider.Size = UDim2.new(1, -40, 0, 1)
+    TitleDivider.Parent = MainFrame
+    
+    -- Player info with avatar
+    PlayerInfoContainer.Name = "PlayerInfoContainer"
+    PlayerInfoContainer.BackgroundTransparency = 1
+    PlayerInfoContainer.Position = UDim2.new(0, 0, 0, 65)
+    PlayerInfoContainer.Size = UDim2.new(1, 0, 0, 50)
+    PlayerInfoContainer.Parent = MainFrame
+    
+    -- Try to get player avatar
+    local player = game:GetService("Players").LocalPlayer
+    local userId = player.UserId
+    local thumbType = Enum.ThumbnailType.HeadShot
+    local thumbSize = Enum.ThumbnailSize.Size150x150
+    local avatarUrl = ""
+    
+    pcall(function()
+        avatarUrl = game:GetService("Players"):GetUserThumbnailAsync(userId, thumbType, thumbSize)
+    end)
+    
+    PlayerAvatar.Name = "PlayerAvatar"
+    PlayerAvatar.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
+    PlayerAvatar.Position = UDim2.new(0, 20, 0, 75)
+    PlayerAvatar.Size = UDim2.new(0, 32, 0, 32)
+    PlayerAvatar.Image = avatarUrl
+    PlayerAvatar.Parent = MainFrame
+    
+    PlayerAvatarCorner.CornerRadius = UDim.new(1, 0)
+    PlayerAvatarCorner.Parent = PlayerAvatar
+    
+    PlayerName.Name = "PlayerName"
+    PlayerName.BackgroundTransparency = 1
+    PlayerName.Position = UDim2.new(0, 60, 0, 75)
+    PlayerName.Size = UDim2.new(1, -80, 0, 32)
+    PlayerName.Font = Enum.Font.Gotham -- Hardcoded font
+    PlayerName.Text = player.DisplayName or player.Name
+    PlayerName.TextColor3 = config.TextColor
+    PlayerName.TextSize = 14
+    PlayerName.TextXAlignment = Enum.TextXAlignment.Left
+    PlayerName.Parent = MainFrame
+    
+    -- Buttons section
+    ButtonsContainer.Name = "ButtonsContainer"
+    ButtonsContainer.BackgroundTransparency = 1
+    ButtonsContainer.Position = UDim2.new(0, 0, 0, 120)
+    ButtonsContainer.Size = UDim2.new(1, 0, 0, 40)
+    ButtonsContainer.Parent = MainFrame
+    
+    -- Load Hub button
+    LoadHubButton.Name = "LoadHubButton"
+    LoadHubButton.BackgroundColor3 = accentColor
+    LoadHubButton.Position = UDim2.new(0, 20, 0, 0)
+    LoadHubButton.Size = UDim2.new(0.5, -25, 1, -10)
+    LoadHubButton.Font = Enum.Font.GothamSemibold -- Hardcoded font
+    LoadHubButton.Text = "Load Lomu Hub"
+    LoadHubButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    LoadHubButton.TextSize = 14
+    LoadHubButton.AutoButtonColor = false
+    LoadHubButton.Parent = ButtonsContainer
     
     HubButtonCorner.CornerRadius = config.ButtonCornerRadius
-    HubButtonCorner.Parent = HubButton
+    HubButtonCorner.Parent = LoadHubButton
     
     -- Load Universal button
-    UniversalButton.Name = "LoadUniversalButton"
-    UniversalButton.BackgroundColor3 = Color3.fromRGB(35, 35, 40)
-    UniversalButton.Position = UDim2.new(0.5, 5, 0, 0)
-    UniversalButton.Size = UDim2.new(0.5, -25, 1, -10)
-    UniversalButton.Font = config.ButtonFont
-    UniversalButton.Text = "Load Universal"
-    UniversalButton.TextColor3 = config.TextColor
-    UniversalButton.TextSize = 14
-    UniversalButton.AutoButtonColor = false
-    UniversalButton.Parent = ButtonContainer
+    LoadUniversalButton.Name = "LoadUniversalButton"
+    LoadUniversalButton.BackgroundColor3 = Color3.fromRGB(35, 35, 40)
+    LoadUniversalButton.Position = UDim2.new(0.5, 5, 0, 0)
+    LoadUniversalButton.Size = UDim2.new(0.5, -25, 1, -10)
+    LoadUniversalButton.Font = Enum.Font.GothamSemibold -- Hardcoded font
+    LoadUniversalButton.Text = "Load Universal"
+    LoadUniversalButton.TextColor3 = config.TextColor
+    LoadUniversalButton.TextSize = 14
+    LoadUniversalButton.AutoButtonColor = false
+    LoadUniversalButton.Parent = ButtonsContainer
     
     UniversalButtonCorner.CornerRadius = config.ButtonCornerRadius
-    UniversalButtonCorner.Parent = UniversalButton
+    UniversalButtonCorner.Parent = LoadUniversalButton
     
     -- Add shadows to buttons
-    createShadow(HubButton)
-    createShadow(UniversalButton)
+    createShadow(LoadHubButton)
+    createShadow(LoadUniversalButton)
     
     -- Button effects
-    HubButton.MouseEnter:Connect(function()
-        smoothTween(HubButton, config.AnimationSpeedFast, {
-            BackgroundColor3 = config.AccentColorHover,
+    LoadHubButton.MouseEnter:Connect(function()
+        smoothTween(LoadHubButton, 0.15, {
+            BackgroundColor3 = Color3.fromRGB(255, 180, 40),
             Size = UDim2.new(0.5, -23, 1, -8)
         })
     end)
     
-    HubButton.MouseLeave:Connect(function()
-        smoothTween(HubButton, config.AnimationSpeedFast, {
-            BackgroundColor3 = config.AccentColor,
+    LoadHubButton.MouseLeave:Connect(function()
+        smoothTween(LoadHubButton, 0.15, {
+            BackgroundColor3 = accentColor,
             Size = UDim2.new(0.5, -25, 1, -10)
         })
     end)
     
-    HubButton.MouseButton1Down:Connect(function()
-        smoothTween(HubButton, 0.1, {
-            BackgroundColor3 = config.AccentColorActive,
+    LoadHubButton.MouseButton1Down:Connect(function()
+        smoothTween(LoadHubButton, 0.1, {
+            BackgroundColor3 = Color3.fromRGB(235, 150, 10),
             Size = UDim2.new(0.5, -27, 1, -12)
         })
     end)
     
-    HubButton.MouseButton1Up:Connect(function()
-        smoothTween(HubButton, 0.1, {
-            BackgroundColor3 = config.AccentColorHover,
+    LoadHubButton.MouseButton1Up:Connect(function()
+        smoothTween(LoadHubButton, 0.1, {
+            BackgroundColor3 = Color3.fromRGB(255, 180, 40),
             Size = UDim2.new(0.5, -23, 1, -8)
         })
     end)
     
-    HubButton.MouseButton1Click:Connect(function()
+    -- Button functionality
+    LoadHubButton.MouseButton1Click:Connect(function()
         -- Hide start menu with animation
         smoothTween(MainFrame, 0.3, {
             Position = UDim2.new(0.5, 0, 1, 100)
         }, function()
-            ScreenGui:Destroy()
-            hubCallback()
+            StartMenu:Destroy()
+            buttonCallback()
         end)
     end)
     
-    UniversalButton.MouseEnter:Connect(function()
-        smoothTween(UniversalButton, config.AnimationSpeedFast, {
+    LoadUniversalButton.MouseEnter:Connect(function()
+        smoothTween(LoadUniversalButton, 0.15, {
             BackgroundColor3 = Color3.fromRGB(45, 45, 50),
             Size = UDim2.new(0.5, -23, 1, -8)
         })
     end)
     
-    UniversalButton.MouseLeave:Connect(function()
-        smoothTween(UniversalButton, config.AnimationSpeedFast, {
+    LoadUniversalButton.MouseLeave:Connect(function()
+        smoothTween(LoadUniversalButton, 0.15, {
             BackgroundColor3 = Color3.fromRGB(35, 35, 40),
             Size = UDim2.new(0.5, -25, 1, -10)
         })
     end)
     
-    UniversalButton.MouseButton1Down:Connect(function()
-        smoothTween(UniversalButton, 0.1, {
+    LoadUniversalButton.MouseButton1Down:Connect(function()
+        smoothTween(LoadUniversalButton, 0.1, {
             BackgroundColor3 = Color3.fromRGB(40, 40, 45),
             Size = UDim2.new(0.5, -27, 1, -12)
         })
     end)
     
-    UniversalButton.MouseButton1Up:Connect(function()
-        smoothTween(UniversalButton, 0.1, {
+    LoadUniversalButton.MouseButton1Up:Connect(function()
+        smoothTween(LoadUniversalButton, 0.1, {
             BackgroundColor3 = Color3.fromRGB(45, 45, 50),
             Size = UDim2.new(0.5, -23, 1, -8)
         })
     end)
     
-    UniversalButton.MouseButton1Click:Connect(function()
+    LoadUniversalButton.MouseButton1Click:Connect(function()
         -- Hide start menu with animation
         smoothTween(MainFrame, 0.3, {
             Position = UDim2.new(0.5, 0, 1, 100)
         }, function()
-            ScreenGui:Destroy()
-            universalCallback()
+            StartMenu:Destroy()
+            universalButtonCallback()
         end)
     end)
     
-    -- Parent to CoreGui or PlayerGui
-    pcall(function()
-        ScreenGui.Parent = game:GetService("CoreGui")
-    end)
-    
-    if not ScreenGui.Parent then
-        ScreenGui.Parent = game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui")
-    end
-    
-    -- Improved animation sequence
-    -- First make the frame visible but positioned below screen
-    MainFrame.Visible = true
-    
-    -- Then animate from bottom to desired position
-    local openTween = smoothTween(MainFrame, config.AnimationSpeed, {
+    -- Show with animation
+    smoothTween(MainFrame, 0.3, {
         Position = UDim2.new(0.5, 0, 1, -20)
     })
     
-    openTween:Play()
-    
-    -- Functions
-    function startMenu:Hide()
-        local hideTween = smoothTween(MainFrame, config.AnimationSpeed, {
-            Position = UDim2.new(0.5, 0, 1, 100)
-        })
-        
-        hideTween:Play()
-        
-        hideTween.Completed:Connect(function()
-            ScreenGui:Destroy()
-        end)
-    end
-    
-    function startMenu:SetTitle(text)
-        Title.Text = text
-    end
-    
-    function startMenu:SetSubtitle(text)
-        Subtitle.Text = text
-    end
-    
-    return startMenu
+    -- Return the start menu
+    return {
+        ScreenGui = StartMenu,
+        MainFrame = MainFrame,
+        ShowNotification = function(message, duration, notificationType)
+            return UILibrary.ShowNotification(message, duration or 3)
+        end
+    }
 end
 
 -- Show notification globally
