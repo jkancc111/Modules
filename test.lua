@@ -121,34 +121,15 @@ function RSV:CreateWindow(options)
     subText.Font = Enum.Font.SourceSansBold
     subText.TextSize = 16
 
-    local profileFrame = Instance.new("Frame")
-    profileFrame.Size = UDim2.new(0, 300, 0, 400)
-    profileFrame.Position = UDim2.new(0, 20, 0.5, -170)
-    profileFrame.BackgroundColor3 = selectedTheme.MainFrameColor
-    profileFrame.BackgroundTransparency = selectedTheme.Transparency
-    profileFrame.BorderSizePixel = 0
-    profileFrame.Parent = screenGui
-    profileFrame.ZIndex = 1
-    profileFrame.Visible = false
-
-    local profileCorner = Instance.new("UICorner")
-    profileCorner.CornerRadius = UDim.new(0, 15)
-    profileCorner.Parent = profileFrame
-
-    local profileGradient = Instance.new("UIGradient")
-    profileGradient.Color = selectedTheme.HomeGradient
-    profileGradient.Rotation = 90
-    profileGradient.Parent = profileFrame
-
     local mainFrame = Instance.new("Frame")
     mainFrame.Size = UDim2.new(0, 350, 0, 400)
-    mainFrame.Position = UDim2.new(0, -350, 0, 50)
+    mainFrame.Position = UDim2.new(0.5, -350, 0.5, -200)
     mainFrame.BackgroundColor3 = selectedTheme.MainFrameColor
     mainFrame.BackgroundTransparency = selectedTheme.Transparency
     mainFrame.BorderSizePixel = 0
-    mainFrame.ClipsDescendants = true
     mainFrame.Parent = screenGui
     mainFrame.ZIndex = 1
+    mainFrame.Visible = false
 
     local mainCorner = Instance.new("UICorner")
     mainCorner.CornerRadius = UDim.new(0, 20)
@@ -184,7 +165,7 @@ function RSV:CreateWindow(options)
     bottomBarGradient.Parent = bottomBar
 
     local highlight = Instance.new("Frame")
-    highlight.Size = UDim2.new(0, 60, 1, 0)
+    highlight.Size = UDim2.new(0, 70, 1, 0)
     highlight.Position = UDim2.new(0, 0, 0, 0)
     highlight.BackgroundColor3 = Color3.fromRGB(255, 105, 180)
     highlight.BorderSizePixel = 0
@@ -202,7 +183,6 @@ function RSV:CreateWindow(options)
 
     local window = {
         MainFrame = mainFrame,
-        ProfileFrame = profileFrame,
         ScreenGui = screenGui,
         Tabs = {},
         CurrentTab = nil,
@@ -210,8 +190,7 @@ function RSV:CreateWindow(options)
         Highlight = highlight,
         ActiveIndex = 1,
         StartTime = os.time(),
-        Theme = selectedTheme,
-        IsOpen = false
+        Theme = selectedTheme
     }
 
     function window:CreateTab(name, description)
@@ -228,7 +207,7 @@ function RSV:CreateWindow(options)
         end
 
         local tabFrame = Instance.new("ScrollingFrame")
-        tabFrame.Size = UDim2.new(0, 330, 0, 340)
+        tabFrame.Size = UDim2.new(1, -20, 1, -60)
         tabFrame.Position = UDim2.new(0, 10, 0, 50)
         tabFrame.BackgroundTransparency = 1
         tabFrame.ScrollBarThickness = 5
@@ -657,25 +636,15 @@ function RSV:CreateWindow(options)
     end
 
     function window:Toggle()
-        self.IsOpen = not self.IsOpen
-        
-        if self.IsOpen then
+        if mainFrame.Position.X.Offset == -350 then
             mainFrame.Visible = true
-            profileFrame.Visible = true
-            
-            TweenService:Create(mainFrame, TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Position = UDim2.new(0, 340, 0, 50)}):Play()
-            
-            TweenService:Create(bottomBar, TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {Position = UDim2.new(0.5, -bottomBar.Size.X.Offset / 2, 1, -70)}):Play()
+            TweenService:Create(mainFrame, TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Position = UDim2.new(0.5, -175, 0.5, -200)}):Play()
+            TweenService:Create(bottomBar, TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Position = UDim2.new(0.5, -bottomBar.Size.X.Offset / 2, 1, -70)}):Play()
         else
-            TweenService:Create(mainFrame, TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {Position = UDim2.new(0, -350, 0, 50)}):Play()
-            
-            TweenService:Create(bottomBar, TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {Position = UDim2.new(0.5, -bottomBar.Size.X.Offset / 2, 1, 10)}):Play()
-            
+            TweenService:Create(mainFrame, TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Position = UDim2.new(0.5, -350, 0.5, -200)}):Play()
+            TweenService:Create(bottomBar, TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Position = UDim2.new(0.5, -bottomBar.Size.X.Offset / 2, 1, 10)}):Play()
             delay(0.5, function()
-                if not self.IsOpen then
-                    mainFrame.Visible = false
-                    profileFrame.Visible = false
-                end
+                mainFrame.Visible = false
             end)
         end
     end
@@ -687,139 +656,139 @@ function RSV:CreateWindow(options)
     end)
 
     local homeTab = window:CreateTab("Home", "Welcome to " .. name)
-    local homeBackground = Instance.new("Frame")
-    homeBackground.Size = UDim2.new(1, 0, 1, 0)
-    homeBackground.BackgroundColor3 = selectedTheme.HomeBackgroundColor
-    homeBackground.BackgroundTransparency = selectedTheme.Transparency
-    homeBackground.BorderSizePixel = 0
-    homeBackground.Parent = homeTab.Frame
-    homeBackground.ZIndex = 1
-    homeBackground.Visible = true
+    
+    if homeTab.Name == "Home" then
+        local homeBackground = Instance.new("Frame")
+        homeBackground.Size = UDim2.new(1, 0, 1, 0)
+        homeBackground.BackgroundColor3 = selectedTheme.HomeBackgroundColor
+        homeBackground.BackgroundTransparency = selectedTheme.Transparency
+        homeBackground.BorderSizePixel = 0
+        homeBackground.Parent = homeTab.Frame
+        homeBackground.ZIndex = 1
 
-    local homeCorner = Instance.new("UICorner")
-    homeCorner.CornerRadius = UDim.new(0, 15)
-    homeCorner.Parent = homeBackground
+        local homeCorner = Instance.new("UICorner")
+        homeCorner.CornerRadius = UDim.new(0, 15)
+        homeCorner.Parent = homeBackground
 
-    local homeGradient = Instance.new("UIGradient")
-    homeGradient.Color = selectedTheme.HomeGradient
-    homeGradient.Rotation = 90
-    homeGradient.Parent = homeBackground
+        local homeGradient = Instance.new("UIGradient")
+        homeGradient.Color = selectedTheme.HomeGradient
+        homeGradient.Rotation = 90
+        homeGradient.Parent = homeBackground
 
-    local avatarImage = Instance.new("ImageLabel")
-    avatarImage.Size = UDim2.new(0, 80, 0, 80)
-    avatarImage.Position = UDim2.new(0.5, -40, 0, 30)
-    avatarImage.BackgroundTransparency = 1
-    avatarImage.Image = Players:GetUserThumbnailAsync(player.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size150x150)
-    avatarImage.Parent = profileFrame
-    avatarImage.ZIndex = 2
+        local avatarImage = Instance.new("ImageLabel")
+        avatarImage.Size = UDim2.new(0, 80, 0, 80)
+        avatarImage.Position = UDim2.new(0.5, -40, 0, 10)
+        avatarImage.BackgroundTransparency = 1
+        avatarImage.Image = Players:GetUserThumbnailAsync(player.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size150x150)
+        avatarImage.Parent = homeTab.Frame
+        avatarImage.ZIndex = 2
 
-    local avatarCorner = Instance.new("UICorner")
-    avatarCorner.CornerRadius = UDim.new(1, 0)
-    avatarCorner.Parent = avatarImage
+        local avatarCorner = Instance.new("UICorner")
+        avatarCorner.CornerRadius = UDim.new(1, 0)
+        avatarCorner.Parent = avatarImage
 
-    local avatarStroke = Instance.new("UIStroke")
-    avatarStroke.Thickness = 3
-    avatarStroke.Color = Color3.fromRGB(88, 101, 242)
-    avatarStroke.Parent = avatarImage
+        local avatarStroke = Instance.new("UIStroke")
+        avatarStroke.Thickness = 3
+        avatarStroke.Color = Color3.fromRGB(88, 101, 242)
+        avatarStroke.Parent = avatarImage
 
-    local displayName = Instance.new("TextLabel")
-    displayName.Size = UDim2.new(0, 280, 0, 30)
-    displayName.Position = UDim2.new(0.5, -140, 0, 120)
-    displayName.BackgroundTransparency = 1
-    displayName.Text = player.DisplayName
-    displayName.TextColor3 = selectedTheme.TextColor
-    displayName.Font = Enum.Font.GothamBold
-    displayName.TextSize = 20
-    displayName.TextXAlignment = Enum.TextXAlignment.Center
-    displayName.Parent = profileFrame
-    displayName.ZIndex = 2
+        local displayName = Instance.new("TextLabel")
+        displayName.Size = UDim2.new(0, 300, 0, 30)
+        displayName.Position = UDim2.new(0.5, -150, 0, 100)
+        displayName.BackgroundTransparency = 1
+        displayName.Text = player.DisplayName
+        displayName.TextColor3 = selectedTheme.TextColor
+        displayName.Font = Enum.Font.GothamBold
+        displayName.TextSize = 20
+        displayName.TextXAlignment = Enum.TextXAlignment.Center
+        displayName.Parent = homeTab.Frame
+        displayName.ZIndex = 2
 
-    local realUsername = Instance.new("TextLabel")
-    realUsername.Size = UDim2.new(0, 280, 0, 20)
-    realUsername.Position = UDim2.new(0.5, -140, 0, 150)
-    realUsername.BackgroundTransparency = 1
-    realUsername.Text = "@" .. player.Name
-    realUsername.TextColor3 = selectedTheme.SubTextColor
-    realUsername.Font = Enum.Font.Gotham
-    realUsername.TextSize = 14
-    realUsername.TextXAlignment = Enum.TextXAlignment.Center
-    realUsername.Parent = profileFrame
-    realUsername.ZIndex = 2
+        local realUsername = Instance.new("TextLabel")
+        realUsername.Size = UDim2.new(0, 300, 0, 20)
+        realUsername.Position = UDim2.new(0.5, -150, 0, 130)
+        realUsername.BackgroundTransparency = 1
+        realUsername.Text = "@" .. player.Name
+        realUsername.TextColor3 = selectedTheme.SubTextColor
+        realUsername.Font = Enum.Font.Gotham
+        realUsername.TextSize = 14
+        realUsername.TextXAlignment = Enum.TextXAlignment.Center
+        realUsername.Parent = homeTab.Frame
+        realUsername.ZIndex = 2
 
-    local serverPlayers = Instance.new("TextLabel")
-    serverPlayers.Size = UDim2.new(0, 280, 0, 20)
-    serverPlayers.Position = UDim2.new(0.5, -140, 0, 180)
-    serverPlayers.BackgroundTransparency = 1
-    serverPlayers.Text = #Players:GetPlayers() .. "/" .. game.Players.MaxPlayers .. " players"
-    serverPlayers.TextColor3 = selectedTheme.TextColor
-    serverPlayers.Font = Enum.Font.Gotham
-    serverPlayers.TextSize = 14
-    serverPlayers.TextXAlignment = Enum.TextXAlignment.Center
-    serverPlayers.Parent = profileFrame
-    serverPlayers.ZIndex = 2
+        local serverPlayers = Instance.new("TextLabel")
+        serverPlayers.Size = UDim2.new(0, 300, 0, 20)
+        serverPlayers.Position = UDim2.new(0.5, -150, 0, 160)
+        serverPlayers.BackgroundTransparency = 1
+        serverPlayers.Text = #Players:GetPlayers() .. "/" .. game.Players.MaxPlayers .. " players"
+        serverPlayers.TextColor3 = selectedTheme.TextColor
+        serverPlayers.Font = Enum.Font.Gotham
+        serverPlayers.TextSize = 14
+        serverPlayers.TextXAlignment = Enum.TextXAlignment.Center
+        serverPlayers.Parent = homeTab.Frame
+        serverPlayers.ZIndex = 2
 
-    local elapsedTime = Instance.new("TextLabel")
-    elapsedTime.Size = UDim2.new(0, 280, 0, 20)
-    elapsedTime.Position = UDim2.new(0.5, -140, 0, 210)
-    elapsedTime.BackgroundTransparency = 1
-    elapsedTime.Text = "0 seconds elapsed"
-    elapsedTime.TextColor3 = selectedTheme.TextColor
-    elapsedTime.Font = Enum.Font.Gotham
-    elapsedTime.TextSize = 14
-    elapsedTime.TextXAlignment = Enum.TextXAlignment.Center
-    elapsedTime.Parent = profileFrame
-    elapsedTime.ZIndex = 2
+        local elapsedTime = Instance.new("TextLabel")
+        elapsedTime.Size = UDim2.new(0, 300, 0, 20)
+        elapsedTime.Position = UDim2.new(0.5, -150, 0, 180)
+        elapsedTime.BackgroundTransparency = 1
+        elapsedTime.Text = "0 seconds elapsed"
+        elapsedTime.TextColor3 = selectedTheme.TextColor
+        elapsedTime.Font = Enum.Font.Gotham
+        elapsedTime.TextSize = 14
+        elapsedTime.TextXAlignment = Enum.TextXAlignment.Center
+        elapsedTime.Parent = homeTab.Frame
+        elapsedTime.ZIndex = 2
 
-    local gameNameLabel = Instance.new("TextLabel")
-    gameNameLabel.Size = UDim2.new(0, 280, 0, 20)
-    gameNameLabel.Position = UDim2.new(0.5, -140, 0, 240)
-    gameNameLabel.BackgroundTransparency = 1
-    gameNameLabel.Text = "Connected to: <b>Loading...</b>"
-    gameNameLabel.TextColor3 = selectedTheme.TextColor
-    gameNameLabel.Font = Enum.Font.Gotham
-    gameNameLabel.TextSize = 14
-    gameNameLabel.TextXAlignment = Enum.TextXAlignment.Center
-    gameNameLabel.RichText = true
-    gameNameLabel.Parent = profileFrame
-    gameNameLabel.ZIndex = 2
+        local gameNameLabel = Instance.new("TextLabel")
+        gameNameLabel.Size = UDim2.new(0, 300, 0, 20)
+        gameNameLabel.Position = UDim2.new(0.5, -150, 0, 210)
+        gameNameLabel.BackgroundTransparency = 1
+        gameNameLabel.Text = "Connected to: <b>Loading...</b>"
+        gameNameLabel.TextColor3 = selectedTheme.TextColor
+        gameNameLabel.Font = Enum.Font.Gotham
+        gameNameLabel.TextSize = 14
+        gameNameLabel.TextXAlignment = Enum.TextXAlignment.Center
+        gameNameLabel.RichText = true
+        gameNameLabel.Parent = homeTab.Frame
+        gameNameLabel.ZIndex = 2
 
-    local changelogLabel = Instance.new("TextLabel")
-    changelogLabel.Size = UDim2.new(0, 280, 0, 100)
-    changelogLabel.Position = UDim2.new(0.5, -140, 0, 270)
-    changelogLabel.BackgroundTransparency = 1
-    changelogLabel.Text = "Changelog:\n- v1.0: Initial release\n- v1.1: Added new themes\n- v1.2: Improved UI responsiveness"
-    changelogLabel.TextColor3 = selectedTheme.TextColor
-    changelogLabel.Font = Enum.Font.Gotham
-    changelogLabel.TextSize = 14
-    changelogLabel.TextXAlignment = Enum.TextXAlignment.Left
-    changelogLabel.TextYAlignment = Enum.TextYAlignment.Top
-    changelogLabel.Parent = profileFrame
-    changelogLabel.ZIndex = 2
+        local changelogLabel = Instance.new("TextLabel")
+        changelogLabel.Size = UDim2.new(0, 300, 0, 100)
+        changelogLabel.Position = UDim2.new(0.5, -150, 0, 240)
+        changelogLabel.BackgroundTransparency = 1
+        changelogLabel.Text = "Changelog:\n- v1.0: Initial release\n- v1.1: Added new themes\n- v1.2: Improved UI responsiveness"
+        changelogLabel.TextColor3 = selectedTheme.TextColor
+        changelogLabel.Font = Enum.Font.Gotham
+        changelogLabel.TextSize = 14
+        changelogLabel.TextXAlignment = Enum.TextXAlignment.Left
+        changelogLabel.TextYAlignment = Enum.TextYAlignment.Top
+        changelogLabel.Parent = homeTab.Frame
+        changelogLabel.ZIndex = 2
 
-    local function updateGameInfo()
-        local success, gameInfo = pcall(function()
-            return MarketplaceService:GetProductInfo(game.PlaceId)
-        end)
-        if success and gameInfo then
-            gameNameLabel.Text = "Connected to: <b>" .. gameInfo.Name .. "</b>"
-        else
-            gameNameLabel.Text = "Connected to: <b>Unknown Game</b>"
+        local function updateGameInfo()
+            local success, gameInfo = pcall(function()
+                return MarketplaceService:GetProductInfo(game.PlaceId)
+            end)
+            if success and gameInfo then
+                gameNameLabel.Text = "Connected to: <b>" .. gameInfo.Name .. "</b>"
+            else
+                gameNameLabel.Text = "Connected to: <b>Unknown Game</b>"
+            end
         end
+
+        updateGameInfo()
+
+        spawn(function()
+            while wait(1) do
+                serverPlayers.Text = #Players:GetPlayers() .. "/" .. game.Players.MaxPlayers .. " players"
+                local elapsed = os.time() - window.StartTime
+                elapsedTime.Text = elapsed .. " seconds elapsed"
+            end
+        end)
     end
 
-    updateGameInfo()
-
-    spawn(function()
-        while wait(1) do
-            serverPlayers.Text = #Players:GetPlayers() .. "/" .. game.Players.MaxPlayers .. " players"
-            local elapsed = os.time() - window.StartTime
-            elapsedTime.Text = elapsed .. " seconds elapsed"
-        end
-    end)
-
-    delay(0.1, function()
-        window:Toggle()
-    end)
+    window:Toggle()
 
     return window
 end
