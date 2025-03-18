@@ -4,32 +4,34 @@ local UILibrary = {}
 local config = {
     Title = "Lomu Hub",
     SubTitle = "Game Library",
-    MainColor = Color3.fromRGB(10, 10, 12), -- Lebih gelap untuk kontras
-    SecondaryColor = Color3.fromRGB(20, 20, 25), -- Item background
-    AccentColor = Color3.fromRGB(255, 120, 20), -- Dark Orange accent
-    TextColor = Color3.fromRGB(255, 255, 255),
-    SecondaryTextColor = Color3.fromRGB(180, 180, 180),
+    MainColor = Color3.fromRGB(20, 20, 22), -- Warna dasar lebih gelap & halus
+    SecondaryColor = Color3.fromRGB(30, 30, 35), -- Item background lebih soft
+    AccentColor = Color3.fromRGB(225, 125, 70), -- Orange lebih soft & elegan
+    TextColor = Color3.fromRGB(240, 240, 240), -- Text putih dengan sedikit keabu-abuan
+    SecondaryTextColor = Color3.fromRGB(170, 170, 175), -- Text sekunder lebih soft
     Font = Enum.Font.GothamSemibold,
     ButtonFont = Enum.Font.Gotham,
-    CornerRadius = UDim.new(0, 6), -- Lebih subtle
-    AnimationSpeed = 0.5, -- Sedikit lebih cepat
+    CornerRadius = UDim.new(0, 5), -- Sudut lebih halus
+    AnimationSpeed = 0.5,
     AnimationSpeedFast = 0.25,
     AnimationEasingStyle = Enum.EasingStyle.Quint,
     AnimationEasingDirection = Enum.EasingDirection.Out,
-    ShadowTransparency = 0.6, -- Lebih halus
+    ShadowTransparency = 0.7, -- Shadow lebih transparan
     MobileScaling = true,
-    GameItemHeight = 80, -- Lebih compact
-    MobileGameItemHeight = 70,
+    GameItemHeight = 75, -- Lebih compact
+    MobileGameItemHeight = 65,
     DefaultThumbnail = "rbxassetid://6894586021",
-    StartMenuHeight = 90, -- Lebih compact
-    Padding = 10, -- Padding lebih kecil
-    ButtonHeight = 32, -- Tombol lebih compact
-    OrangeDark = Color3.fromRGB(15, 15, 17), -- Lebih gelap, minimalis
-    OrangeDarker = Color3.fromRGB(10, 10, 12), -- Background gelap minimalis
-    IconSize = 20, -- Ukuran standar untuk ikon
-    ItemSpacing = 8, -- Spacing antar elemen
-    BorderRadius = 4, -- Border radius yang lebih subtle
-    SearchBarHeight = 30 -- Tinggi search bar
+    StartMenuHeight = 85, -- Lebih compact
+    Padding = 10,
+    ButtonHeight = 32,
+    OrangeDark = Color3.fromRGB(25, 23, 25), -- Background game item lebih soft
+    OrangeDarker = Color3.fromRGB(18, 18, 20), -- Background utama lebih soft
+    IconSize = 18, -- Ukuran icon lebih kecil
+    ItemSpacing = 8,
+    BorderRadius = 4,
+    SearchBarHeight = 28,
+    AccentTransparency = 0.1, -- Transparansi untuk aksen
+    GlowTransparency = 0.85 -- Glow lebih halus
 }
 
 -- Fungsi helper untuk membuat animasi yang lebih smooth
@@ -240,13 +242,13 @@ function UILibrary.new(customConfig)
         local CategoryButton = Instance.new("TextButton")
         CategoryButton.Name = "Category_" .. catName
         CategoryButton.BackgroundColor3 = (catName == selectedCategory) and config.AccentColor or config.SecondaryColor
-        CategoryButton.Size = UDim2.new(0, 0, 1, 0) -- Auto-size based on text
+        CategoryButton.BackgroundTransparency = (catName == selectedCategory) and 0.1 or 0.8 -- Lebih transparan
+        CategoryButton.Size = UDim2.new(0, 0, 1, 0)
         CategoryButton.AutomaticSize = Enum.AutomaticSize.X
         CategoryButton.Font = config.ButtonFont
         CategoryButton.Text = " " .. catName .. " "
         CategoryButton.TextColor3 = config.TextColor
-        CategoryButton.TextSize = 14
-        CategoryButton.BackgroundTransparency = (catName == selectedCategory) and 0 or 0.7
+        CategoryButton.TextSize = 13 -- Ukuran teks lebih kecil
         CategoryButton.Parent = CategoryButtons
         
         local CategoryButtonCorner = Instance.new("UICorner")
@@ -483,10 +485,10 @@ function UILibrary.new(customConfig)
         
         -- Status indicator based on status text
         local statusColors = {
-            ["Working"] = Color3.fromRGB(50, 200, 100),
-            ["Updated"] = Color3.fromRGB(50, 150, 255),
-            ["Testing"] = Color3.fromRGB(255, 200, 50),
-            ["Patched"] = Color3.fromRGB(220, 50, 50)
+            ["Working"] = Color3.fromRGB(80, 180, 120), -- Warna hijau lebih soft
+            ["Updated"] = Color3.fromRGB(90, 140, 210), -- Biru lebih soft
+            ["Testing"] = Color3.fromRGB(220, 180, 80), -- Kuning lebih soft
+            ["Patched"] = Color3.fromRGB(200, 90, 80)  -- Merah lebih soft
         }
         
         local StatusIndicator = Instance.new("Frame")
@@ -510,6 +512,7 @@ function UILibrary.new(customConfig)
         -- Play button with orange accent
         PlayButton.Name = "PlayButton"
         PlayButton.BackgroundColor3 = config.AccentColor
+        PlayButton.BackgroundTransparency = config.AccentTransparency
         PlayButton.Position = UDim2.new(1, -40, 0.5, 0)
         PlayButton.AnchorPoint = Vector2.new(0, 0.5)
         PlayButton.Size = UDim2.new(0, 32, 0, 32)
@@ -517,6 +520,7 @@ function UILibrary.new(customConfig)
         PlayButton.ImageRectOffset = Vector2.new(764, 244)
         PlayButton.ImageRectSize = Vector2.new(36, 36)
         PlayButton.ImageColor3 = config.TextColor
+        PlayButton.ImageTransparency = 0.1
         PlayButton.Parent = GameItem
         
         PlayButtonCorner.CornerRadius = UDim.new(0, config.BorderRadius)
@@ -528,8 +532,8 @@ function UILibrary.new(customConfig)
         PlayButtonGlow.BackgroundTransparency = 1
         PlayButtonGlow.Image = "rbxassetid://5028857084"
         PlayButtonGlow.ImageColor3 = Color3.fromRGB(255, 150, 50)
-        PlayButtonGlow.ImageTransparency = 0.8
-        PlayButtonGlow.Size = UDim2.new(1.5, 0, 1.5, 0)
+        PlayButtonGlow.ImageTransparency = config.GlowTransparency
+        PlayButtonGlow.Size = UDim2.new(1.3, 0, 1.3, 0)
         PlayButtonGlow.Position = UDim2.new(0.5, 0, 0.5, 0)
         PlayButtonGlow.AnchorPoint = Vector2.new(0.5, 0.5)
         PlayButtonGlow.ZIndex = -1
@@ -538,19 +542,19 @@ function UILibrary.new(customConfig)
         -- Play button hover effects
         PlayButton.MouseEnter:Connect(function()
             smoothTween(PlayButton, config.AnimationSpeedFast, {
-                Size = UDim2.new(0, 36, 0, 36),
-                ImageTransparency = 0
+                Size = UDim2.new(0, 34, 0, 34),
+                BackgroundTransparency = 0
             }):Play()
             
             smoothTween(PlayButtonGlow, config.AnimationSpeedFast, {
-                ImageTransparency = 0.6
+                ImageTransparency = 0.7
             }):Play()
         end)
         
         PlayButton.MouseLeave:Connect(function()
             smoothTween(PlayButton, config.AnimationSpeedFast, {
                 Size = UDim2.new(0, 32, 0, 32),
-                ImageTransparency = 0
+                BackgroundTransparency = 0
             }):Play()
             
             smoothTween(PlayButtonGlow, config.AnimationSpeedFast, {
