@@ -1472,4 +1472,388 @@ function UILibrary.ShowExample()
     return myHub
 end
 
+-- Function to create Start Menu with Animation
+function UILibrary:CreateStartMenu(options)
+    local startMenu = {}
+    options = options or {}
+    
+    -- Default options
+    local logoText = options.LogoText or "Lomu Hub"
+    local description = options.Description or "Powerful script hub for all your needs"
+    local accentColor = options.AccentColor or config.AccentColor
+    local buttonCallback = options.ButtonCallback or function() end
+    local universalCallback = options.UniversalButtonCallback or function() end
+    local customPlayerName = options.CustomPlayerName
+    
+    -- Efek blur untuk background
+    local BlurEffect = Instance.new("BlurEffect")
+    BlurEffect.Size = 0
+    BlurEffect.Parent = game:GetService("Lighting")
+    
+    -- Create start menu GUI
+    local ScreenGui = Instance.new("ScreenGui")
+    local Background = Instance.new("Frame")
+    local MainFrame = Instance.new("Frame")
+    local MainCorner = Instance.new("UICorner")
+    local MainBorder = Instance.new("UIStroke")
+    local Logo = Instance.new("TextLabel")
+    local Description = Instance.new("TextLabel")
+    local LoadButton = Instance.new("TextButton")
+    local LoadButtonCorner = Instance.new("UICorner")
+    local UniversalButton = Instance.new("TextButton")
+    local UniversalButtonCorner = Instance.new("UICorner")
+    local PlayerInfo = Instance.new("Frame")
+    local PlayerAvatar = Instance.new("ImageLabel")
+    local PlayerAvatarCorner = Instance.new("UICorner")
+    local PlayerName = Instance.new("TextLabel")
+    
+    -- Set up ScreenGui
+    ScreenGui.Name = "LomuStartMenu"
+    ScreenGui.ResetOnSpawn = false
+    ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    ScreenGui.IgnoreGuiInset = true
+    ScreenGui.DisplayOrder = 100
+    
+    -- Background overlay for blur effect
+    Background.Name = "Background"
+    Background.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    Background.BackgroundTransparency = 1 -- Start transparent for animation
+    Background.Size = UDim2.new(1, 0, 1, 0)
+    Background.ZIndex = 5
+    Background.Parent = ScreenGui
+    
+    -- Main frame
+    MainFrame.Name = "MainFrame"
+    MainFrame.BackgroundColor3 = config.MainColor
+    MainFrame.BorderSizePixel = 0
+    MainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
+    MainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
+    MainFrame.Size = UDim2.new(0, 0, 0, 0) -- Start with size 0 for animation
+    MainFrame.ZIndex = 10
+    MainFrame.Parent = ScreenGui
+    
+    -- Add shadow
+    local MainShadow = createShadow(MainFrame)
+    MainShadow.ImageTransparency = 1 -- Start transparent for animation
+    
+    MainCorner.CornerRadius = UDim.new(0, 6)
+    MainCorner.Parent = MainFrame
+    
+    MainBorder.Color = config.BorderColor
+    MainBorder.Thickness = 1
+    MainBorder.Transparency = 1 -- Start transparent for animation
+    MainBorder.Parent = MainFrame
+    
+    -- Logo text
+    Logo.Name = "Logo"
+    Logo.BackgroundTransparency = 1
+    Logo.Position = UDim2.new(0, 0, 0.2, 0)
+    Logo.Size = UDim2.new(1, 0, 0, 40)
+    Logo.Font = config.HeadingFont
+    Logo.Text = logoText
+    Logo.TextColor3 = accentColor
+    Logo.TextSize = 28
+    Logo.TextTransparency = 1 -- Start transparent for animation
+    Logo.ZIndex = 11
+    Logo.Parent = MainFrame
+    
+    -- Description text
+    Description.Name = "Description"
+    Description.BackgroundTransparency = 1
+    Description.Position = UDim2.new(0, 0, 0.2, 45)
+    Description.Size = UDim2.new(1, 0, 0, 20)
+    Description.Font = config.BodyFont
+    Description.Text = description
+    Description.TextColor3 = config.SecondaryTextColor
+    Description.TextSize = 14
+    Description.TextTransparency = 1 -- Start transparent for animation
+    Description.ZIndex = 11
+    Description.Parent = MainFrame
+    
+    -- Load Hub button
+    LoadButton.Name = "LoadButton"
+    LoadButton.BackgroundColor3 = accentColor
+    LoadButton.Position = UDim2.new(0.5, -75, 0.65, 0)
+    LoadButton.Size = UDim2.new(0, 150, 0, 36)
+    LoadButton.Font = config.ButtonFont
+    LoadButton.Text = "Load Hub"
+    LoadButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    LoadButton.TextSize = 16
+    LoadButton.AutoButtonColor = false
+    LoadButton.BackgroundTransparency = 1 -- Start transparent for animation
+    LoadButton.TextTransparency = 1 -- Start transparent for animation
+    LoadButton.ZIndex = 11
+    LoadButton.Parent = MainFrame
+    
+    LoadButtonCorner.CornerRadius = UDim.new(0, 5)
+    LoadButtonCorner.Parent = LoadButton
+    
+    -- Universal script button
+    UniversalButton.Name = "UniversalButton"
+    UniversalButton.BackgroundColor3 = Color3.fromRGB(60, 60, 70)
+    UniversalButton.Position = UDim2.new(0.5, -75, 0.65, 45)
+    UniversalButton.Size = UDim2.new(0, 150, 0, 36)
+    UniversalButton.Font = config.ButtonFont
+    UniversalButton.Text = "Universal"
+    UniversalButton.TextColor3 = Color3.fromRGB(220, 220, 230)
+    UniversalButton.TextSize = 16
+    UniversalButton.AutoButtonColor = false
+    UniversalButton.BackgroundTransparency = 1 -- Start transparent for animation
+    UniversalButton.TextTransparency = 1 -- Start transparent for animation
+    UniversalButton.ZIndex = 11
+    UniversalButton.Parent = MainFrame
+    
+    UniversalButtonCorner.CornerRadius = UDim.new(0, 5)
+    UniversalButtonCorner.Parent = UniversalButton
+    
+    -- Player info section
+    PlayerInfo.Name = "PlayerInfo"
+    PlayerInfo.BackgroundTransparency = 1
+    PlayerInfo.Position = UDim2.new(0, 0, 0.85, 10)
+    PlayerInfo.Size = UDim2.new(1, 0, 0, 50)
+    PlayerInfo.ZIndex = 11
+    PlayerInfo.Parent = MainFrame
+    
+    PlayerAvatar.Name = "PlayerAvatar"
+    PlayerAvatar.BackgroundTransparency = 0.5
+    PlayerAvatar.BackgroundColor3 = Color3.fromRGB(30, 35, 45)
+    PlayerAvatar.Position = UDim2.new(0.5, -100, 0, 0)
+    PlayerAvatar.Size = UDim2.new(0, 40, 0, 40)
+    PlayerAvatar.ImageTransparency = 1 -- Start transparent for animation
+    PlayerAvatar.ZIndex = 12
+    PlayerAvatar.Parent = PlayerInfo
+    
+    PlayerAvatarCorner.CornerRadius = UDim.new(1, 0)
+    PlayerAvatarCorner.Parent = PlayerAvatar
+    
+    PlayerName.Name = "PlayerName"
+    PlayerName.BackgroundTransparency = 1
+    PlayerName.Position = UDim2.new(0.5, -50, 0, 0)
+    PlayerName.Size = UDim2.new(0, 200, 0, 40)
+    PlayerName.Font = config.Font
+    PlayerName.TextColor3 = config.TextColor
+    PlayerName.TextSize = 14
+    PlayerName.TextXAlignment = Enum.TextXAlignment.Left
+    PlayerName.TextTransparency = 1 -- Start transparent for animation
+    PlayerName.ZIndex = 12
+    PlayerName.Parent = PlayerInfo
+    
+    -- Get player info
+    local player = game:GetService("Players").LocalPlayer
+    
+    -- Try to get player's avatar
+    pcall(function()
+        local userId = player.UserId
+        PlayerAvatar.Image = "https://www.roblox.com/headshot-thumbnail/image?userId=" .. userId .. "&width=420&height=420&format=png"
+    end)
+    
+    -- Set player name (or custom name if provided)
+    PlayerName.Text = customPlayerName or player.Name
+    
+    -- Parent the ScreenGui
+    pcall(function()
+        ScreenGui.Parent = game:GetService("CoreGui")
+    end)
+    
+    if not ScreenGui.Parent then
+        ScreenGui.Parent = game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui")
+    end
+    
+    -- Button hover/click effects
+    LoadButton.MouseEnter:Connect(function()
+        smoothTween(LoadButton, 0.3, {
+            BackgroundColor3 = config.AccentColorHover,
+            Size = UDim2.new(0, 155, 0, 38)
+        })
+    end)
+    
+    LoadButton.MouseLeave:Connect(function()
+        smoothTween(LoadButton, 0.3, {
+            BackgroundColor3 = accentColor,
+            Size = UDim2.new(0, 150, 0, 36)
+        })
+    end)
+    
+    UniversalButton.MouseEnter:Connect(function()
+        smoothTween(UniversalButton, 0.3, {
+            BackgroundColor3 = Color3.fromRGB(70, 70, 85),
+            Size = UDim2.new(0, 155, 0, 38)
+        })
+    end)
+    
+    UniversalButton.MouseLeave:Connect(function()
+        smoothTween(UniversalButton, 0.3, {
+            BackgroundColor3 = Color3.fromRGB(60, 60, 70),
+            Size = UDim2.new(0, 150, 0, 36)
+        })
+    end)
+    
+    -- Button click effects and callbacks
+    LoadButton.MouseButton1Click:Connect(function()
+        -- Visual feedback
+        smoothTween(LoadButton, 0.1, {
+            Size = UDim2.new(0, 145, 0, 34),
+            BackgroundColor3 = config.AccentColorActive
+        })
+        
+        task.delay(0.1, function()
+            smoothTween(LoadButton, 0.1, {
+                Size = UDim2.new(0, 150, 0, 36),
+                BackgroundColor3 = accentColor
+            })
+        end)
+        
+        -- Animate closing of start menu but keep blur
+        -- Fade out content first
+        for _, child in pairs(MainFrame:GetChildren()) do
+            if child:IsA("GuiObject") and child ~= MainFrame and child.Name ~= "Shadow" then
+                if child.ClassName == "TextLabel" or child.ClassName == "TextButton" or child.ClassName == "TextBox" then
+                    smoothTween(child, 0.4, {
+                        TextTransparency = 1
+                    })
+                elseif child.ClassName == "ImageLabel" then
+                    smoothTween(child, 0.4, {
+                        ImageTransparency = 1
+                    })
+                end
+                
+                if child.BackgroundTransparency < 1 then
+                    smoothTween(child, 0.4, {
+                        BackgroundTransparency = 1
+                    })
+                end
+            end
+        end
+        
+        -- Keep the blur effect for the game hub
+        -- Don't fade the background yet either
+        
+        -- Then collapse the frame with a cool effect
+        task.delay(0.4, function()
+            -- Create a tween with a bounce-in-reverse effect
+            local closeTween = game:GetService("TweenService"):Create(
+                MainFrame,
+                TweenInfo.new(0.7, Enum.EasingStyle.Back, Enum.EasingDirection.In),
+                {
+                    Size = UDim2.new(0, 0, 0, 0),
+                    Position = UDim2.new(0.5, 0, 0.5, 0)
+                }
+            )
+            
+            smoothTween(MainShadow, 0.6, {
+                ImageTransparency = 1
+            })
+            
+            closeTween:Play()
+            
+            closeTween.Completed:Connect(function()
+                -- Execute callback but keep blur and background
+                buttonCallback(BlurEffect, Background)
+                -- Don't destroy ScreenGui or background yet
+                -- They'll be reused by the main hub
+            end)
+        end)
+    end)
+    
+    UniversalButton.MouseButton1Click:Connect(function()
+        -- Visual feedback
+        smoothTween(UniversalButton, 0.1, {
+            Size = UDim2.new(0, 145, 0, 34),
+            BackgroundColor3 = Color3.fromRGB(50, 50, 60)
+        })
+        
+        task.delay(0.1, function()
+            smoothTween(UniversalButton, 0.1, {
+                Size = UDim2.new(0, 150, 0, 36),
+                BackgroundColor3 = Color3.fromRGB(60, 60, 70)
+            })
+        end)
+        
+        -- Execute universal callback
+        universalCallback()
+    end)
+    
+    -- Perform the opening animation sequence
+    -- First apply blur effect
+    smoothTween(BlurEffect, 0.6, {
+        Size = 10
+    })
+    
+    -- Fade in the background
+    smoothTween(Background, 0.6, {
+        BackgroundTransparency = 0.4
+    })
+    
+    -- Then expand the main frame with a bounce effect
+    task.delay(0.2, function()
+        -- Calculate final size based on contents
+        MainFrame.Size = UDim2.new(0, 320, 0, 360)
+        
+        local sizeTween = game:GetService("TweenService"):Create(
+            MainFrame,
+            TweenInfo.new(0.8, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
+            {Size = UDim2.new(0, 320, 0, 360)}
+        )
+        sizeTween:Play()
+        
+        -- Fade in border and shadow
+        smoothTween(MainBorder, 0.8, {
+            Transparency = 0
+        })
+        
+        smoothTween(MainShadow, 0.8, {
+            ImageTransparency = 0.5
+        })
+        
+        -- Fade in UI elements with staggered delay
+        task.delay(0.3, function()
+            -- Logo elements
+            smoothTween(Logo, 0.5, {
+                TextTransparency = 0
+            })
+            
+            task.delay(0.1, function()
+                smoothTween(Description, 0.5, {
+                    TextTransparency = 0
+                })
+            end)
+            
+            -- Buttons
+            task.delay(0.2, function()
+                smoothTween(LoadButton, 0.5, {
+                    BackgroundTransparency = 0,
+                    TextTransparency = 0
+                })
+                
+                task.delay(0.1, function()
+                    smoothTween(UniversalButton, 0.5, {
+                        BackgroundTransparency = 0.2,
+                        TextTransparency = 0
+                    })
+                end)
+            end)
+            
+            -- Player info
+            task.delay(0.3, function()
+                smoothTween(PlayerAvatar, 0.5, {
+                    BackgroundTransparency = 0.2,
+                    ImageTransparency = 0
+                })
+                
+                smoothTween(PlayerName, 0.5, {
+                    TextTransparency = 0
+                })
+            end)
+        end)
+    end)
+    
+    return startMenu
+end
+
+-- Function to create hub from start menu (compatible with both methods)
+function UILibrary.CreateHub(customConfig)
+    -- Just call UILibrary.new with the custom config
+    return UILibrary.new(customConfig)
+end
+
 return UILibrary
